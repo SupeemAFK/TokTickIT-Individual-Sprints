@@ -1,13 +1,13 @@
 # Tok TickIT - IT Service Desk (Lab 1)
 
-This project is a vertical slice of the Tok TickIT application, an IT service desk for managing Account and Access, Hardware, Software, and Network requests[cite: 1]. This Lab 1 starter proves that the full tech stack works seamlessly from the UI down to the database[cite: 1].
+This project is a vertical slice of the Tok TickIT application, an IT service desk for managing Account and Access, Hardware, Software, and Network requests. This Lab 1 starter proves that the full tech stack works seamlessly from the UI down to the database.
 
 ## Tech Stack
 
-*   **Frontend:** React, TypeScript, Vite, Bootstrap[cite: 1]
-*   **Backend:** Node.js, Express, TypeScript, REST APIs[cite: 1]
-*   **Database:** PostgreSQL, Prisma ORM[cite: 1]
-*   **Testing:** Vitest (Frontend), Supertest (Backend)[cite: 1]
+*   **Frontend:** React, TypeScript, Vite, Bootstrap
+*   **Backend:** Node.js, Express, TypeScript, REST APIs
+*   **Database:** PostgreSQL, Prisma ORM
+*   **Testing:** Vitest (Frontend), Supertest (Backend)
 
 ## Prerequisites
 
@@ -60,30 +60,30 @@ Open a new terminal window, navigate to the `client/` directory, install depende
 
 ## Available API Endpoints
 
-Once the backend is running, the following REST API endpoints are available[cite: 1]:
+Once the backend is running, the following REST API endpoints are available:
 
 *   **`GET /api/health`**
-    *   **Description:** Health check to verify the backend and API are online[cite: 1].
-    *   **Response (200 OK):** `{"status": "ok", "service": "TokTickIT API"}`[cite: 1].
+    *   **Description:** Health check to verify the backend and API are online.
+    *   **Response (200 OK):** `{"status": "ok", "service": "TokTickIT API"}`.
 
 *   **`GET /api/categories`**
-    *   **Description:** Retrieves the list of seeded IT request categories (Account and Access, Hardware, Software, Network)[cite: 1].
-    *   **Response (200 OK):** Array of category objects containing `id` and `name`[cite: 1].
+    *   **Description:** Retrieves the list of seeded IT request categories (Account and Access, Hardware, Software, Network).
+    *   **Response (200 OK):** Array of category objects containing `id` and `name`.
 
 ---
 
 ## Running Tests
 
-To verify the setup, you can run the automated tests required for Lab 1[cite: 1]:
+To verify the setup, you can run the automated tests required for Lab 1:
 
 **Backend Tests (Supertest):**
-Tests the health and category endpoints[cite: 1].
+Tests the health and category endpoints.
 
     cd server
     npm test
 
 **Frontend Tests (Vitest):**
-Tests the UI rendering and API connection[cite: 1].
+Tests the UI rendering and API connection.
 
     cd client
     npm test
