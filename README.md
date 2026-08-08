@@ -1,4 +1,4 @@
-# Tok TickIT - IT Service Desk (Lab 1)
+# Tok TickIT - IT Service Desk
 
 This project is a vertical slice of the Tok TickIT application, an IT service desk for managing Account and Access, Hardware, Software, and Network requests. This Lab 1 starter proves that the full tech stack works seamlessly from the UI down to the database.
 
@@ -13,7 +13,7 @@ This project is a vertical slice of the Tok TickIT application, an IT service de
 
 Before you begin, ensure you have the following installed on your machine:
 *   **Node.js** (v18 or higher recommended)
-*   **PostgreSQL** (Running locally)
+*   **Docker** (For running the database easily)
 *   **Git**
 
 ---
@@ -23,20 +23,23 @@ Before you begin, ensure you have the following installed on your machine:
 ### 1. Clone the Repository
 Open your terminal and clone the repository to your local machine:
 
-    git clone <YOUR_GITHUB_REPOSITORY_URL>
+    git clone https://github.com/SupeemAFK/TokTickIT-Individual-Sprints.git
     cd toktickit
 
-*(Note: Replace `<YOUR_GITHUB_REPOSITORY_URL>` with your actual repository link).*
-
-### 2. Database Configuration
-1. Open PostgreSQL and create a new database named `toktickit`.
+### 2. Database Configuration (Docker)
+1. Spin up a local PostgreSQL instance using Docker by running this command in your terminal:
+```
+    docker run --name toktickit-db -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=mysecretpassword -e POSTGRES_DB=toktickit -p 5432:5432 -d postgres
+```
 2. Navigate to the `server/` directory and create your environment variables file:
-
+```
     cd server
     cp .env.example .env
-
-3. Open the newly created `.env` file and update the `DATABASE_URL` with your local PostgreSQL credentials.
-
+```
+3. Open the newly created `.env` file and set your `DATABASE_URL` exactly like this to match the Docker container:
+```
+    DATABASE_URL="postgresql://postgres:mysecretpassword@localhost:5432/toktickit?schema=public"
+```
 ### 3. Backend Initialization (Server)
 While still in the `server/` directory, install dependencies, initialize the database, and start the server:
 
