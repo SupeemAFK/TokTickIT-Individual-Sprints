@@ -1,19 +1,26 @@
 import { useState } from "react";
-import { checkSystem, Category } from "./api.js";
+import { checkSystem } from "./api.js";
 
-// UI states you must handle for Issue 4: idle, loading, success, error.
 type UiState = "idle" | "loading" | "success" | "error";
 
 export default function App() {
   const [state, setState] = useState<UiState>("idle");
-  const [categories, setCategories] = useState<Category[]>([]);
-  void categories;
+  const [service, setService] = useState("");
+  const [message, setMessage] = useState("");
 
   async function handleCheck() {
-    // TODO(Issue 4): set loading, call checkSystem(), then either
-    //   - success: store categories and show Online + the list, or
-    //   - error: show Offline + a useful message.
     setState("loading");
+    setMessage("");
+
+    try {
+      const status = await checkSystem();
+      setService(status.service);
+      setState("success");
+    } catch (error) {
+      setService("");
+      setMessage(error instanceof Error ? error.message : "Unable to check backend status.");
+      setState("error");
+    }
   }
 
   return (
@@ -26,7 +33,25 @@ export default function App() {
         {state === "loading" ? "Loading…" : "Check System"}
       </button>
 
-      {/* TODO(Issue 4): render loading / success (Online + categories) / error (Offline) states. */}
+      {state === "loading" && (
+        <p className="mt-3 mb-0 text-secondary" role="status">
+          Checking backend status...
+        </p>
+      )}
+
+      {state === "success" && (
+        <div className="alert alert-success mt-3 mb-0" role="status">
+          <strong>Online</strong>
+          <div>{service} is running.</div>
+        </div>
+      )}
+
+      {state === "error" && (
+        <div className="alert alert-danger mt-3 mb-0" role="alert">
+          <strong>Offline</strong>
+          <div>{message}</div>
+        </div>
+      )}
     </div>
   );
 }
