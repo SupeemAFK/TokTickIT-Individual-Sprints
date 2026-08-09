@@ -1,17 +1,26 @@
 # Lab 1 — Test Plan and Evidence
 
-All test files live under server/tests/lab-01/ and client/tests/lab-01/.
+All test files live under `server/tests/lab-01/` and `client/tests/lab-01/`.
+
+## Issue 2 — API Health Check
 
 | # | Tool | Test | Result |
 |---|------|------|--------|
-| 1 | Prisma schema | Category model has `id`, unique `name`, and `createdAt` | Passed |
-| 2 | Prisma migration | Migration creates `Category` table and unique `name` index | Passed |
-| 3 | Prisma seed | Seed uses `upsert` for the four required categories | Passed |
+| 1 | Supertest | `GET /api/health` returns 200, `status=ok`, and the service name | Passed |
+| 2 | Vitest + Testing Library | TokTickIT heading renders | Passed |
+| 3 | Vitest + Testing Library | Health success state shows Online from the API helper | Passed |
+| 4 | Vitest + Testing Library | Health failure state shows Offline plus the error message | Passed |
+
+## Issue 3 — Category Schema and Seed
+
+| # | Tool | Test | Result |
+|---|------|------|--------|
+| 1 | Prisma schema validation | Category model has `id`, unique `name`, and `createdAt` | Passed |
+| 2 | Prisma migration review | Migration creates `Category` table and unique `name` index | Passed |
+| 3 | Prisma seed review | Seed uses `upsert` for the four required categories | Passed |
 | 4 | Credentials check | Real `.env` files are ignored by Git | Passed |
 
-## Evidence
-
-### Prisma Schema Validation
+### Issue 3 Evidence
 
 Command:
 
@@ -27,8 +36,6 @@ Prisma schema loaded from prisma/schema.prisma
 The schema at prisma/schema.prisma is valid
 ```
 
-### Prisma Client Generation
-
 Command:
 
 ```text
@@ -42,75 +49,56 @@ Output:
 Prisma schema loaded from prisma/schema.prisma
 ```
 
-### TypeScript Build
+The seed uses `prisma.category.upsert()` with `where: { name }`, so running it multiple times updates existing rows instead of creating duplicate category names.
 
-Command:
+## Issue 4 — Category List
+
+| # | Tool | Test | Result |
+|---|------|------|--------|
+| 1 | Supertest | `GET /api/categories` returns category `id` and `name` values in ascending id order | Passed |
+| 2 | Supertest | Category route returns a safe 500 error body when Prisma fails | Passed |
+| 3 | Vitest + Testing Library | Category loading state appears while the API request is pending | Passed |
+| 4 | Vitest + Testing Library | Category names render from the API helper response | Passed |
+| 5 | Vitest + Testing Library | Category error state appears when the API helper rejects | Passed |
+
+### Issue 4 Evidence
+
+Server command:
 
 ```text
-cd server && npm run build
+cd server && npm test
 ```
 
 Output:
 
 ```text
-> toktickit-server@1.0.0 build
-> tsc
-```
-
-### Seed Safety
-
-The seed uses `prisma.category.upsert()` with `where: { name }`, so running it multiple times updates existing rows instead of creating duplicate category names.
-
-### Credential Safety
-
-`.gitignore` contains:
-
-```text
-.env
-*.env
-!.env.example
-```
-
-Only `.env.example` is committed. Real database credentials remain local.
-| 1 | Supertest | GET /api/health returns 200, status=ok | Passed |
-| 2 | Vitest | Heading renders | Passed |
-| 3 | Vitest | Success state shows Online from the real health API helper | Passed |
-| 4 | Vitest | Error state shows Offline + message | Passed |
-
-## Evidence
-
-### Server
-
-Command: `cd server && npm test`
-
-```text
 RUN  v2.1.9 /home/supeem/works/toktickit/server
 
-↓ tests/lab-01/categories.test.ts (1 test | 1 skipped)
-✓ tests/lab-01/health.test.ts (1 test) 13ms
+✓ tests/lab-01/categories.test.ts (2 tests) 14ms
+✓ tests/lab-01/health.test.ts (1 test) 12ms
 
-Test Files  1 passed | 1 skipped (2)
-Tests  1 passed | 1 todo (2)
+Test Files  2 passed (2)
+Tests  3 passed (3)
 ```
 
-Note: the existing Issue 4 category todo appears in the server test output but was not implemented for this ticket. This test needed permission to open an ephemeral local port for Supertest.
+Client command:
 
-### Client
+```text
+cd client && npm test
+```
 
-Command: `cd client && npm test`
+Output:
 
 ```text
 RUN  v2.1.9 /home/supeem/works/toktickit/client
 
-✓ tests/lab-01/App.test.tsx (3 tests) 106ms
+✓ tests/lab-01/App.test.tsx (5 tests) 149ms
 
 Test Files  1 passed (1)
-Tests  3 passed (3)
+Tests  5 passed (5)
 ```
 
-### Build Checks
-
-Commands:
+Build commands:
 
 ```text
 cd server && npm run build
@@ -118,3 +106,5 @@ cd client && npm run build
 ```
 
 Both completed successfully.
+
+Note: the server Supertest run needs permission to bind an ephemeral local port in this sandbox. It passed after running with that permission.
