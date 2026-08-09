@@ -31,3 +31,25 @@ export async function checkSystem(): Promise<SystemStatus> {
 
   return { online: true, service: data.service ?? "TokTickIT API" };
 }
+
+export async function fetchCategories(): Promise<Category[]> {
+  let response: Response;
+
+  try {
+    response = await fetch(`${API_URL}/api/categories`);
+  } catch {
+    throw new Error("Unable to reach the backend. Check that the API server is running.");
+  }
+
+  if (!response.ok) {
+    throw new Error(`Category request failed with HTTP ${response.status}.`);
+  }
+
+  const data = (await response.json()) as Category[];
+
+  if (!Array.isArray(data)) {
+    throw new Error("Category request returned an unexpected response.");
+  }
+
+  return data
+}

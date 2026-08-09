@@ -1,12 +1,45 @@
-import { useState } from "react";
-import { checkSystem } from "./api.js";
+import { useEffect, useState } from "react";
+import { checkSystem, fetchCategories, type Category } from "./api.js";
 
 type UiState = "idle" | "loading" | "success" | "error";
+type CategoryState = "loading" | "success" | "error";
 
 export default function App() {
   const [state, setState] = useState<UiState>("idle");
   const [service, setService] = useState("");
   const [message, setMessage] = useState("");
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [categoryState, setCategoryState] = useState<CategoryState>("loading");
+  const [categoryMessage, setCategoryMessage] = useState("");
+
+  useEffect(() => {
+    let isActive = true;
+
+    async function loadCategories() {
+      setCategoryState("loading");
+      setCategoryMessage("");
+
+      try {
+        const results = await fetchCategories();
+        if (!isActive) return;
+
+        setCategories(results);
+        setCategoryState("success");
+      } catch (error) {
+        if (!isActive) return;
+
+        setCategories([]);
+        setCategoryMessage(error instanceof Error ? error.message : "Unable to load categories.");
+        setCategoryState("error");
+      }
+    }
+
+    void loadCategories();
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
 
   async function handleCheck() {
     setState("loading");
@@ -52,6 +85,35 @@ export default function App() {
           <div>{message}</div>
         </div>
       )}
+
+      <section className="mt-5" aria-labelledby="categories-heading">
+        <h2 id="categories-heading" className="h5 mb-3">
+          Request categories
+        </h2>
+
+        {categoryState === "loading" && (
+          <p className="text-secondary" role="status">
+            Loading categories...
+          </p>
+        )}
+
+        {categoryState === "error" && (
+          <div className="alert alert-danger" role="alert">
+            <strong>Categories unavailable</strong>
+            <div>{categoryMessage}</div>
+          </div>
+        )}
+
+        {categoryState === "success" && (
+          <ul className="list-group">
+            {categories.map((category) => (
+              <li className="list-group-item" key={category.id}>
+                {category.name}
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
     </div>
   );
 }
