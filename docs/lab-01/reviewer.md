@@ -1,8 +1,9 @@
 # Lab 1 — Peer Review Record  (fill this in)
 
 **Author:** <Peemmapat Sripongsai> — <67070503436> — GitHub: @SupeemAFK<SupeemAFK>
-**Peer reviewer:** <Suwiwat Sinsomboon> — <67070503444> — GitHub: @Suwiwat Sinsomboon<username>
-**Peer reviewer:** <Suwiwat Sinsomboon> — <67070503429> — GitHub: @Peeranat Ngamkiatkajorn<username>
+**Peer reviewer (Reviewer - approve to partner):** <Suwiwat Sinsomboon> — <67070503444> — GitHub: @iceswift
+<username>
+**Peer reviewer (Reviewer - partner approved):** <Suwiwat Sinsomboon> — <67070503429> — GitHub: @jarbbie <username>
 
 ## Pull Requests I authored (reviewed by my partner)
 | PR | Branch | Reviewer verdict |
