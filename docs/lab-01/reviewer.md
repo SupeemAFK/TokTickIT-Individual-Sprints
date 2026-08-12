@@ -7,10 +7,10 @@
 ## Pull Requests I authored (reviewed by my partner)
 | PR | Branch | Reviewer verdict |
 |----|--------|------------------|
-|  #1  | feature/1-project-foundation | PASSED LGTM  |
-|  #2 | feature/2-health-check | PASSED LGTM |
-|  #3  | feature/3-category-seed | PASSED LGTM |
-|  #4  | feature/4-category-list | PASSED LGTM |
+|  #1 (https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/5)  | feature/1-project-foundation | PASSED LGTM  |
+|  #2 (https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/6) | feature/2-health-check | PASSED LGTM |
+|  #3 (https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/7)  | feature/3-category-seed | PASSED LGTM |
+|  #4 (https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/8) | feature/4-category-list | PASSED LGTM |
 
 ### feature/1-project-foundation
 ![alt text](image.png)
