@@ -1,7 +1,8 @@
 # Lab 1 — Peer Review Record  (fill this in)
 
-**Author:** <Peemmapat Sripongsai> — <67070503436> — GitHub: @<SupeemAFK>
-**Peer reviewer:** <Suwiwat Sinsomboon> — <67070503444> — GitHub: @<username>
+**Author:** <Peemmapat Sripongsai> — <67070503436> — GitHub: @SupeemAFK<SupeemAFK>
+**Peer reviewer:** <Suwiwat Sinsomboon> — <67070503444> — GitHub: @Suwiwat Sinsomboon<username>
+**Peer reviewer:** <Suwiwat Sinsomboon> — <67070503429> — GitHub: @Peeranat Ngamkiatkajorn<username>
 
 ## Pull Requests I authored (reviewed by my partner)
 | PR | Branch | Reviewer verdict |
@@ -129,6 +130,7 @@ Good schema is good and seed is simple and valid LGTM
 ### Issue 4: Display the IT request category list
 ![alt text](image-15.png)
 ![alt text](image-16.png)
+![alt text](image-17.png)
 
 **My comment:** 
 Excellent work I see your code and also image of the working application. Code looks good and test is passed. LGTM
