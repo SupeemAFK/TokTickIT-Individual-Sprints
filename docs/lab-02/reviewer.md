@@ -4,13 +4,13 @@
 
 | Reviewer | GitHub account | Evidence |
 |---|---|---|
-| Pending genuine peer review | — | Do not fill until review occurs. |
+| jarbbie | @jarbbie | PR #22 requested the Section 7 Prisma data-design expansion on 2026-08-24. |
 
 ## Pull Requests I Authored
 
 | Issue | PR | Branch | Reviewer comments | Response/fix | Approval |
 |---|---|---|---|---|---|
-| 1 | Pending | `feature/lab2-spec` | Pending | Pending | Pending |
+| 10 | [#22](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/22) | `feature/lab2-spec` | Requested explicit proposed Prisma models, fields/types, keys, relationships, constraints, enums, timestamps, indexes, soft-removal fields, and migration decision. | Expanded `specification.md` Section 7 in commit pending below; awaiting re-review. | Pending |
 
 ## Pull Requests I Reviewed for My Partner
 

@@ -65,7 +65,23 @@ The shell shows TokTickIT, active page navigation, current requester, and Change
 
 ## 7. Data Changes
 
-Prisma adds `DevelopmentRequester`, `RelatedSystem`, `Ticket`, and `Attachment`, plus enums for ticket status and requested priority. Category gains an active flag. Ticket has foreign keys to requester, category, and related system; Attachment has a foreign key to Ticket and optional soft-removal fields. Unique ticket number, requester/date and list-query indexes, and ticket/active-attachment indexes are used. Development Requester is deliberately a separate temporary model so Lab 3 can map or replace it with authenticated users without rewriting Ticket ownership.
+The Issue 3 implementation will add the following PostgreSQL/Prisma design. These are the approved proposed model names and fields; the implementation must keep the schema, migration, API, and tests consistent with them.
+
+| Model | Fields, types, and constraints |
+|---|---|
+| `DevelopmentRequester` | `id Int @id @default(autoincrement())`; `name String`; `email String @unique`; `isActive Boolean @default(true)`; `createdAt DateTime @default(now())`; `updatedAt DateTime @updatedAt`; `tickets Ticket[]`; `removedAttachments Attachment[]` (named relation). Index: `[isActive, name]` for the active selector. |
+| `Category` | Existing `id Int @id @default(autoincrement())`, `name String @unique`, and `createdAt DateTime @default(now())`; add `isActive Boolean @default(true)`, `updatedAt DateTime @updatedAt`, and `tickets Ticket[]`. Index: `[isActive, name]` for active reference-data lookup. |
+| `RelatedSystem` | `id Int @id @default(autoincrement())`; `name String @unique`; `isActive Boolean @default(true)`; `createdAt DateTime @default(now())`; `updatedAt DateTime @updatedAt`; `tickets Ticket[]`. Index: `[isActive, name]`. |
+| `Ticket` | `id Int @id @default(autoincrement())`; `ticketNumber String @unique`; `requesterId Int`; `categoryId Int`; `relatedSystemId Int`; `summary String`; `requestedPriority RequestedPriority`; `description String @db.Text`; `currentStatus TicketStatus @default(NEW)`; `createdAt DateTime @default(now())`; `updatedAt DateTime @updatedAt`; `attachments Attachment[]`. `createdAt` is the server-generated Ticket Date, avoiding a duplicate date field. Required foreign-key relations point to `DevelopmentRequester`, `Category`, and `RelatedSystem`. Indexes: `[requesterId, createdAt]`, `[requesterId, categoryId]`, `[requesterId, relatedSystemId]`, `[requesterId, requestedPriority]`, and `[requesterId, currentStatus]`. |
+| `Attachment` | `id Int @id @default(autoincrement())`; `ticketId Int`; `originalFilename String`; `storageKey String @unique`; `mimeType String`; `byteSize Int`; `createdAt DateTime @default(now())`; nullable `removedAt DateTime?`, `removalReason String?`, and `removedByRequesterId Int?`. Required relation to `Ticket`; optional named relation to the requester who removed it. Index `[ticketId, removedAt]` supports the active-attachment count and display. Application validation requires removal timestamp, reason, and remover to be set together. |
+
+`RequestedPriority` is the Prisma enum `LOW`, `MEDIUM`, `HIGH`; `TicketStatus` currently contains only `NEW`. Future status transitions are intentionally not added in Lab 2.
+
+All IDs are integer primary keys. The non-null Ticket foreign keys enforce that every Ticket has exactly one requester, category, and related system; the non-null Attachment `ticketId` enforces that every Attachment belongs to exactly one Ticket. One requester/category/related system can relate to many tickets, and one ticket can relate to many attachments. `onDelete: Restrict` will be used for Ticket reference relations and `onDelete: Cascade` for Ticket-to-Attachment rows, preventing accidental deletion of referenced lookup data while keeping attachment records tied to their ticket.
+
+The migration will be a new additive Prisma migration named for Lab 2 ticketing, not an edit to the existing Lab 1 migration. It will add the models, enums, foreign keys, unique constraints, indexes, and the new Category columns with safe defaults so the existing four categories remain valid. The idempotent seed will upsert the required categories, at least six Related Systems, and at least four active plus one inactive Development Requester.
+
+The key design decision is to keep `DevelopmentRequester` separate from a future authentication model and retain its foreign key on Ticket. This makes ownership explicit and testable in Lab 2, while Lab 3 can map or migrate the identity relationship without rewriting ticket, attachment, or audit data.
 
 ## 8. API Contract
 
