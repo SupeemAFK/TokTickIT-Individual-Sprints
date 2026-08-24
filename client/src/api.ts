@@ -51,5 +51,33 @@ export async function fetchCategories(): Promise<Category[]> {
     throw new Error("Category request returned an unexpected response.");
   }
 
-  return data
+  return data;
+}
+
+export interface DevelopmentRequester {
+  id: number;
+  name: string;
+  email: string;
+}
+
+export async function fetchDevelopmentRequesters(): Promise<DevelopmentRequester[]> {
+  let response: Response;
+
+  try {
+    response = await fetch(`${API_URL}/api/development-requesters`);
+  } catch {
+    throw new Error("Unable to reach the backend. Check that the API server is running.");
+  }
+
+  if (!response.ok) {
+    throw new Error(`Development Requester request failed with HTTP ${response.status}.`);
+  }
+
+  const data = (await response.json()) as DevelopmentRequester[];
+
+  if (!Array.isArray(data)) {
+    throw new Error("Development Requester request returned an unexpected response.");
+  }
+
+  return data;
 }
