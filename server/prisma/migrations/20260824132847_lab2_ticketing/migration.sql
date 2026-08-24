@@ -10,9 +10,11 @@ CREATE TYPE "RequestedPriority" AS ENUM ('LOW', 'MEDIUM', 'HIGH');
 -- CreateEnum
 CREATE TYPE "TicketStatus" AS ENUM ('NEW');
 
--- AlterTable
-ALTER TABLE "Category" ADD COLUMN     "isActive" BOOLEAN NOT NULL DEFAULT true,
-ADD COLUMN     "updatedAt" TIMESTAMP(3) NOT NULL;
+-- AlterTable: safely extend non-empty Lab 1 Category rows.
+ALTER TABLE "Category" ADD COLUMN "isActive" BOOLEAN NOT NULL DEFAULT true;
+ALTER TABLE "Category" ADD COLUMN "updatedAt" TIMESTAMP(3);
+UPDATE "Category" SET "updatedAt" = "createdAt" WHERE "updatedAt" IS NULL;
+ALTER TABLE "Category" ALTER COLUMN "updatedAt" SET NOT NULL;
 
 -- CreateTable
 CREATE TABLE "DevelopmentRequester" (
