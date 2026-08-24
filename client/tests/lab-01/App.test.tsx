@@ -1,11 +1,15 @@
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import * as api from "../../src/api.js";
-import App from "../../src/App.js";
+import * as api from "../../src/api";
+import App from "../../src/App";
 
 describe("App", () => {
   beforeEach(() => {
+    sessionStorage.clear();
+    vi.spyOn(api, "fetchDevelopmentRequesters").mockResolvedValue([
+      { id: 1, name: "Anan Kittisak", email: "anan.kittisak@toktickit.test" },
+    ]);
     vi.spyOn(api, "fetchCategories").mockResolvedValue([
       { id: 1, name: "Account and Access" },
       { id: 2, name: "Hardware" },
@@ -22,7 +26,7 @@ describe("App", () => {
   it("renders the TokTickIT heading", async () => {
     render(<App />);
     expect(screen.getByText(/TokTickIT/i)).toBeInTheDocument();
-    expect(await screen.findByText("Account and Access")).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: /continue/i })).toBeInTheDocument();
   });
 
   it("shows Online when the backend health check succeeds", async () => {
@@ -32,6 +36,7 @@ describe("App", () => {
     });
 
     render(<App />);
+    await selectRequester();
     await userEvent.click(screen.getByRole("button", { name: /check system/i }));
 
     expect(await screen.findByText("Online")).toBeInTheDocument();
@@ -44,6 +49,7 @@ describe("App", () => {
     );
 
     render(<App />);
+    await selectRequester();
     await userEvent.click(screen.getByRole("button", { name: /check system/i }));
 
     expect(await screen.findByText("Offline")).toBeInTheDocument();
@@ -52,8 +58,8 @@ describe("App", () => {
 
   it("loads and displays categories from the API", async () => {
     render(<App />);
+    await selectRequester();
 
-    expect(screen.getByText(/loading categories/i)).toBeInTheDocument();
     expect(await screen.findByText("Account and Access")).toBeInTheDocument();
     expect(screen.getByText("Hardware")).toBeInTheDocument();
     expect(screen.getByText("Software")).toBeInTheDocument();
@@ -67,8 +73,17 @@ describe("App", () => {
     );
 
     render(<App />);
+    await selectRequester();
 
     expect(await screen.findByText("Categories unavailable")).toBeInTheDocument();
     expect(screen.getByText(/category request failed/i)).toBeInTheDocument();
   });
 });
+
+async function selectRequester() {
+  await userEvent.selectOptions(
+    await screen.findByRole("combobox", { name: "Development Requester" }),
+    "1",
+  );
+  await userEvent.click(screen.getByRole("button", { name: /continue/i }));
+}

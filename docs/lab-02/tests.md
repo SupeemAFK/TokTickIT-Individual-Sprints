@@ -9,12 +9,12 @@ Tests are planned before implementation and trace to the approved specification.
 | ID | Type | AC | Scenario | Planned path | Status |
 |---|---|---|---|---|---|
 | UNIT-01 | Unit | AC-04 | unique ticket-number format | `server/tests/lab-02/ticket-number.test.ts` | Planned |
-| API-01 | API | AC-01–03 | active requester list and inactive exclusion | `server/tests/lab-02/requesters.api.test.ts` | Planned |
+| API-01 | API | AC-01–03 | active requester list and inactive exclusion | `server/tests/lab-02/requesters.api.test.ts` | Pass |
 | API-02 | API | AC-04–05 | valid/invalid ticket creation and duplicate prevention | `server/tests/lab-02/create-ticket.api.test.ts` | Planned |
 | API-03 | API | AC-06–08 | owned list, query validation, search/filter/sort/page, cross-owner detail rejection | `server/tests/lab-02/my-tickets.api.test.ts` | Planned |
 | API-04 | API | AC-09 | owned detail and safe missing/non-owner response | `server/tests/lab-02/ticket-detail.api.test.ts` | Planned |
 | API-05 | API | AC-10–12 | allowed/invalid/oversized/max files, download, soft removal and blocked download | `server/tests/lab-02/attachments.api.test.ts` | Planned |
-| UI-01 | UI | AC-01–03 | selector loading/error/empty/selection/switch | `client/tests/lab-02/RequesterSelection.test.tsx` | Planned |
+| UI-01 | UI | AC-01–03,14 | selector loading/error/empty/selection/switch | `client/tests/lab-02/RequesterSelection.test.tsx` | Pass |
 | UI-02 | UI | AC-04–05,14 | create form validation, busy, success, failed-request retention | `client/tests/lab-02/CreateTicket.test.tsx` | Planned |
 | UI-03 | UI | AC-06–08 | list states, query controls, reload and navigation | `client/tests/lab-02/MyTickets.test.tsx` | Planned |
 | UI-04 | UI | AC-09–12 | detail, attachment state/actions and errors | `client/tests/lab-02/RequesterTicketDetail.test.tsx` | Planned |

@@ -40,4 +40,17 @@ app.get("/api/categories", async (_req: Request, res: Response) => {
   }
 });
 
+app.get("/api/development-requesters", async (_req: Request, res: Response) => {
+  try {
+    const requesters = await getPrisma().developmentRequester.findMany({
+      where: { isActive: true },
+      orderBy: { name: "asc" },
+      select: { id: true, name: true, email: true },
+    });
+    res.status(200).json(requesters);
+  } catch {
+    res.status(500).json({ error: "Unable to load Development Requesters." });
+  }
+});
+
 export default app;
