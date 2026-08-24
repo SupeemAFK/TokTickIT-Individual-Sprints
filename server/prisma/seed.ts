@@ -1,29 +1,4 @@
 import { getPrisma } from "../src/prisma.js";
-
-// Issue 3 — seed the four supported categories.
-// The four names are: Account and Access, Hardware, Software, Network.
-// Requirement: running the seed twice must NOT create duplicates.
-// Hint: prisma.category.upsert({ where:{name}, update:{}, create:{name} }).
-async function main() {
-  const prisma = getPrisma();
-  const categories = ["Account and Access", "Hardware", "Software", "Network"];
-
-  for (const name of categories) {
-    await prisma.category.upsert({
-      where: { name },
-      update: {},
-      create: { name },
-    });
-  }
-
-  console.log(`Seeded ${categories.length} request categories.`);
-}
-
-main()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await getPrisma().$disconnect();
-  });
+import { developmentRequesters, relatedSystems, seedDatabase, ticketCategories } from "./seed-data.js";
+async function main() { await seedDatabase(getPrisma()); console.log("Seeded " + ticketCategories.length + " categories, " + relatedSystems.length + " related systems, and " + developmentRequesters.length + " Development Requesters."); }
+main().catch((error) => { console.error(error); process.exit(1); }).finally(async () => { await getPrisma().$disconnect(); });
