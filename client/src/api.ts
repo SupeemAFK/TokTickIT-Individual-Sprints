@@ -1,83 +1,79 @@
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
 
-export interface Category {
+export interface Category { id: number; name: string; }
+export interface RelatedSystem { id: number; name: string; }
+export interface DevelopmentRequester { id: number; name: string; email: string; }
+export interface SystemStatus { online: boolean; service: string; }
+export type RequestedPriority = "LOW" | "MEDIUM" | "HIGH";
+
+export interface CreateTicketInput {
+  requesterId: number;
+  categoryId: number;
+  relatedSystemId: number;
+  summary: string;
+  requestedPriority: RequestedPriority;
+  description: string;
+}
+
+export interface Ticket {
   id: number;
-  name: string;
+  ticketNumber: string;
+  requesterId: number;
+  categoryId: number;
+  relatedSystemId: number;
+  summary: string;
+  requestedPriority: RequestedPriority;
+  description: string;
+  currentStatus: "NEW";
+  createdAt: string;
+  updatedAt: string;
 }
 
-export interface SystemStatus {
-  online: boolean;
-  service: string;
-}
-
-export async function checkSystem(): Promise<SystemStatus> {
+async function requestJson<T>(path: string, options?: RequestInit, label = "Request"): Promise<T> {
   let response: Response;
-
   try {
-    response = await fetch(`${API_URL}/api/health`);
+    response = await fetch(`${API_URL}${path}`, options);
   } catch {
     throw new Error("Unable to reach the backend. Check that the API server is running.");
   }
 
+  const data = await response.json().catch(() => null) as { error?: string } | T | null;
   if (!response.ok) {
-    throw new Error(`Backend health check failed with HTTP ${response.status}.`);
+    const error = data && typeof data === "object" && "error" in data ? data.error : undefined;
+    throw new Error(error || `${label} failed with HTTP ${response.status}.`);
   }
 
-  const data = (await response.json()) as { status?: string; service?: string };
+  return data as T;
+}
 
-  if (data.status !== "ok") {
-    throw new Error("Backend health check returned an unexpected response.");
-  }
-
+export async function checkSystem(): Promise<SystemStatus> {
+  const data = await requestJson<{ status?: string; service?: string }>("/api/health", undefined, "Backend health check");
+  if (data.status !== "ok") throw new Error("Backend health check returned an unexpected response.");
   return { online: true, service: data.service ?? "TokTickIT API" };
 }
 
 export async function fetchCategories(): Promise<Category[]> {
-  let response: Response;
-
-  try {
-    response = await fetch(`${API_URL}/api/categories`);
-  } catch {
-    throw new Error("Unable to reach the backend. Check that the API server is running.");
-  }
-
-  if (!response.ok) {
-    throw new Error(`Category request failed with HTTP ${response.status}.`);
-  }
-
-  const data = (await response.json()) as Category[];
-
-  if (!Array.isArray(data)) {
-    throw new Error("Category request returned an unexpected response.");
-  }
-
+  const data = await requestJson<Category[]>("/api/categories", undefined, "Category request");
+  if (!Array.isArray(data)) throw new Error("Category request returned an unexpected response.");
   return data;
 }
 
-export interface DevelopmentRequester {
-  id: number;
-  name: string;
-  email: string;
+export async function fetchRelatedSystems(): Promise<RelatedSystem[]> {
+  const data = await requestJson<RelatedSystem[]>("/api/related-systems", undefined, "Related System request");
+  if (!Array.isArray(data)) throw new Error("Related System request returned an unexpected response.");
+  return data;
 }
 
 export async function fetchDevelopmentRequesters(): Promise<DevelopmentRequester[]> {
-  let response: Response;
-
-  try {
-    response = await fetch(`${API_URL}/api/development-requesters`);
-  } catch {
-    throw new Error("Unable to reach the backend. Check that the API server is running.");
-  }
-
-  if (!response.ok) {
-    throw new Error(`Development Requester request failed with HTTP ${response.status}.`);
-  }
-
-  const data = (await response.json()) as DevelopmentRequester[];
-
-  if (!Array.isArray(data)) {
-    throw new Error("Development Requester request returned an unexpected response.");
-  }
-
+  const data = await requestJson<DevelopmentRequester[]>("/api/development-requesters", undefined, "Development Requester request");
+  if (!Array.isArray(data)) throw new Error("Development Requester request returned an unexpected response.");
   return data;
+}
+
+export async function createTicket(input: CreateTicketInput): Promise<Ticket> {
+  return requestJson<Ticket>("/api/tickets", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  }, "Create Ticket request");
 }

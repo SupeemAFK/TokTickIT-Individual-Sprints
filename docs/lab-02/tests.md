@@ -15,7 +15,7 @@ Tests are planned before implementation and trace to the approved specification.
 | API-04 | API | AC-09 | owned detail and safe missing/non-owner response | `server/tests/lab-02/ticket-detail.api.test.ts` | Planned |
 | API-05 | API | AC-10–12 | allowed/invalid/oversized/max files, download, soft removal and blocked download | `server/tests/lab-02/attachments.api.test.ts` | Planned |
 | UI-01 | UI | AC-01–03,14 | selector loading/error/empty/selection/switch | `client/tests/lab-02/RequesterSelection.test.tsx` | Pass |
-| UI-02 | UI | AC-04–05,14 | create form validation, busy, success, failed-request retention | `client/tests/lab-02/CreateTicket.test.tsx` | Planned |
+| UI-02 | UI | AC-04–05,14 | create form validation, busy, success, and failed-request retention | `client/tests/lab-02/CreateTicket.test.tsx` | Pass |
 | UI-03 | UI | AC-06–08 | list states, query controls, reload and navigation | `client/tests/lab-02/MyTickets.test.tsx` | Planned |
 | UI-04 | UI | AC-09–12 | detail, attachment state/actions and errors | `client/tests/lab-02/RequesterTicketDetail.test.tsx` | Planned |
 | STYLE-01 | UI style | AC-13 | Zen Green tokens, labels, asterisks, focus, busy/disabled and responsive classes | `client/tests/lab-02/zen-green-style.test.tsx` | Planned |
