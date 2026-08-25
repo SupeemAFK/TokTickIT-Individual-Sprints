@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { RequestedPriority } from "@prisma/client";
-import express, { Request, Response } from "express";
+import express, { NextFunction, Request, Response } from "express";
 import cors from "cors";
 import { getPrisma } from "./prisma.js";
 
@@ -45,6 +45,15 @@ export const app = express();
 
 app.use(cors());
 app.use(express.json());
+
+app.use((error: unknown, _req: Request, res: Response, next: NextFunction) => {
+  if (error instanceof SyntaxError && (error as { status?: number }).status === 400) {
+    res.status(400).json({ error: "Request body must be valid JSON." });
+    return;
+  }
+
+  next(error);
+});
 
 app.get("/api/health", (_req: Request, res: Response) => {
   res.status(200).json({ status: "ok", service: "TokTickIT API" });

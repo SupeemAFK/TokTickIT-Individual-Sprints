@@ -78,6 +78,18 @@ describe("POST /api/tickets", () => {
     }));
   });
 
+  it("returns a safe JSON error for a malformed request body", async () => {
+    const response = await request(app)
+      .post("/api/tickets")
+      .set("Content-Type", "application/json")
+      .send("{\"requesterId\":");
+
+    expect(response.status).toBe(400);
+    expect(response.headers["content-type"]).toContain("application/json");
+    expect(response.body).toEqual({ error: "Request body must be valid JSON." });
+    expect(prisma.$transaction).not.toHaveBeenCalled();
+  });
+
   it("rejects invalid input before attempting a database transaction", async () => {
     const response = await request(app).post("/api/tickets").send({ ...validTicket, summary: "bad" });
 
