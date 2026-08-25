@@ -122,6 +122,7 @@ const PAGE_SIZES = new Set([10, 20, 50]);
 app.get("/api/tickets", async (req: Request, res: Response) => {
   try {
     const requesterId = parseQueryInteger(req.query.requesterId, "requesterId");
+    if (!requesterId) throw new TicketRequestError(400, "requesterId is required.");
     const categoryId = parseQueryInteger(req.query.categoryId, "categoryId");
     const relatedSystemId = parseQueryInteger(req.query.relatedSystemId, "relatedSystemId");
     const requestedPriority = parseQueryEnum(req.query.requestedPriority, "requestedPriority", REQUESTED_PRIORITIES) as RequestedPriority | undefined;
