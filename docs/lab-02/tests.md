@@ -11,7 +11,7 @@ Tests are planned before implementation and trace to the approved specification.
 | UNIT-01 | Unit | AC-04 | unique ticket-number format | `server/tests/lab-02/ticket-number.test.ts` | Planned |
 | API-01 | API | AC-01–03 | active requester list and inactive exclusion | `server/tests/lab-02/requesters.api.test.ts` | Pass |
 | API-02 | API | AC-04–05,14 | valid/invalid and malformed ticket creation, reference rejection, and safe failure | `server/tests/lab-02/create-ticket.api.test.ts` | Pass |
-| API-03 | API | AC-06–08 | owned list, query validation, search/filter/sort/page, cross-owner detail rejection | `server/tests/lab-02/my-tickets.api.test.ts` | Planned |
+| API-03 | API | AC-06–08 | owned list, query validation, search/filter/sort/page, and requester protection | `server/tests/lab-02/my-tickets.api.test.ts` | Pass |
 | API-04 | API | AC-09 | owned detail and safe missing/non-owner response | `server/tests/lab-02/ticket-detail.api.test.ts` | Planned |
 | API-05 | API | AC-10–12 | allowed/invalid/oversized/max files, download, soft removal and blocked download | `server/tests/lab-02/attachments.api.test.ts` | Planned |
 | UI-01 | UI | AC-01–03,14 | selector loading/error/empty/selection/switch | `client/tests/lab-02/RequesterSelection.test.tsx` | Pass |
