@@ -41,7 +41,7 @@ cd client && npm run build
 
 ## 6. Final Results
 
-Not run: this is the pre-implementation plan. Update each planned row with its actual path and passing result only after implementation.
+Completed so far: API-01 and UI-01 requester-context coverage pass; API-02 Create Ticket API coverage passes. All remaining rows stay Planned until their scoped Issues are implemented and verified.
 
 ## 7. Known Limitations or Deferred Tests
 
