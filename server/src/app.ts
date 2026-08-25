@@ -98,6 +98,79 @@ app.get("/api/development-requesters", async (_req: Request, res: Response) => {
   }
 });
 
+
+function parseQueryInteger(value: unknown, fieldName: string, fallback?: number): number | undefined {
+  if (value === undefined) return fallback;
+  if (typeof value !== "string" || !/^\d+$/.test(value) || Number(value) < 1) {
+    throw new TicketRequestError(400, `${fieldName} must be a positive integer.`);
+  }
+  return Number(value);
+}
+
+function parseQueryEnum(value: unknown, fieldName: string, allowedValues: Set<string>): string | undefined {
+  if (value === undefined) return undefined;
+  if (typeof value !== "string" || !allowedValues.has(value)) {
+    throw new TicketRequestError(400, `${fieldName} is invalid.`);
+  }
+  return value;
+}
+
+const TICKET_SORT_FIELDS = new Set(["createdAt", "updatedAt", "ticketNumber", "summary", "requestedPriority"]);
+const SORT_DIRECTIONS = new Set(["asc", "desc"]);
+const PAGE_SIZES = new Set([10, 20, 50]);
+
+app.get("/api/tickets", async (req: Request, res: Response) => {
+  try {
+    const requesterId = parseQueryInteger(req.query.requesterId, "requesterId");
+    const categoryId = parseQueryInteger(req.query.categoryId, "categoryId");
+    const relatedSystemId = parseQueryInteger(req.query.relatedSystemId, "relatedSystemId");
+    const requestedPriority = parseQueryEnum(req.query.requestedPriority, "requestedPriority", REQUESTED_PRIORITIES) as RequestedPriority | undefined;
+    const currentStatus = parseQueryEnum(req.query.status, "status", new Set(["NEW"])) as "NEW" | undefined;
+    const sort = parseQueryEnum(req.query.sort, "sort", TICKET_SORT_FIELDS) ?? "createdAt";
+    const direction = parseQueryEnum(req.query.direction, "direction", SORT_DIRECTIONS) ?? "desc";
+    const page = parseQueryInteger(req.query.page, "page", 1) as number;
+    const pageSize = parseQueryInteger(req.query.pageSize, "pageSize", 10) as number;
+    if (!PAGE_SIZES.has(pageSize)) throw new TicketRequestError(400, "pageSize must be 10, 20, or 50.");
+    if (req.query.search !== undefined && (typeof req.query.search !== "string" || req.query.search.trim().length > 160)) {
+      throw new TicketRequestError(400, "search must be at most 160 characters.");
+    }
+
+    const requester = await getPrisma().developmentRequester.findFirst({
+      where: { id: requesterId, isActive: true },
+      select: { id: true },
+    });
+    if (!requester) throw new TicketRequestError(404, "Requester or reference data is unavailable.");
+
+    const search = typeof req.query.search === "string" ? req.query.search.trim() : "";
+    const where = {
+      requesterId,
+      ...(categoryId ? { categoryId } : {}),
+      ...(relatedSystemId ? { relatedSystemId } : {}),
+      ...(requestedPriority ? { requestedPriority } : {}),
+      ...(currentStatus ? { currentStatus } : {}),
+      ...(search ? { OR: [{ ticketNumber: { contains: search, mode: "insensitive" as const } }, { summary: { contains: search, mode: "insensitive" as const } }] } : {}),
+    };
+    const orderBy = [{ [sort]: direction }, { id: "desc" }] as never;
+    const [items, totalItems] = await Promise.all([
+      getPrisma().ticket.findMany({
+        where,
+        orderBy,
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        select: { id: true, ticketNumber: true, summary: true, currentStatus: true, requestedPriority: true, category: { select: { id: true, name: true } }, relatedSystem: { select: { id: true, name: true } }, createdAt: true, updatedAt: true },
+      }),
+      getPrisma().ticket.count({ where }),
+    ]);
+    res.status(200).json({ items, pagination: { page, pageSize, totalItems, totalPages: Math.ceil(totalItems / pageSize) } });
+  } catch (error) {
+    if (error instanceof TicketRequestError) {
+      res.status(error.status).json({ error: error.message });
+      return;
+    }
+    res.status(500).json({ error: "Unable to load tickets." });
+  }
+});
+
 app.post("/api/tickets", async (req: Request, res: Response) => {
   try {
     const requesterId = parsePositiveInteger(req.body?.requesterId, "requesterId");
