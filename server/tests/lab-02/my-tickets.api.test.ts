@@ -40,6 +40,14 @@ describe("GET /api/tickets", () => {
     expect(prisma.ticket.findMany).not.toHaveBeenCalled();
   });
 
+  it("rejects oversized integer query values safely", async () => {
+    const response = await request(app).get("/api/tickets?requesterId=999999999999999999999999");
+    expect(response.status).toBe(400);
+    expect(response.body).toEqual({ error: "requesterId must be a positive integer." });
+    expect(prisma.developmentRequester.findFirst).not.toHaveBeenCalled();
+    expect(prisma.ticket.findMany).not.toHaveBeenCalled();
+  });
+
   it("rejects malformed query values safely", async () => {
     const response = await request(app).get("/api/tickets?requesterId=bad&pageSize=7");
     expect(response.status).toBe(400);

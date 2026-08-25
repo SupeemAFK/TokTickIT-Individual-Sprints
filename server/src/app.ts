@@ -101,10 +101,16 @@ app.get("/api/development-requesters", async (_req: Request, res: Response) => {
 
 function parseQueryInteger(value: unknown, fieldName: string, fallback?: number): number | undefined {
   if (value === undefined) return fallback;
-  if (typeof value !== "string" || !/^\d+$/.test(value) || Number(value) < 1) {
+  if (typeof value !== "string" || !/^\d+$/.test(value)) {
     throw new TicketRequestError(400, `${fieldName} must be a positive integer.`);
   }
-  return Number(value);
+
+  const parsedValue = Number(value);
+  if (!Number.isSafeInteger(parsedValue) || parsedValue < 1) {
+    throw new TicketRequestError(400, `${fieldName} must be a positive integer.`);
+  }
+
+  return parsedValue;
 }
 
 function parseQueryEnum(value: unknown, fieldName: string, allowedValues: Set<string>): string | undefined {
