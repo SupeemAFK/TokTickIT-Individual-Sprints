@@ -43,3 +43,10 @@
   border-color: #b9ddc8;
   color: var(--toktickit-text);
 }
+
+
+.toktickit-readonly {
+  background-color: #edf3ee !important;
+  border-color: #c8d7cc;
+  color: var(--toktickit-text);
+}

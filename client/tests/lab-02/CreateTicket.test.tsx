@@ -61,4 +61,18 @@ describe("CreateTicketForm", () => {
     expect(await screen.findByText("Ticket not created")).toBeInTheDocument();
     expect(screen.getByLabelText(/^Ticket Summary/)).toHaveValue("VPN cannot connect");
   });
+
+  it("disables duplicate submission while the request is pending", async () => {
+    let resolveTicket: (ticket: api.Ticket) => void;
+    vi.spyOn(api, "createTicket").mockReturnValue(new Promise((resolve) => { resolveTicket = resolve; }));
+    renderForm();
+    await completeValidForm();
+    await userEvent.click(screen.getByRole("button", { name: /submit ticket/i }));
+    const submittingButton = screen.getByRole("button", { name: /submitting/i });
+    expect(submittingButton).toBeDisabled();
+    await userEvent.click(submittingButton);
+    expect(api.createTicket).toHaveBeenCalledTimes(1);
+    resolveTicket!({ id: 42, ticketNumber: "TKT-2026-000042", requesterId: 1, categoryId: 2, relatedSystemId: 3, summary: "VPN cannot connect", requestedPriority: "MEDIUM", description: "VPN connection fails after signing in.", currentStatus: "NEW", createdAt: "2026-08-25T00:00:00.000Z", updatedAt: "2026-08-25T00:00:00.000Z" });
+    expect(await screen.findByText("TKT-2026-000042")).toBeInTheDocument();
+  });
 });

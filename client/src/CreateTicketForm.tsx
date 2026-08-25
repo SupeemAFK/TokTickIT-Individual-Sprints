@@ -90,9 +90,9 @@ export default function CreateTicketForm({ requester, onCancel }: { requester: D
   return <section className="card shadow-sm border-0" aria-labelledby="create-ticket-heading"><div className="card-body p-4 p-md-5"><h1 id="create-ticket-heading" className="h3 mb-4">Create Ticket</h1>
     <form onSubmit={(event) => void handleSubmit(event)} noValidate>
       <div className="row g-3">
-        <div className="col-md-6"><label className="form-label fw-semibold" htmlFor="ticket-requester">Requester</label><input id="ticket-requester" className="form-control" value={requester.name} readOnly /></div>
-        <div className="col-md-3"><label className="form-label fw-semibold" htmlFor="ticket-date">Ticket Date</label><input id="ticket-date" className="form-control" value="Set by server on submission" readOnly /></div>
-        <div className="col-md-3"><label className="form-label fw-semibold" htmlFor="ticket-number">Ticket Number</label><input id="ticket-number" className="form-control" value="Generated on submission" readOnly /></div>
+        <div className="col-md-6"><label className="form-label fw-semibold" htmlFor="ticket-requester">Requester</label><input id="ticket-requester" className="form-control toktickit-readonly" value={requester.name} readOnly /></div>
+        <div className="col-md-3"><label className="form-label fw-semibold" htmlFor="ticket-date">Ticket Date</label><input id="ticket-date" className="form-control toktickit-readonly" value="Set by server on submission" readOnly /></div>
+        <div className="col-md-3"><label className="form-label fw-semibold" htmlFor="ticket-number">Ticket Number</label><input id="ticket-number" className="form-control toktickit-readonly" value="Generated on submission" readOnly /></div>
       </div>
       {referenceState === "loading" && <p className="mt-4" role="status">Loading ticket reference data...</p>}
       {referenceState === "error" && <div className="alert alert-danger mt-4" role="alert"><strong>Reference data unavailable</strong><div>{referenceError}</div><button type="button" className="btn btn-outline-danger mt-3" onClick={() => void loadReferenceData()}>Try again</button></div>}
