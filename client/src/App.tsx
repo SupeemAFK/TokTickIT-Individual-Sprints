@@ -6,6 +6,7 @@ import {
   type Category,
   type DevelopmentRequester,
 } from "./api";
+import CreateTicketForm from "./CreateTicketForm";
 
 type UiState = "idle" | "loading" | "success" | "error";
 type LoadState = "loading" | "success" | "error";
@@ -18,6 +19,7 @@ export default function App() {
   const [requesterMessage, setRequesterMessage] = useState("");
   const [pendingRequesterId, setPendingRequesterId] = useState("");
   const [selectedRequester, setSelectedRequester] = useState<DevelopmentRequester | null>(null);
+  const [activePage, setActivePage] = useState<"tickets" | "create">("tickets");
   const [state, setState] = useState<UiState>("idle");
   const [service, setService] = useState("");
   const [message, setMessage] = useState("");
@@ -97,11 +99,13 @@ export default function App() {
     setState("idle");
     setService("");
     setMessage("");
+    setActivePage("tickets");
   }
 
   async function handleCheck() {
     setState("loading");
     setMessage("");
+    setActivePage("tickets");
 
     try {
       const status = await checkSystem();
@@ -175,8 +179,8 @@ export default function App() {
             <div className="small text-secondary">Requester: <strong className="text-dark">{selectedRequester.name}</strong></div>
           </div>
           <nav aria-label="Requester navigation" className="d-flex gap-2">
-            <button className="btn btn-toktickit-primary btn-sm" aria-current="page">My Tickets</button>
-            <button className="btn btn-toktickit-outline btn-sm">Create Ticket</button>
+            <button className="btn btn-toktickit-primary btn-sm" aria-current={activePage === "tickets" ? "page" : undefined} onClick={() => setActivePage("tickets")}>My Tickets</button>
+            <button className="btn btn-toktickit-outline btn-sm" aria-current={activePage === "create" ? "page" : undefined} onClick={() => setActivePage("create")}>Create Ticket</button>
             <button className="btn btn-outline-secondary btn-sm" onClick={handleChangeRequester}>Change Requester</button>
           </nav>
         </div>
@@ -186,6 +190,7 @@ export default function App() {
         <div className="alert toktickit-context" role="status">
           Requester context active for <strong>{selectedRequester.name}</strong>. Requester-specific data is reloaded when you change requester.
         </div>
+        {activePage === "create" ? <CreateTicketForm requester={selectedRequester} onCancel={() => setActivePage("tickets")} /> : <>
         <button className="btn btn-toktickit-primary" onClick={handleCheck} disabled={state === "loading"}>
           {state === "loading" ? "Loading…" : "Check System"}
         </button>
@@ -200,6 +205,7 @@ export default function App() {
           {categoryState === "error" && <div className="alert alert-danger" role="alert"><strong>Categories unavailable</strong><div>{categoryMessage}</div></div>}
           {categoryState === "success" && <ul className="list-group">{categories.map((category) => <li className="list-group-item" key={category.id}>{category.name}</li>)}</ul>}
         </section>
+        </>}
       </main>
     </div>
   );
