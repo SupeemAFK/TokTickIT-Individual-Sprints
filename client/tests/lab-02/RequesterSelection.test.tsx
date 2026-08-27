@@ -13,6 +13,8 @@ describe("Requester selection", () => {
   beforeEach(() => {
     sessionStorage.clear();
     vi.spyOn(api, "fetchCategories").mockResolvedValue([]);
+    vi.spyOn(api, "fetchRelatedSystems").mockResolvedValue([]);
+    vi.spyOn(api, "fetchTickets").mockResolvedValue({ items: [], pagination: { page: 1, pageSize: 10, totalItems: 0, totalPages: 0 } });
   });
 
   afterEach(() => vi.restoreAllMocks());
