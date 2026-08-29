@@ -50,3 +50,18 @@
   border-color: #c8d7cc;
   color: var(--toktickit-text);
 }
+.ticket-row {
+  cursor: pointer;
+}
+
+.ticket-row:hover {
+  background-color: var(--toktickit-pale);
+}
+
+.ticket-card {
+  border: 1px solid #d7e2da;
+}
+
+.ticket-card:hover {
+  border-color: var(--toktickit-secondary);
+}

@@ -29,6 +29,35 @@ export interface Ticket {
   updatedAt: string;
 }
 
+export interface TicketListItem {
+  id: number;
+  ticketNumber: string;
+  summary: string;
+  currentStatus: "NEW";
+  requestedPriority: RequestedPriority;
+  category: Category;
+  relatedSystem: RelatedSystem;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TicketListQuery {
+  search?: string;
+  categoryId?: number;
+  relatedSystemId?: number;
+  requestedPriority?: RequestedPriority;
+  status?: "NEW";
+  sort?: "createdAt" | "updatedAt" | "ticketNumber" | "summary" | "requestedPriority";
+  direction?: "asc" | "desc";
+  page?: number;
+  pageSize?: 10 | 20 | 50;
+}
+
+export interface TicketListResponse {
+  items: TicketListItem[];
+  pagination: { page: number; pageSize: number; totalItems: number; totalPages: number; };
+}
+
 async function requestJson<T>(path: string, options?: RequestInit, label = "Request"): Promise<T> {
   let response: Response;
   try {
@@ -76,4 +105,15 @@ export async function createTicket(input: CreateTicketInput): Promise<Ticket> {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(input),
   }, "Create Ticket request");
+}
+
+export async function fetchTickets(requesterId: number, query: TicketListQuery = {}): Promise<TicketListResponse> {
+  const params = new URLSearchParams({ requesterId: String(requesterId) });
+  for (const [key, value] of Object.entries(query)) {
+    if (value !== undefined && value !== "") params.set(key, String(value));
+  }
+
+  const data = await requestJson<TicketListResponse>("/api/tickets?" + params.toString(), undefined, "Ticket list request");
+  if (!Array.isArray(data.items) || !data.pagination) throw new Error("Ticket list request returned an unexpected response.");
+  return data;
 }
