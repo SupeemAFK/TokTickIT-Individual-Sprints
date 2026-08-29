@@ -26,7 +26,7 @@ describe("MyTickets", () => {
     vi.spyOn(api, "fetchTickets").mockResolvedValue({ items: [ticket], pagination: { page: 1, pageSize: 10, totalItems: 1, totalPages: 1 } });
     render(<MyTickets requester={requester} onCreateTicket={vi.fn()} onOpenTicket={onOpenTicket} />);
     await screen.findAllByText(ticket.summary);
-    await userEvent.click(screen.getAllByText(ticket.summary)[0]);
+    await userEvent.click(screen.getByRole("button", { name: "Open ticket " + ticket.ticketNumber }));
     expect(onOpenTicket).toHaveBeenCalledWith(ticket);
   });
 
