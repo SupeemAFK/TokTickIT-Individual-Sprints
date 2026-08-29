@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import {
   fetchDevelopmentRequesters,
   type DevelopmentRequester,
+  type TicketListItem,
 } from "./api";
 import CreateTicketForm from "./CreateTicketForm";
 import MyTickets from "./MyTickets";
@@ -16,7 +17,8 @@ export default function App() {
   const [requesterMessage, setRequesterMessage] = useState("");
   const [pendingRequesterId, setPendingRequesterId] = useState("");
   const [selectedRequester, setSelectedRequester] = useState<DevelopmentRequester | null>(null);
-  const [activePage, setActivePage] = useState<"tickets" | "create">("tickets");
+  const [activePage, setActivePage] = useState<"tickets" | "create" | "detail">("tickets");
+  const [selectedTicket, setSelectedTicket] = useState<TicketListItem | null>(null);
 
   async function loadRequesters() {
     setRequesterState("loading");
@@ -58,6 +60,7 @@ export default function App() {
     sessionStorage.removeItem(REQUESTER_STORAGE_KEY);
     setSelectedRequester(null);
     setActivePage("tickets");
+    setSelectedTicket(null);
   }
 
   if (!selectedRequester) {
@@ -132,10 +135,23 @@ export default function App() {
         <div className="alert toktickit-context" role="status">
           Requester context active for <strong>{selectedRequester.name}</strong>. Requester-specific data is reloaded when you change requester.
         </div>
-        {activePage === "create" ? <CreateTicketForm requester={selectedRequester} onCancel={() => setActivePage("tickets")} /> : <>
-        <MyTickets requester={selectedRequester} onCreateTicket={() => setActivePage("create")} />
-        </>}
+        {activePage === "create" ? <CreateTicketForm requester={selectedRequester} onCancel={() => setActivePage("tickets")} /> : activePage === "detail" && selectedTicket ? <TicketListDetail ticket={selectedTicket} requester={selectedRequester} onBack={() => setActivePage("tickets")} /> : <MyTickets requester={selectedRequester} onCreateTicket={() => setActivePage("create")} onOpenTicket={(ticket) => { setSelectedTicket(ticket); setActivePage("detail"); }} />}
       </main>
     </div>
   );
 }
+
+function TicketListDetail({ ticket, requester, onBack }: { ticket: TicketListItem; requester: DevelopmentRequester; onBack: () => void }) {
+  return <section className="card shadow-sm border-0" aria-labelledby="ticket-detail-heading"><div className="card-body p-4 p-md-5">
+    <button className="btn btn-toktickit-outline mb-4" onClick={onBack}>Back to My Tickets</button>
+    <h1 id="ticket-detail-heading" className="h3 mb-4">Ticket Detail</h1>
+    <div className="row g-3">
+      <ReadOnly label="Ticket Number" value={ticket.ticketNumber} /><ReadOnly label="Requester" value={requester.name} />
+      <ReadOnly label="Category" value={ticket.category.name} /><ReadOnly label="Related System" value={ticket.relatedSystem.name} />
+      <ReadOnly label="Summary" value={ticket.summary} /><ReadOnly label="Requested Priority" value={ticket.requestedPriority} />
+      <ReadOnly label="Current Status" value="NEW" /><ReadOnly label="Last Updated" value={new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(new Date(ticket.updatedAt))} />
+    </div>
+  </div></section>;
+}
+
+function ReadOnly({ label, value }: { label: string; value: string }) { return <div className="col-md-6"><div className="form-label fw-semibold">{label}</div><div className="form-control toktickit-readonly">{value}</div></div>; }

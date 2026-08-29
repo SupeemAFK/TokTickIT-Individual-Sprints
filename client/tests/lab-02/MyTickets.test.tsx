@@ -21,6 +21,15 @@ describe("MyTickets", () => {
     await userEvent.click(screen.getByRole("button", { name: "Search" }));
     expect(fetchTickets).toHaveBeenLastCalledWith(2, expect.objectContaining({ search: "vpn", page: 1 }));
   });
+  it("opens a selected ticket", async () => {
+    const onOpenTicket = vi.fn();
+    vi.spyOn(api, "fetchTickets").mockResolvedValue({ items: [ticket], pagination: { page: 1, pageSize: 10, totalItems: 1, totalPages: 1 } });
+    render(<MyTickets requester={requester} onCreateTicket={vi.fn()} onOpenTicket={onOpenTicket} />);
+    await screen.findAllByText(ticket.summary);
+    await userEvent.click(screen.getAllByText(ticket.summary)[0]);
+    expect(onOpenTicket).toHaveBeenCalledWith(ticket);
+  });
+
   it("distinguishes no tickets from no matching tickets", async () => {
     vi.spyOn(api, "fetchTickets").mockResolvedValue({ items: [], pagination: { page: 1, pageSize: 10, totalItems: 0, totalPages: 0 } });
     render(<MyTickets requester={requester} onCreateTicket={vi.fn()} />);
