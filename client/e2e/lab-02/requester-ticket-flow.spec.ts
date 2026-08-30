@@ -100,7 +100,10 @@ test("requester validates, creates, finds, and manages an owned ticket", async (
   await page.locator("#attachment-removal-reason").fill("No longer relevant");
   page.once("dialog", (dialog) => dialog.accept());
   await page.getByRole("button", { name: "Remove" }).last().click();
-  await expect(page.getByText("Removed")).toBeVisible();
+  const uploadedAttachment = page.locator(".list-group-item", { hasText: "evidence.png" });
+  await expect(uploadedAttachment.getByText("Removed", { exact: true })).toBeVisible();
+  await expect(uploadedAttachment.getByRole("link", { name: "Download" })).toHaveCount(0);
+  await expect(uploadedAttachment.getByRole("button", { name: "Remove" })).toHaveCount(0);
 });
 
 test("requester switching and responsive layouts preserve usable navigation", async ({ page }) => {
