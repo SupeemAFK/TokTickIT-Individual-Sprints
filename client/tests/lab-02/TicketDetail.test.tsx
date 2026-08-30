@@ -9,12 +9,14 @@ describe("TicketDetail", () => {
   afterEach(() => vi.restoreAllMocks());
   it("loads the owned ticket with read-only information", async () => {
     vi.spyOn(api, "fetchTicket").mockResolvedValue(ticket);
+    vi.spyOn(api, "fetchAttachments").mockResolvedValue([]);
     render(<TicketDetail ticketId={8} requester={requester} onBack={vi.fn()} />);
     expect(await screen.findByText("TKT-2026-000008")).toBeInTheDocument();
     expect(screen.getByText("VPN fails after sign in.")).toBeInTheDocument();
     expect(api.fetchTicket).toHaveBeenCalledWith(8, 1);
   });
   it("shows a safe retryable failure", async () => {
+    vi.spyOn(api, "fetchAttachments").mockResolvedValue([]);
     vi.spyOn(api, "fetchTicket").mockRejectedValue(new Error("Ticket not found."));
     render(<TicketDetail ticketId={8} requester={requester} onBack={vi.fn()} />);
     expect(await screen.findByText("Ticket unavailable")).toBeInTheDocument();

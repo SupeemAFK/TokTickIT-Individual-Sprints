@@ -35,6 +35,8 @@ export interface TicketDetail extends Ticket {
   relatedSystem: RelatedSystem;
 }
 
+export interface Attachment { id: number; originalFilename: string; mimeType: string; byteSize: number; createdAt: string; removedAt: string | null; removalReason: string | null; }
+
 export interface TicketListItem {
   id: number;
   ticketNumber: string;
@@ -111,6 +113,12 @@ export async function createTicket(input: CreateTicketInput): Promise<Ticket> {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(input),
   }, "Create Ticket request");
+}
+
+export async function fetchAttachments(ticketId: number, requesterId: number): Promise<Attachment[]> {
+  const data = await requestJson<Attachment[]>("/api/tickets/" + ticketId + "/attachments?requesterId=" + requesterId, undefined, "Attachment request");
+  if (!Array.isArray(data)) throw new Error("Attachment request returned an unexpected response.");
+  return data;
 }
 
 export async function fetchTicket(ticketId: number, requesterId: number): Promise<TicketDetail> {
