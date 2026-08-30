@@ -27,7 +27,16 @@ AC-01: API-01, UI-01, E2E-01; AC-02: UI-01, E2E-01; AC-03: API-01, UI-01, UI-03,
 
 ## 4. Responsive and Visual Checklist
 
-Requester selection visual checks passed with mocked active-requester data: `artifacts/lab-02/screenshots/requester-selection-1440.png` (1440px), `artifacts/lab-02/screenshots/requester-selection-768.png` (768px), and `artifacts/lab-02/screenshots/requester-selection-375.png` (375px). The screenshots confirm the card, selector, primary action, Zen Green styling, and narrow layout render without horizontal-overflow suppression. `STYLE-01` provides the automated CSS baseline; `E2E-01` remains the planned full requester-to-ticket flow.
+All visual checks use mocked active-requester data at 1440px, 768px, and 375px. Each view has a focused control so the Secondary Green keyboard-focus treatment is visible. No horizontal page scroll, clipped labels, overlapping validation messages, or hidden controls were observed.
+
+| Screen/state | Evidence | Observation |
+| --- | --- | --- |
+| Requester selection | `artifacts/lab-02/screenshots/requester-selection-1440.png`, `artifacts/lab-02/screenshots/requester-selection-768.png`, `artifacts/lab-02/screenshots/requester-selection-375.png` | Selector and Continue action remain usable at every width. |
+| My Tickets | `artifacts/lab-02/screenshots/my-tickets-1440.png`, `artifacts/lab-02/screenshots/my-tickets-768.png`, `artifacts/lab-02/screenshots/my-tickets-375.png` | Responsive navigation, filters, focused search control, desktop table, and mobile ticket card are visible. |
+| Create Ticket validation | `artifacts/lab-02/screenshots/create-ticket-validation-1440.png`, `artifacts/lab-02/screenshots/create-ticket-validation-768.png`, `artifacts/lab-02/screenshots/create-ticket-validation-375.png` | Required-field errors and their controls remain separate and readable; focused Category control and submit action remain visible. |
+| Ticket Detail attachments | `artifacts/lab-02/screenshots/ticket-detail-attachments-1440.png`, `artifacts/lab-02/screenshots/ticket-detail-attachments-768.png`, `artifacts/lab-02/screenshots/ticket-detail-attachments-375.png` | Focused upload control, active Download/Remove controls, and a Removed attachment state are visible at every width. |
+
+`STYLE-01` provides the automated CSS baseline; `E2E-01` remains the planned full requester-to-ticket flow.
 
 ## 5. Test Commands
 
