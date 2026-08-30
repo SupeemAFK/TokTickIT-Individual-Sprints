@@ -164,7 +164,7 @@ app.get("/api/tickets", async (req: Request, res: Response) => {
         orderBy,
         skip: (page - 1) * pageSize,
         take: pageSize,
-        select: { id: true, ticketNumber: true, summary: true, currentStatus: true, requestedPriority: true, category: { select: { id: true, name: true } }, relatedSystem: { select: { id: true, name: true } }, createdAt: true, updatedAt: true },
+        select: { id: true, requesterId: true, categoryId: true, relatedSystemId: true, ticketNumber: true, summary: true, currentStatus: true, requestedPriority: true, category: { select: { id: true, name: true } }, relatedSystem: { select: { id: true, name: true } }, createdAt: true, updatedAt: true },
       }),
       getPrisma().ticket.count({ where }),
     ]);
@@ -175,6 +175,29 @@ app.get("/api/tickets", async (req: Request, res: Response) => {
       return;
     }
     res.status(500).json({ error: "Unable to load tickets." });
+  }
+});
+
+app.get("/api/tickets/:ticketId", async (req: Request, res: Response) => {
+  try {
+    const requesterId = parseQueryInteger(req.query.requesterId, "requesterId");
+    if (!requesterId) throw new TicketRequestError(400, "requesterId is required.");
+    const ticketId = parseQueryInteger(req.params.ticketId, "ticketId");
+    if (!ticketId) throw new TicketRequestError(400, "ticketId is required.");
+
+    const ticket = await getPrisma().ticket.findFirst({
+      where: { id: ticketId, requesterId },
+      select: { id: true, ticketNumber: true, summary: true, description: true, requestedPriority: true, currentStatus: true, createdAt: true, updatedAt: true, requester: { select: { id: true, name: true, email: true } }, category: { select: { id: true, name: true } }, relatedSystem: { select: { id: true, name: true } } },
+    });
+    if (!ticket) throw new TicketRequestError(404, "Ticket not found.");
+
+    res.status(200).json(ticket);
+  } catch (error) {
+    if (error instanceof TicketRequestError) {
+      res.status(error.status).json({ error: error.message });
+      return;
+    }
+    res.status(500).json({ error: "Unable to load ticket." });
   }
 });
 
