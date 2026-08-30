@@ -42,7 +42,7 @@ Invalid or malformed query values return `400`; inactive/missing requester retur
 
 `GET /api/tickets/:ticketId?requesterId=1`
 
-Returns `200` with ticket, requester display name, category, related system, and attachment metadata. Missing or non-owned tickets return the same safe `404`; invalid IDs return `400`; unexpected failures return `500`.
+Returns `200` with the ticket, requester display name, category, and related system. Attachment metadata is returned by its separate attachment endpoint when that feature is implemented. Missing or non-owned tickets return the same safe `404`; invalid IDs return `400`; unexpected failures return `500`.
 
 ## Attachments
 

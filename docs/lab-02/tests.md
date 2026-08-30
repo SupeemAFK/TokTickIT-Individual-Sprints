@@ -12,12 +12,12 @@ Tests are planned before implementation and trace to the approved specification.
 | API-01 | API | AC-01–03 | active requester list and inactive exclusion | `server/tests/lab-02/requesters.api.test.ts` | Pass |
 | API-02 | API | AC-04–05,14 | valid/invalid and malformed ticket creation, reference rejection, and safe failure | `server/tests/lab-02/create-ticket.api.test.ts` | Pass |
 | API-03 | API | AC-06–08 | owned list, query validation, search/filter/sort/page, and requester protection | `server/tests/lab-02/my-tickets.api.test.ts` | Pass |
-| API-04 | API | AC-09 | owned detail and safe missing/non-owner response | `server/tests/lab-02/ticket-detail.api.test.ts` | Planned |
+| API-04 | API | AC-08–09,14 | active requester, owned detail, invalid ID, and safe missing/non-owner response | `server/tests/lab-02/ticket-detail.api.test.ts` | Pass |
 | API-05 | API | AC-10–12 | allowed/invalid/oversized/max files, download, soft removal and blocked download | `server/tests/lab-02/attachments.api.test.ts` | Planned |
 | UI-01 | UI | AC-01–03,14 | selector loading/error/empty/selection/switch | `client/tests/lab-02/RequesterSelection.test.tsx` | Pass |
 | UI-02 | UI | AC-04–05,14 | create form validation, busy, success, and failed-request retention | `client/tests/lab-02/CreateTicket.test.tsx` | Pass |
-| UI-03 | UI | AC-06–08 | list states, query controls, reload and navigation | `client/tests/lab-02/MyTickets.test.tsx` | Planned |
-| UI-04 | UI | AC-09–12 | detail, attachment state/actions and errors | `client/tests/lab-02/RequesterTicketDetail.test.tsx` | Planned |
+| UI-03 | UI | AC-06–08,14 | list states, query controls, requester reload, and accessible navigation | `client/tests/lab-02/MyTickets.test.tsx` | Pass |
+| UI-04 | UI | AC-09,14 | read-only detail loading, display, and safe failure | `client/tests/lab-02/TicketDetail.test.tsx` | Pass |
 | STYLE-01 | UI style | AC-13 | Zen Green tokens, labels, asterisks, focus, busy/disabled and responsive classes | `client/tests/lab-02/zen-green-style.test.tsx` | Planned |
 | E2E-01 | E2E/responsive | AC-01–14 | select requester, create, find, view, attach, remove; screenshot three widths | `e2e/lab-02/requester-ticket-flow.spec.ts` | Planned |
 
@@ -41,7 +41,7 @@ cd client && npm run build
 
 ## 6. Final Results
 
-Completed so far: API-01 and UI-01 requester-context coverage pass; API-02 Create Ticket API coverage passes. All remaining rows stay Planned until their scoped Issues are implemented and verified.
+Completed so far: API-01–04 and UI-01–04 implemented coverage pass; attachment, style, and E2E rows remain planned for their scoped Issues.
 
 ## 7. Known Limitations or Deferred Tests
 

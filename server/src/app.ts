@@ -185,6 +185,12 @@ app.get("/api/tickets/:ticketId", async (req: Request, res: Response) => {
     const ticketId = parseQueryInteger(req.params.ticketId, "ticketId");
     if (!ticketId) throw new TicketRequestError(400, "ticketId is required.");
 
+    const requester = await getPrisma().developmentRequester.findFirst({
+      where: { id: requesterId, isActive: true },
+      select: { id: true },
+    });
+    if (!requester) throw new TicketRequestError(404, "Ticket not found.");
+
     const ticket = await getPrisma().ticket.findFirst({
       where: { id: ticketId, requesterId },
       select: { id: true, ticketNumber: true, summary: true, description: true, requestedPriority: true, currentStatus: true, createdAt: true, updatedAt: true, requester: { select: { id: true, name: true, email: true } }, category: { select: { id: true, name: true } }, relatedSystem: { select: { id: true, name: true } } },
