@@ -18,7 +18,7 @@ Tests are planned before implementation and trace to the approved specification.
 | UI-02 | UI | AC-04–05,14 | create form validation, busy, success, and failed-request retention | `client/tests/lab-02/CreateTicket.test.tsx` | Pass |
 | UI-03 | UI | AC-06–08,14 | list states, query controls, requester reload, and accessible navigation | `client/tests/lab-02/MyTickets.test.tsx` | Pass |
 | UI-04 | UI | AC-09–12,14 | detail display/failure plus upload, download, and removal controls | `client/tests/lab-02/TicketDetail.test.tsx` | Pass |
-| STYLE-01 | UI style | AC-13 | Zen Green tokens, labels, asterisks, focus, busy/disabled and responsive classes | `client/tests/lab-02/zen-green-style.test.tsx` | Planned |
+| STYLE-01 | UI style | AC-13 | Zen Green tokens, labels, asterisks, focus, busy/disabled and responsive classes | `client/tests/lab-02/zen-green-style.test.tsx` | Automated |
 | E2E-01 | E2E/responsive | AC-01–14 | select requester, create, find, view, attach, remove; screenshot three widths | `e2e/lab-02/requester-ticket-flow.spec.ts` | Planned |
 
 ## 3. Acceptance-Criterion Traceability
@@ -27,7 +27,16 @@ AC-01: API-01, UI-01, E2E-01; AC-02: UI-01, E2E-01; AC-03: API-01, UI-01, UI-03,
 
 ## 4. Responsive and Visual Checklist
 
-Follow the checklist in [ui-spec.md](ui-spec.md) at 1440px, 768px, and 375px. Record screenshot paths and observations when implementation is complete.
+All visual checks use mocked active-requester data at 1440px, 768px, and 375px. Each view has a focused control so the Secondary Green keyboard-focus treatment is visible. No horizontal page scroll, clipped labels, overlapping validation messages, or hidden controls were observed.
+
+| Screen/state | Evidence | Observation |
+| --- | --- | --- |
+| Requester selection | `artifacts/lab-02/screenshots/requester-selection-1440.png`, `artifacts/lab-02/screenshots/requester-selection-768.png`, `artifacts/lab-02/screenshots/requester-selection-375.png` | Selector and Continue action remain usable at every width. |
+| My Tickets | `artifacts/lab-02/screenshots/my-tickets-1440.png`, `artifacts/lab-02/screenshots/my-tickets-768.png`, `artifacts/lab-02/screenshots/my-tickets-375.png` | Responsive navigation, filters, focused search control, desktop table, and mobile ticket card are visible. |
+| Create Ticket validation | `artifacts/lab-02/screenshots/create-ticket-validation-1440.png`, `artifacts/lab-02/screenshots/create-ticket-validation-768.png`, `artifacts/lab-02/screenshots/create-ticket-validation-375.png` | Required-field errors and their controls remain separate and readable; focused Category control and submit action remain visible. |
+| Ticket Detail attachments | `artifacts/lab-02/screenshots/ticket-detail-attachments-1440.png`, `artifacts/lab-02/screenshots/ticket-detail-attachments-768.png`, `artifacts/lab-02/screenshots/ticket-detail-attachments-375.png` | Focused upload control, active Download/Remove controls, and a Removed attachment state are visible at every width. |
+
+`STYLE-01` provides the automated CSS baseline; `E2E-01` remains the planned full requester-to-ticket flow.
 
 ## 5. Test Commands
 
