@@ -16,6 +16,10 @@ describe("attachment API", () => {
     const response = await request(app).post("/api/tickets/8/attachments").field("requesterId", "1").attach("file", Buffer.from("x"), { filename: "script.exe", contentType: "application/octet-stream" });
     expect(response.status).toBe(415); expect(response.body).toEqual({ error: "Only JPG, PNG, WEBP, and PDF files are allowed." }); expect(prisma.attachment.create).not.toHaveBeenCalled();
   });
+  it("returns a safe error for oversized uploads", async () => {
+    const response = await request(app).post("/api/tickets/8/attachments").field("requesterId", "1").attach("file", Buffer.alloc(5 * 1024 * 1024 + 1), { filename: "large.pdf", contentType: "application/pdf" });
+    expect(response.status).toBe(413); expect(response.body).toEqual({ error: "Attachment must be 5 MB or smaller." });
+  });
   it("enforces the five active attachment limit", async () => {
     prisma.attachment.count.mockResolvedValue(5);
     const response = await request(app).post("/api/tickets/8/attachments").field("requesterId", "1").attach("file", Buffer.from("x"), { filename: "guide.pdf", contentType: "application/pdf" });

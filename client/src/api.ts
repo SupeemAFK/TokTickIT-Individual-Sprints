@@ -115,6 +115,10 @@ export async function createTicket(input: CreateTicketInput): Promise<Ticket> {
   }, "Create Ticket request");
 }
 
+export async function uploadAttachment(ticketId: number, requesterId: number, file: File): Promise<Attachment> { const data = new FormData(); data.set("requesterId", String(requesterId)); data.set("file", file); return requestJson<Attachment>("/api/tickets/" + ticketId + "/attachments", { method: "POST", body: data }, "Attachment upload"); }
+export async function removeAttachment(attachmentId: number, requesterId: number, removalReason: string): Promise<Attachment> { return requestJson<Attachment>("/api/attachments/" + attachmentId + "?requesterId=" + requesterId, { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ removalReason }) }, "Attachment removal"); }
+export function attachmentDownloadUrl(attachmentId: number, requesterId: number) { return API_URL + "/api/attachments/" + attachmentId + "/download?requesterId=" + requesterId; }
+
 export async function fetchAttachments(ticketId: number, requesterId: number): Promise<Attachment[]> {
   const data = await requestJson<Attachment[]>("/api/tickets/" + ticketId + "/attachments?requesterId=" + requesterId, undefined, "Attachment request");
   if (!Array.isArray(data)) throw new Error("Attachment request returned an unexpected response.");

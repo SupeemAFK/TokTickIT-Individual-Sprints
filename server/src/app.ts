@@ -320,3 +320,11 @@ app.post("/api/tickets", async (req: Request, res: Response) => {
 });
 
 export default app;
+
+app.use((error: unknown, _req: Request, res: Response, next: NextFunction) => {
+  if (error instanceof multer.MulterError && error.code === "LIMIT_FILE_SIZE") {
+    res.status(413).json({ error: "Attachment must be 5 MB or smaller." });
+    return;
+  }
+  next(error);
+});
