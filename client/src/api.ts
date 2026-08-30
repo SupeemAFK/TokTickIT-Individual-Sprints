@@ -29,6 +29,12 @@ export interface Ticket {
   updatedAt: string;
 }
 
+export interface TicketDetail extends Ticket {
+  requester: DevelopmentRequester;
+  category: Category;
+  relatedSystem: RelatedSystem;
+}
+
 export interface TicketListItem {
   id: number;
   ticketNumber: string;
@@ -105,6 +111,10 @@ export async function createTicket(input: CreateTicketInput): Promise<Ticket> {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(input),
   }, "Create Ticket request");
+}
+
+export async function fetchTicket(ticketId: number, requesterId: number): Promise<TicketDetail> {
+  return requestJson<TicketDetail>("/api/tickets/" + ticketId + "?requesterId=" + requesterId, undefined, "Ticket detail request");
 }
 
 export async function fetchTickets(requesterId: number, query: TicketListQuery = {}): Promise<TicketListResponse> {
