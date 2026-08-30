@@ -67,11 +67,10 @@
 }
 
 html, body, #root { min-height: 100%; }
-body { overflow-x: hidden; }
 .card { border: 1px solid #d7e2da !important; border-radius: .75rem; }
 .form-control, .form-select { min-height: 2.75rem; border-color: #b9c9bf; }
 .form-control:focus, .form-select:focus, .btn:focus-visible, a:focus-visible {
-  outline: 3px solid #f0a500;
+  outline: 3px solid var(--toktickit-secondary);
   outline-offset: 2px;
   box-shadow: none;
 }

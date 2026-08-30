@@ -18,7 +18,7 @@ Tests are planned before implementation and trace to the approved specification.
 | UI-02 | UI | AC-04–05,14 | create form validation, busy, success, and failed-request retention | `client/tests/lab-02/CreateTicket.test.tsx` | Pass |
 | UI-03 | UI | AC-06–08,14 | list states, query controls, requester reload, and accessible navigation | `client/tests/lab-02/MyTickets.test.tsx` | Pass |
 | UI-04 | UI | AC-09–12,14 | detail display/failure plus upload, download, and removal controls | `client/tests/lab-02/TicketDetail.test.tsx` | Pass |
-| STYLE-01 | UI style | AC-13 | Zen Green tokens, labels, asterisks, focus, busy/disabled and responsive classes | `client/tests/lab-02/zen-green-style.test.tsx` | Planned |
+| STYLE-01 | UI style | AC-13 | Zen Green tokens, labels, asterisks, focus, busy/disabled and responsive classes | `client/tests/lab-02/zen-green-style.test.tsx` | Automated |
 | E2E-01 | E2E/responsive | AC-01–14 | select requester, create, find, view, attach, remove; screenshot three widths | `e2e/lab-02/requester-ticket-flow.spec.ts` | Planned |
 
 ## 3. Acceptance-Criterion Traceability
@@ -27,7 +27,7 @@ AC-01: API-01, UI-01, E2E-01; AC-02: UI-01, E2E-01; AC-03: API-01, UI-01, UI-03,
 
 ## 4. Responsive and Visual Checklist
 
-Follow the checklist in [ui-spec.md](ui-spec.md) at 1440px, 768px, and 375px. Record screenshot paths and observations when implementation is complete.
+Requester selection visual checks passed with mocked active-requester data: `artifacts/lab-02/screenshots/requester-selection-1440.png` (1440px), `artifacts/lab-02/screenshots/requester-selection-768.png` (768px), and `artifacts/lab-02/screenshots/requester-selection-375.png` (375px). The screenshots confirm the card, selector, primary action, Zen Green styling, and narrow layout render without horizontal-overflow suppression. `STYLE-01` provides the automated CSS baseline; `E2E-01` remains the planned full requester-to-ticket flow.
 
 ## 5. Test Commands
 
