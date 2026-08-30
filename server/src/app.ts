@@ -6,6 +6,7 @@ import express, { NextFunction, Request, Response } from "express";
 import cors from "cors";
 import multer from "multer";
 import { getPrisma } from "./prisma.js";
+import { formatTicketNumber } from "./ticket-number.js";
 
 const SUMMARY_MIN_LENGTH = 5;
 const SUMMARY_MAX_LENGTH = 160;
@@ -42,10 +43,6 @@ function parseText(value: unknown, fieldName: string, minLength: number, maxLeng
   }
 
   return trimmedValue;
-}
-
-function formatTicketNumber(ticketId: number, ticketDate: Date): string {
-  return `TKT-${ticketDate.getUTCFullYear()}-${String(ticketId).padStart(6, "0")}`;
 }
 
 export const app = express();

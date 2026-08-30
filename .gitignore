@@ -15,3 +15,7 @@ server/prisma/*.db
 
 # Lab 2 attachment storage
 server/uploads/
+
+# Playwright generated output
+client/playwright-report/
+client/test-results/
