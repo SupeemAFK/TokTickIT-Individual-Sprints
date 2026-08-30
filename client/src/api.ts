@@ -35,6 +35,8 @@ export interface TicketDetail extends Ticket {
   relatedSystem: RelatedSystem;
 }
 
+export interface Attachment { id: number; originalFilename: string; mimeType: string; byteSize: number; createdAt: string; removedAt: string | null; removalReason: string | null; }
+
 export interface TicketListItem {
   id: number;
   ticketNumber: string;
@@ -111,6 +113,16 @@ export async function createTicket(input: CreateTicketInput): Promise<Ticket> {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(input),
   }, "Create Ticket request");
+}
+
+export async function uploadAttachment(ticketId: number, requesterId: number, file: File): Promise<Attachment> { const data = new FormData(); data.set("requesterId", String(requesterId)); data.set("file", file); return requestJson<Attachment>("/api/tickets/" + ticketId + "/attachments", { method: "POST", body: data }, "Attachment upload"); }
+export async function removeAttachment(attachmentId: number, requesterId: number, removalReason: string): Promise<Attachment> { return requestJson<Attachment>("/api/attachments/" + attachmentId + "?requesterId=" + requesterId, { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ removalReason }) }, "Attachment removal"); }
+export function attachmentDownloadUrl(attachmentId: number, requesterId: number) { return API_URL + "/api/attachments/" + attachmentId + "/download?requesterId=" + requesterId; }
+
+export async function fetchAttachments(ticketId: number, requesterId: number): Promise<Attachment[]> {
+  const data = await requestJson<Attachment[]>("/api/tickets/" + ticketId + "/attachments?requesterId=" + requesterId, undefined, "Attachment request");
+  if (!Array.isArray(data)) throw new Error("Attachment request returned an unexpected response.");
+  return data;
 }
 
 export async function fetchTicket(ticketId: number, requesterId: number): Promise<TicketDetail> {
