@@ -45,4 +45,4 @@ Completed so far: API-01–04 and UI-01–04 implemented coverage pass; attachme
 
 ## 7. Known Limitations or Deferred Tests
 
-Real authentication and authorization are intentionally deferred to Lab 3. Attachment persistence and E2E tooling details will be verified when their scoped Issues introduce them.
+Real authentication and authorization are intentionally deferred to Lab 3. Attachment persistence is implemented and covered by API/UI tests; E2E tooling remains planned for Issue #20.
