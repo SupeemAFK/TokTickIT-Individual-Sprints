@@ -46,10 +46,13 @@ describe("CreateTicketForm", () => {
 
   it("submits the selected requester and shows the official ticket number", async () => {
     vi.spyOn(api, "createTicket").mockResolvedValue({ id: 42, ticketNumber: "TKT-2026-000042", requesterId: 1, categoryId: 2, relatedSystemId: 3, summary: "VPN cannot connect", requestedPriority: "MEDIUM", description: "VPN connection fails after signing in.", currentStatus: "NEW", createdAt: "2026-08-25T00:00:00.000Z", updatedAt: "2026-08-25T00:00:00.000Z" });
+    const uploadAttachment = vi.spyOn(api, "uploadAttachment").mockResolvedValue({ id: 1, originalFilename: "note.pdf", mimeType: "application/pdf", byteSize: 1, createdAt: "2026-08-25T00:00:00.000Z", removedAt: null, removalReason: null });
     renderForm();
     await completeValidForm();
+    await userEvent.upload(screen.getByLabelText("Attachments"), new File(["x"], "note.pdf", { type: "application/pdf" }));
     await userEvent.click(screen.getByRole("button", { name: /submit ticket/i }));
     expect(await screen.findByText("TKT-2026-000042")).toBeInTheDocument();
+    expect(uploadAttachment).toHaveBeenCalledWith(42, 1, expect.any(File));
     expect(api.createTicket).toHaveBeenCalledWith(expect.objectContaining({ requesterId: 1, categoryId: 2, relatedSystemId: 3 }));
   });
 

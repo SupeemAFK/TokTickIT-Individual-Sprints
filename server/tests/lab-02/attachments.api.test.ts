@@ -25,6 +25,16 @@ describe("attachment API", () => {
     const response = await request(app).post("/api/tickets/8/attachments").field("requesterId", "1").attach("file", Buffer.from("x"), { filename: "guide.pdf", contentType: "application/pdf" });
     expect(response.status).toBe(409); expect(response.body).toEqual({ error: "A ticket can have at most five active attachments." });
   });
+  it("rejects a non-owner upload", async () => {
+    prisma.ticket.findFirst.mockResolvedValue(null);
+    const response = await request(app).post("/api/tickets/8/attachments").field("requesterId", "2").attach("file", Buffer.from("x"), { filename: "guide.pdf", contentType: "application/pdf" });
+    expect(response.status).toBe(404); expect(response.body).toEqual({ error: "Ticket not found." });
+  });
+  it("uploads a valid owned file", async () => {
+    prisma.attachment.count.mockResolvedValue(0); prisma.attachment.create.mockResolvedValue({ id: 2, originalFilename: "guide.pdf", mimeType: "application/pdf", byteSize: 1, createdAt: new Date(), removedAt: null, removalReason: null });
+    const response = await request(app).post("/api/tickets/8/attachments").field("requesterId", "1").attach("file", Buffer.from("x"), { filename: "guide.pdf", contentType: "application/pdf" });
+    expect(response.status).toBe(201); expect(response.body.originalFilename).toBe("guide.pdf");
+  });
   it("blocks download of a removed attachment", async () => {
     prisma.attachment.findFirst.mockResolvedValue({ storageKey: "x", originalFilename: "guide.pdf", mimeType: "application/pdf", removedAt: new Date() });
     const response = await request(app).get("/api/attachments/1/download?requesterId=1");

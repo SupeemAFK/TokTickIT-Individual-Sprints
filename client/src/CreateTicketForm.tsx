@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import {
   createTicket,
+  uploadAttachment,
   fetchCategories,
   fetchRelatedSystems,
   type Category,
@@ -26,6 +27,8 @@ export default function CreateTicketForm({ requester, onCancel }: { requester: D
   const [submitState, setSubmitState] = useState<"idle" | "submitting" | "error" | "success">("idle");
   const [submitError, setSubmitError] = useState("");
   const [createdTicket, setCreatedTicket] = useState<Ticket | null>(null);
+  const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
+  const [attachmentError, setAttachmentError] = useState("");
 
   async function loadReferenceData() {
     setReferenceState("loading");
@@ -76,6 +79,7 @@ export default function CreateTicketForm({ requester, onCancel }: { requester: D
         description: values.description.trim(),
       });
       setCreatedTicket(ticket);
+      if (attachmentFile) { try { await uploadAttachment(ticket.id, requester.id, attachmentFile); } catch (error) { setAttachmentError(error instanceof Error ? error.message : "Ticket was created, but the attachment could not be uploaded."); } }
       setSubmitState("success");
     } catch (error) {
       setSubmitError(error instanceof Error ? error.message : "Unable to create the ticket.");
@@ -84,7 +88,7 @@ export default function CreateTicketForm({ requester, onCancel }: { requester: D
   }
 
   if (createdTicket) {
-    return <section className="card shadow-sm border-0"><div className="card-body p-4"><h1 className="h3">Ticket created</h1><div className="alert toktickit-context" role="status">Your official ticket number is <strong>{createdTicket.ticketNumber}</strong>.</div><button className="btn btn-toktickit-primary" onClick={onCancel}>Back to My Tickets</button></div></section>;
+    return <section className="card shadow-sm border-0"><div className="card-body p-4"><h1 className="h3">Ticket created</h1><div className="alert toktickit-context" role="status">Your official ticket number is <strong>{createdTicket.ticketNumber}</strong>.</div>{attachmentError && <div className="alert alert-warning" role="alert"><strong>Ticket created, attachment not uploaded</strong><div>{attachmentError}</div></div>}<button className="btn btn-toktickit-primary" onClick={onCancel}>Back to My Tickets</button></div></section>;
   }
 
   return <section className="card shadow-sm border-0" aria-labelledby="create-ticket-heading"><div className="card-body p-4 p-md-5"><h1 id="create-ticket-heading" className="h3 mb-4">Create Ticket</h1>
@@ -103,7 +107,7 @@ export default function CreateTicketForm({ requester, onCancel }: { requester: D
           <div className="col-md-6"><label className="form-label fw-semibold" htmlFor="ticket-priority">Requested Priority <span className="text-danger" aria-hidden="true">*</span></label><select id="ticket-priority" className={`form-select ${errors.requestedPriority ? "is-invalid" : ""}`} value={values.requestedPriority} onChange={(event) => update("requestedPriority", event.target.value as FormValues["requestedPriority"])} aria-describedby={errors.requestedPriority ? "ticket-priority-error" : undefined}><option value="">Choose a priority</option><option value="LOW">Low</option><option value="MEDIUM">Medium</option><option value="HIGH">High</option></select>{errors.requestedPriority && <div id="ticket-priority-error" className="invalid-feedback">{errors.requestedPriority}</div>}</div>
           <div className="col-12"><label className="form-label fw-semibold" htmlFor="ticket-summary">Ticket Summary <span className="text-danger" aria-hidden="true">*</span></label><input id="ticket-summary" className={`form-control ${errors.summary ? "is-invalid" : ""}`} value={values.summary} onChange={(event) => update("summary", event.target.value)} aria-describedby={errors.summary ? "ticket-summary-error" : undefined} />{errors.summary && <div id="ticket-summary-error" className="invalid-feedback">{errors.summary}</div>}</div>
           <div className="col-12"><label className="form-label fw-semibold" htmlFor="ticket-description">Description <span className="text-danger" aria-hidden="true">*</span></label><textarea id="ticket-description" rows={5} className={`form-control ${errors.description ? "is-invalid" : ""}`} value={values.description} onChange={(event) => update("description", event.target.value)} aria-describedby={errors.description ? "ticket-description-error" : undefined} />{errors.description && <div id="ticket-description-error" className="invalid-feedback">{errors.description}</div>}</div>
-          <div className="col-12"><label className="form-label fw-semibold" htmlFor="ticket-attachment">Attachments</label><input id="ticket-attachment" className="form-control" type="file" disabled aria-describedby="ticket-attachment-help" /><div id="ticket-attachment-help" className="form-text">Attachments can be added after ticket creation when the attachment feature is available.</div></div>
+          <div className="col-12"><label className="form-label fw-semibold" htmlFor="ticket-attachment">Attachments</label><input id="ticket-attachment" className="form-control" type="file" accept=".jpg,.jpeg,.png,.webp,.pdf" onChange={(event) => setAttachmentFile(event.target.files?.[0] ?? null)} aria-describedby="ticket-attachment-help" /><div id="ticket-attachment-help" className="form-text">Optional: JPG, PNG, WEBP, or PDF up to 5 MB. It uploads after the ticket is created.</div></div>
         </div>
         {submitState === "error" && <div className="alert alert-danger mt-4" role="alert"><strong>Ticket not created</strong><div>{submitError}</div></div>}
         <div className="d-flex gap-2 mt-4"><button type="button" className="btn btn-toktickit-outline" onClick={onCancel} disabled={submitState === "submitting"}>Cancel</button><button type="submit" className="btn btn-toktickit-primary" disabled={submitState === "submitting"}>{submitState === "submitting" ? "Submitting…" : "Submit Ticket"}</button></div>
