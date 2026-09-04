@@ -77,16 +77,29 @@ Once the backend is running, the following REST API endpoints are available:
 
 ## Running Tests
 
-To verify the setup, you can run the automated tests required for Lab 1:
+Run the complete Lab 2 verification suite from the repository root:
 
-**Backend Tests (Supertest):**
-Tests the health and category endpoints.
+```text
+cd server && npm test
+cd server && npm run build
+cd client && npm test
+cd client && npm run build
+```
 
-    cd server
-    npm test
+The backend suite covers API and unit behavior; the client suite covers component and style behavior.
 
-**Frontend Tests (Vitest):**
-Tests the UI rendering and API connection.
+### End-to-End Tests
 
-    cd client
-    npm test
+Install the Playwright browser once after installing client dependencies, then run the requester workflow:
+
+```text
+cd client
+npx playwright install chromium
+npm run test:e2e
+```
+
+The E2E flow uses stateful browser API fixtures, so it is reproducible without a running PostgreSQL database. It covers requester selection/switching, validation, ticket creation, search, Ticket Detail, attachment upload/removal, and desktop/tablet/mobile layouts.
+
+## Lab 2 Documentation and Evidence
+
+The engineering contract, API/UI specifications, test traceability, peer-review record, AI-use record, and responsive screenshots are versioned under [`docs/lab-02/`](docs/lab-02/) and [`artifacts/lab-02/screenshots/`](artifacts/lab-02/screenshots/).

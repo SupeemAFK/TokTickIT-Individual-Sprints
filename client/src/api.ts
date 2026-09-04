@@ -1,55 +1,141 @@
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
 
-export interface Category {
+export interface Category { id: number; name: string; }
+export interface RelatedSystem { id: number; name: string; }
+export interface DevelopmentRequester { id: number; name: string; email: string; }
+export interface SystemStatus { online: boolean; service: string; }
+export type RequestedPriority = "LOW" | "MEDIUM" | "HIGH";
+
+export interface CreateTicketInput {
+  requesterId: number;
+  categoryId: number;
+  relatedSystemId: number;
+  summary: string;
+  requestedPriority: RequestedPriority;
+  description: string;
+}
+
+export interface Ticket {
   id: number;
-  name: string;
+  ticketNumber: string;
+  requesterId: number;
+  categoryId: number;
+  relatedSystemId: number;
+  summary: string;
+  requestedPriority: RequestedPriority;
+  description: string;
+  currentStatus: "NEW";
+  createdAt: string;
+  updatedAt: string;
 }
 
-export interface SystemStatus {
-  online: boolean;
-  service: string;
+export interface TicketDetail extends Ticket {
+  requester: DevelopmentRequester;
+  category: Category;
+  relatedSystem: RelatedSystem;
 }
 
-export async function checkSystem(): Promise<SystemStatus> {
+export interface Attachment { id: number; originalFilename: string; mimeType: string; byteSize: number; createdAt: string; removedAt: string | null; removalReason: string | null; }
+
+export interface TicketListItem {
+  id: number;
+  ticketNumber: string;
+  summary: string;
+  currentStatus: "NEW";
+  requestedPriority: RequestedPriority;
+  category: Category;
+  relatedSystem: RelatedSystem;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TicketListQuery {
+  search?: string;
+  categoryId?: number;
+  relatedSystemId?: number;
+  requestedPriority?: RequestedPriority;
+  status?: "NEW";
+  sort?: "createdAt" | "updatedAt" | "ticketNumber" | "summary" | "requestedPriority";
+  direction?: "asc" | "desc";
+  page?: number;
+  pageSize?: 10 | 20 | 50;
+}
+
+export interface TicketListResponse {
+  items: TicketListItem[];
+  pagination: { page: number; pageSize: number; totalItems: number; totalPages: number; };
+}
+
+async function requestJson<T>(path: string, options?: RequestInit, label = "Request"): Promise<T> {
   let response: Response;
-
   try {
-    response = await fetch(`${API_URL}/api/health`);
+    response = await fetch(`${API_URL}${path}`, options);
   } catch {
     throw new Error("Unable to reach the backend. Check that the API server is running.");
   }
 
+  const data = await response.json().catch(() => null) as { error?: string } | T | null;
   if (!response.ok) {
-    throw new Error(`Backend health check failed with HTTP ${response.status}.`);
+    const error = data && typeof data === "object" && "error" in data ? data.error : undefined;
+    throw new Error(error || `${label} failed with HTTP ${response.status}.`);
   }
 
-  const data = (await response.json()) as { status?: string; service?: string };
+  return data as T;
+}
 
-  if (data.status !== "ok") {
-    throw new Error("Backend health check returned an unexpected response.");
-  }
-
+export async function checkSystem(): Promise<SystemStatus> {
+  const data = await requestJson<{ status?: string; service?: string }>("/api/health", undefined, "Backend health check");
+  if (data.status !== "ok") throw new Error("Backend health check returned an unexpected response.");
   return { online: true, service: data.service ?? "TokTickIT API" };
 }
 
 export async function fetchCategories(): Promise<Category[]> {
-  let response: Response;
+  const data = await requestJson<Category[]>("/api/categories", undefined, "Category request");
+  if (!Array.isArray(data)) throw new Error("Category request returned an unexpected response.");
+  return data;
+}
 
-  try {
-    response = await fetch(`${API_URL}/api/categories`);
-  } catch {
-    throw new Error("Unable to reach the backend. Check that the API server is running.");
+export async function fetchRelatedSystems(): Promise<RelatedSystem[]> {
+  const data = await requestJson<RelatedSystem[]>("/api/related-systems", undefined, "Related System request");
+  if (!Array.isArray(data)) throw new Error("Related System request returned an unexpected response.");
+  return data;
+}
+
+export async function fetchDevelopmentRequesters(): Promise<DevelopmentRequester[]> {
+  const data = await requestJson<DevelopmentRequester[]>("/api/development-requesters", undefined, "Development Requester request");
+  if (!Array.isArray(data)) throw new Error("Development Requester request returned an unexpected response.");
+  return data;
+}
+
+export async function createTicket(input: CreateTicketInput): Promise<Ticket> {
+  return requestJson<Ticket>("/api/tickets", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  }, "Create Ticket request");
+}
+
+export async function uploadAttachment(ticketId: number, requesterId: number, file: File): Promise<Attachment> { const data = new FormData(); data.set("requesterId", String(requesterId)); data.set("file", file); return requestJson<Attachment>("/api/tickets/" + ticketId + "/attachments", { method: "POST", body: data }, "Attachment upload"); }
+export async function removeAttachment(attachmentId: number, requesterId: number, removalReason: string): Promise<Attachment> { return requestJson<Attachment>("/api/attachments/" + attachmentId + "?requesterId=" + requesterId, { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ removalReason }) }, "Attachment removal"); }
+export function attachmentDownloadUrl(attachmentId: number, requesterId: number) { return API_URL + "/api/attachments/" + attachmentId + "/download?requesterId=" + requesterId; }
+
+export async function fetchAttachments(ticketId: number, requesterId: number): Promise<Attachment[]> {
+  const data = await requestJson<Attachment[]>("/api/tickets/" + ticketId + "/attachments?requesterId=" + requesterId, undefined, "Attachment request");
+  if (!Array.isArray(data)) throw new Error("Attachment request returned an unexpected response.");
+  return data;
+}
+
+export async function fetchTicket(ticketId: number, requesterId: number): Promise<TicketDetail> {
+  return requestJson<TicketDetail>("/api/tickets/" + ticketId + "?requesterId=" + requesterId, undefined, "Ticket detail request");
+}
+
+export async function fetchTickets(requesterId: number, query: TicketListQuery = {}): Promise<TicketListResponse> {
+  const params = new URLSearchParams({ requesterId: String(requesterId) });
+  for (const [key, value] of Object.entries(query)) {
+    if (value !== undefined && value !== "") params.set(key, String(value));
   }
 
-  if (!response.ok) {
-    throw new Error(`Category request failed with HTTP ${response.status}.`);
-  }
-
-  const data = (await response.json()) as Category[];
-
-  if (!Array.isArray(data)) {
-    throw new Error("Category request returned an unexpected response.");
-  }
-
-  return data
+  const data = await requestJson<TicketListResponse>("/api/tickets?" + params.toString(), undefined, "Ticket list request");
+  if (!Array.isArray(data.items) || !data.pagination) throw new Error("Ticket list request returned an unexpected response.");
+  return data;
 }

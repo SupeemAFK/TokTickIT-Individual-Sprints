@@ -1,0 +1,90 @@
+:root {
+  --toktickit-primary: #006B3C;
+  --toktickit-secondary: #0B7A46;
+  --toktickit-pale: #EAF6EF;
+  --toktickit-page: #F5F7F6;
+  --toktickit-text: #16372B;
+}
+
+.toktickit-page {
+  background-color: var(--toktickit-page);
+  color: var(--toktickit-text);
+}
+
+.toktickit-text {
+  color: var(--toktickit-primary) !important;
+}
+
+.btn-toktickit-primary {
+  --bs-btn-color: #fff;
+  --bs-btn-bg: var(--toktickit-primary);
+  --bs-btn-border-color: var(--toktickit-primary);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: var(--toktickit-secondary);
+  --bs-btn-hover-border-color: var(--toktickit-secondary);
+  --bs-btn-active-bg: var(--toktickit-secondary);
+  --bs-btn-active-border-color: var(--toktickit-secondary);
+  --bs-btn-disabled-bg: var(--toktickit-primary);
+  --bs-btn-disabled-border-color: var(--toktickit-primary);
+}
+
+.btn-toktickit-outline {
+  --bs-btn-color: var(--toktickit-primary);
+  --bs-btn-border-color: var(--toktickit-primary);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: var(--toktickit-primary);
+  --bs-btn-hover-border-color: var(--toktickit-primary);
+  --bs-btn-active-bg: var(--toktickit-secondary);
+  --bs-btn-active-border-color: var(--toktickit-secondary);
+}
+
+.toktickit-context {
+  background-color: var(--toktickit-pale);
+  border-color: #b9ddc8;
+  color: var(--toktickit-text);
+}
+
+
+.toktickit-readonly {
+  background-color: #edf3ee !important;
+  border-color: #c8d7cc;
+  color: var(--toktickit-text);
+}
+.ticket-row {
+  cursor: pointer;
+}
+
+.ticket-row:hover {
+  background-color: var(--toktickit-pale);
+}
+
+.ticket-card {
+  border: 1px solid #d7e2da;
+}
+
+.ticket-card:hover {
+  border-color: var(--toktickit-secondary);
+}
+
+html, body, #root { min-height: 100%; }
+.card { border: 1px solid #d7e2da !important; border-radius: .75rem; }
+.form-control, .form-select { min-height: 2.75rem; border-color: #b9c9bf; }
+.form-control:focus, .form-select:focus, .btn:focus-visible, a:focus-visible {
+  outline: 3px solid var(--toktickit-secondary);
+  outline-offset: 2px;
+  box-shadow: none;
+}
+.badge { font-weight: 600; }
+@media (max-width: 767.98px) {
+  .toktickit-page .container { padding-left: 1rem; padding-right: 1rem; }
+  header .container { align-items: stretch !important; }
+  header nav { width: 100%; display: grid !important; grid-template-columns: 1fr 1fr; }
+  header nav .btn:last-child { grid-column: 1 / -1; }
+  .card-body { padding: 1.25rem !important; }
+  .btn-group { width: 100%; }
+  .btn-group .btn { flex: 1 1 auto; }
+  #ticket-attachment, [aria-label="Attachment file"] { min-width: 0; }
+}
+@media (min-width: 768px) and (max-width: 991.98px) {
+  .toktickit-page .container { max-width: 900px; }
+}
