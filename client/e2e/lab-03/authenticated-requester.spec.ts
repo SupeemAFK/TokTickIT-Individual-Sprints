@@ -39,6 +39,7 @@ test("authenticated requester can create, inspect, comment, report resolution, a
   await page.getByRole("button", { name: "View details" }).click();
   await expect(page.getByText("guide.pdf")).toBeVisible();
   await expect(page.getByText("We are investigating.")).toBeVisible();
+  await page.screenshot({ path: "../artifacts/lab-03/screenshots/requester-detail.png", fullPage: true });
   await page.getByRole("button", { name: "Problem Appears Resolved" }).click();
   await page.getByPlaceholder("Add a public comment").fill("Thanks for the update");
   await page.getByRole("button", { name: "Comment" }).click();
@@ -52,5 +53,6 @@ test("authenticated requester remains usable at desktop, tablet, and mobile widt
     await page.setViewportSize(viewport); await openRequester(page);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     await expect(page.getByRole("button", { name: "View details" })).toBeVisible();
+    await page.screenshot({ path: "../artifacts/lab-03/screenshots/requester-" + viewport.width + ".png", fullPage: true });
   }
 });
