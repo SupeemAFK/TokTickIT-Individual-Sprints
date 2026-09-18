@@ -1,16 +1,25 @@
 import { FormEvent, useEffect, useState } from "react";
 
 const API = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
-type User = { id: number; name: string; email: string; role: "REQUESTER" | "IT_STAFF" | "ADMINISTRATOR"; isActive: boolean };
-type AuthResponse = { user: User; mustChangePassword: boolean; session: { token: string; expiresAt: string } };
+type Role = "REQUESTER" | "IT_STAFF" | "ADMINISTRATOR";
+type User = { id: number; name: string; email: string; role: Role; isActive: boolean };
+type Reference = { id: number; name: string };
+type Attachment = { id: number; originalFilename: string; mimeType: string; byteSize: number; removedAt: string | null; removalReason: string | null };
+type Comment = { id: number; content: string; createdAt?: string; author?: { id: number; name: string; role: string } };
+type Ticket = { id: number; ticketNumber: string; summary: string; description?: string; currentStatus: string; requestedPriority: string; itPriority?: string; category?: Reference; relatedSystem?: Reference; owner?: { id: number; name: string; role?: string } | null; attachments?: Attachment[]; publicComments?: Comment[]; internalNotes?: Comment[]; requester?: { id: number; name: string; email?: string }; problemAppearsResolvedAt?: string | null };
 
 async function api(path: string, token: string, options: RequestInit = {}) {
-  const response = await fetch(API + path, {
-    ...options,
-    headers: { ...options.headers, "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-  });
+  const response = await fetch(API + path, { ...options, headers: { ...options.headers, "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
   const data = await response.json().catch(() => null);
   if (!response.ok) throw new Error(data?.error ?? "Request failed.");
+  return data;
+}
+
+async function upload(path: string, token: string, file: File) {
+  const form = new FormData(); form.set("file", file);
+  const response = await fetch(API + path, { method: "POST", body: form, headers: { Authorization: `Bearer ${token}` } });
+  const data = await response.json().catch(() => null);
+  if (!response.ok) throw new Error(data?.error ?? "Upload failed.");
   return data;
 }
 
@@ -23,137 +32,75 @@ export default function App() {
 
   useEffect(() => {
     if (!token) return;
-    api("/api/auth/me", token)
-      .then((data: { user: User; mustChangePassword: boolean }) => {
-        setUser(data.user);
-        setMustChangePassword(data.mustChangePassword);
-      })
-      .catch(() => {
-        setToken("");
-        setUser(null);
-        sessionStorage.removeItem("toktickit.token");
-      });
+    api("/api/auth/me", token).then((data) => { setUser(data.user); setMustChangePassword(Boolean(data.mustChangePassword)); }).catch(() => { setToken(""); setUser(null); sessionStorage.removeItem("toktickit.token"); });
   }, [token]);
 
-  if (!token) {
-    return <Login onLogin={(nextToken, nextUser, needsPasswordChange) => {
-      sessionStorage.setItem("toktickit.token", nextToken);
-      setToken(nextToken);
-      setUser(nextUser);
-      setMustChangePassword(needsPasswordChange);
-    }} />;
-  }
+  if (!token) return <Login onLogin={(newToken, nextUser, nextMustChange) => { sessionStorage.setItem("toktickit.token", newToken); setToken(newToken); setUser(nextUser); setMustChangePassword(nextMustChange); }} />;
   if (!user) return <main className="container py-5">Loading your account…</main>;
-  if (mustChangePassword) {
-    return <Password token={token} onDone={() => api("/api/auth/me", token).then((data) => {
-      setUser(data.user);
-      setMustChangePassword(data.mustChangePassword);
-    })} />;
-  }
+  if (mustChangePassword) return <Password token={token} onDone={() => api("/api/auth/me", token).then((data) => { setUser(data.user); setMustChangePassword(Boolean(data.mustChangePassword)); })} />;
 
-  const logout = async () => {
-    await fetch(API + "/api/auth/logout", { method: "POST", headers: { Authorization: `Bearer ${token}` } });
-    sessionStorage.removeItem("toktickit.token");
-    setToken("");
-    setUser(null);
-  };
-
-  return <div className="min-vh-100 toktickit-page">
-    <header className="border-bottom bg-white">
-      <div className="container py-3 d-flex gap-2 align-items-center">
-        <strong className="me-auto">TokTickIT <span className="toktickit-text">IT Service Desk</span><small className="d-block text-secondary">{user.name} · {user.role.replace("_", " ")}</small></strong>
-        {(user.role === "IT_STAFF" || user.role === "ADMINISTRATOR") && <button className="btn btn-toktickit-outline" onClick={() => setPage("queue")}>Ticket Queue</button>}
-        {user.role === "ADMINISTRATOR" && <button className="btn btn-toktickit-outline" onClick={() => setPage("users")}>User Management</button>}
-        <button className="btn btn-outline-secondary" onClick={() => void logout()}>Logout</button>
-      </div>
-    </header>
-    <main className="container py-5">
-      {error && <div className="alert alert-danger" role="alert">{error}</div>}
-      {page === "queue" ? <Queue token={token} onError={setError} /> : page === "users" ? <Users token={token} onError={setError} /> : <section className="card shadow-sm border-0"><div className="card-body p-4"><h1 className="h3">Welcome, {user.name}</h1><p className="text-secondary">Your authenticated {user.role.replace("_", " ")} workspace is ready.</p>{user.role === "REQUESTER" && <p>Requester ticket screens remain available after authenticated ownership migration.</p>}</div></section>}
-    </main>
-  </div>;
+  const logout = async () => { await fetch(API + "/api/auth/logout", { method: "POST", headers: { Authorization: `Bearer ${token}` } }); sessionStorage.removeItem("toktickit.token"); setToken(""); setUser(null); };
+  return <div className="min-vh-100 toktickit-page"><header className="border-bottom bg-white"><div className="container py-3 d-flex gap-2 align-items-center"><strong className="me-auto">TokTickIT <span className="toktickit-text">IT Service Desk</span><small className="d-block text-secondary">{user.name} · {user.role.replace("_", " ")}</small></strong>{user.role !== "REQUESTER" && <button className="btn btn-toktickit-outline" onClick={() => setPage("queue")}>Ticket Queue</button>}{user.role === "ADMINISTRATOR" && <button className="btn btn-toktickit-outline" onClick={() => setPage("users")}>User Management</button>}<button className="btn btn-outline-secondary" onClick={() => void logout()}>Logout</button></div></header><main className="container py-5">{error && <div className="alert alert-danger">{error}</div>}{page === "queue" ? <Queue token={token} onError={setError} /> : page === "users" ? <Users token={token} onError={setError} /> : user.role === "REQUESTER" ? <Requester token={token} onError={setError} /> : <section className="card shadow-sm border-0"><div className="card-body p-4"><h1 className="h3">Welcome, {user.name}</h1><p className="text-secondary">Your authenticated {user.role.replace("_", " ")} workspace is ready.</p></div></section>}</main></div>;
 }
 
 function Login({ onLogin }: { onLogin: (token: string, user: User, mustChangePassword: boolean) => void }) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [busy, setBusy] = useState(false);
-
-  const submit = async (event: FormEvent) => {
-    event.preventDefault();
-    setBusy(true);
-    setError("");
-    try {
-      const data: AuthResponse = await api("/api/auth/login", "", { method: "POST", body: JSON.stringify({ email, password }) });
-      onLogin(data.session.token, data.user, data.mustChangePassword);
-    } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "Unable to sign in.");
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  return <main className="container py-5" style={{ maxWidth: 520 }}>
-    <section className="card shadow-sm border-0"><div className="card-body p-4">
-      <h1 className="h3">TokTickIT Login</h1>
-      <form onSubmit={submit}>
-        <label className="form-label mt-3" htmlFor="login-email">Email</label>
-        <input id="login-email" className="form-control" type="email" value={email} onChange={(event) => setEmail(event.target.value)} required autoComplete="username" />
-        <label className="form-label mt-3" htmlFor="login-password">Password</label>
-        <input id="login-password" className="form-control" type="password" value={password} onChange={(event) => setPassword(event.target.value)} required autoComplete="current-password" />
-        {error && <div className="alert alert-danger mt-3" role="alert">{error}</div>}
-        <button className="btn btn-toktickit-primary mt-3" disabled={busy}>{busy ? "Signing in…" : "Sign in"}</button>
-      </form>
-    </div></section>
-  </main>;
+  const [email, setEmail] = useState(""); const [password, setPassword] = useState(""); const [error, setError] = useState("");
+  const submit = async (event: FormEvent) => { event.preventDefault(); try { const data = await api("/api/auth/login", "", { method: "POST", body: JSON.stringify({ email, password }) }); onLogin(data.session.token, data.user, Boolean(data.mustChangePassword)); } catch (reason) { setError(reason instanceof Error ? reason.message : "Unable to sign in."); } };
+  return <main className="container py-5" style={{ maxWidth: 520 }}><section className="card shadow-sm border-0"><div className="card-body p-4"><h1 className="h3">TokTickIT Login</h1><form onSubmit={submit}><label className="form-label mt-3">Email</label><input className="form-control" type="email" value={email} onChange={(event) => setEmail(event.target.value)} required /><label className="form-label mt-3">Password</label><input className="form-control" type="password" value={password} onChange={(event) => setPassword(event.target.value)} required />{error && <div className="alert alert-danger mt-3">{error}</div>}<button className="btn btn-toktickit-primary mt-3">Sign in</button></form></div></section></main>;
 }
 
 function Password({ token, onDone }: { token: string; onDone: () => void }) {
-  const [password, setPassword] = useState("");
-  const [confirm, setConfirm] = useState("");
-  const [error, setError] = useState("");
-  const [busy, setBusy] = useState(false);
+  const [password, setPassword] = useState(""); const [confirm, setConfirm] = useState(""); const [error, setError] = useState("");
+  const submit = async (event: FormEvent) => { event.preventDefault(); try { await api("/api/auth/change-password", token, { method: "POST", body: JSON.stringify({ newPassword: password, confirmation: confirm }) }); onDone(); } catch (reason) { setError(reason instanceof Error ? reason.message : "Unable to change password."); } };
+  return <main className="container py-5" style={{ maxWidth: 520 }}><h1 className="h3">Change your initial password</h1><form onSubmit={submit}><input className="form-control mt-3" type="password" placeholder="New password" value={password} onChange={(event) => setPassword(event.target.value)} required /><input className="form-control mt-3" type="password" placeholder="Confirm password" value={confirm} onChange={(event) => setConfirm(event.target.value)} required />{error && <div className="alert alert-danger mt-3">{error}</div>}<button className="btn btn-toktickit-primary mt-3">Save password</button></form></main>;
+}
 
-  const submit = async (event: FormEvent) => {
-    event.preventDefault();
-    if (password !== confirm) { setError("Passwords do not match."); return; }
-    setBusy(true);
-    setError("");
-    try {
-      await api("/api/auth/change-password", token, { method: "POST", body: JSON.stringify({ newPassword: password, confirmation: confirm }) });
-      onDone();
-    } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "Unable to change password.");
-    } finally {
-      setBusy(false);
-    }
-  };
+function Requester({ token, onError }: { token: string; onError: (message: string) => void }) {
+  const [items, setItems] = useState<Ticket[]>([]); const [selected, setSelected] = useState<Ticket | null>(null); const [summary, setSummary] = useState(""); const [description, setDescription] = useState(""); const [createFile, setCreateFile] = useState<File | null>(null); const [message, setMessage] = useState(""); const [categories, setCategories] = useState<Reference[]>([]); const [systems, setSystems] = useState<Reference[]>([]); const [categoryId, setCategoryId] = useState(""); const [systemId, setSystemId] = useState("");
+  const load = () => api("/api/tickets", token).then((data) => setItems(data.items ?? [])).catch((reason) => onError(reason instanceof Error ? reason.message : "Unable to load tickets."));
+  useEffect(() => { void load(); Promise.all([api("/api/categories", token), api("/api/related-systems", token)]).then(([loadedCategories, loadedSystems]) => { setCategories(loadedCategories); setSystems(loadedSystems); if (loadedCategories[0]) setCategoryId(String(loadedCategories[0].id)); if (loadedSystems[0]) setSystemId(String(loadedSystems[0].id)); }).catch(() => undefined); }, [token]);
+  const create = async (event: FormEvent) => { event.preventDefault(); try { const created = await api("/api/tickets", token, { method: "POST", body: JSON.stringify({ categoryId: Number(categoryId), relatedSystemId: Number(systemId), summary, description, requestedPriority: "MEDIUM" }) }); setSummary(""); setDescription(""); setMessage("Ticket created."); if (createFile) { try { await upload(`/api/tickets/${created.id}/attachments`, token, createFile); } catch (reason) { setMessage(`Ticket created, but the attachment was not uploaded: ${reason instanceof Error ? reason.message : "upload failed."}`); } setCreateFile(null); } await load(); } catch (reason) { onError(reason instanceof Error ? reason.message : "Unable to create ticket."); } };
+  const open = async (id: number) => { try { setSelected(await api(`/api/tickets/${id}`, token)); } catch (reason) { onError(reason instanceof Error ? reason.message : "Unable to load ticket."); } };
+  if (selected) return <RequesterDetail ticket={selected} token={token} onBack={() => setSelected(null)} onError={onError} onChanged={(next) => { setSelected(next); void load(); }} />;
+  return <section><h1 className="h3">My Tickets</h1><p className="text-secondary">Authenticated tickets belonging to your account.</p><div className="row g-3">{items.map((ticket) => <article className="col-md-6" key={ticket.id}><div className="card h-100"><div className="card-body"><button className="btn btn-link p-0" onClick={() => void open(ticket.id)}>{ticket.ticketNumber}</button><h2 className="h5 mt-2">{ticket.summary}</h2><span className="badge text-bg-secondary">{ticket.currentStatus}</span></div></div></article>)}</div>{!items.length && <p className="text-secondary mt-3">No tickets yet.</p>}<form className="card mt-4" onSubmit={create}><div className="card-body"><h2 className="h5">Create ticket</h2><select className="form-select mb-2" aria-label="Category" value={categoryId} onChange={(event) => setCategoryId(event.target.value)}>{categories.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select><select className="form-select mb-2" aria-label="Related system" value={systemId} onChange={(event) => setSystemId(event.target.value)}>{systems.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select><input className="form-control mb-2" required minLength={5} placeholder="Summary" value={summary} onChange={(event) => setSummary(event.target.value)} /><textarea className="form-control mb-2" required minLength={10} placeholder="Description" value={description} onChange={(event) => setDescription(event.target.value)} /><input className="form-control mb-2" type="file" accept=".jpg,.jpeg,.png,.webp,.pdf" aria-label="Creation attachment" onChange={(event) => setCreateFile(event.target.files?.[0] ?? null)} /><button className="btn btn-toktickit-primary">Create ticket</button>{message && <span className="ms-2 text-success">{message}</span>}</div></form></section>;
+}
 
-  return <main className="container py-5" style={{ maxWidth: 520 }}>
-    <section className="card shadow-sm border-0"><div className="card-body p-4">
-      <h1 className="h3">Change your initial password</h1>
-      <p className="text-secondary">Use at least 12 characters with upper-case, lower-case, and numeric characters.</p>
-      <form onSubmit={submit}>
-        <label className="form-label mt-3" htmlFor="new-password">New password</label>
-        <input id="new-password" className="form-control" type="password" value={password} onChange={(event) => setPassword(event.target.value)} required minLength={12} autoComplete="new-password" />
-        <label className="form-label mt-3" htmlFor="confirm-password">Confirm new password</label>
-        <input id="confirm-password" className="form-control" type="password" value={confirm} onChange={(event) => setConfirm(event.target.value)} required minLength={12} autoComplete="new-password" />
-        {error && <div className="alert alert-danger mt-3" role="alert">{error}</div>}
-        <button className="btn btn-toktickit-primary mt-3" disabled={busy}>{busy ? "Saving…" : "Save password"}</button>
-      </form>
-    </div></section>
-  </main>;
+function RequesterDetail({ ticket, token, onBack, onError, onChanged }: { ticket: Ticket; token: string; onBack: () => void; onError: (message: string) => void; onChanged: (ticket: Ticket) => void }) {
+  const [comment, setComment] = useState(""); const [file, setFile] = useState<File | null>(null); const [busy, setBusy] = useState(false);
+  const refresh = async () => { try { onChanged(await api(`/api/tickets/${ticket.id}`, token)); } catch (reason) { onError(reason instanceof Error ? reason.message : "Unable to refresh ticket."); } };
+  const addComment = async (event: FormEvent) => { event.preventDefault(); try { await api(`/api/tickets/${ticket.id}/comments`, token, { method: "POST", body: JSON.stringify({ content: comment }) }); setComment(""); await refresh(); } catch (reason) { onError(reason instanceof Error ? reason.message : "Unable to add comment."); } };
+  const reportResolved = async () => { try { await api(`/api/tickets/${ticket.id}/resolution-signal`, token, { method: "POST" }); await refresh(); } catch (reason) { onError(reason instanceof Error ? reason.message : "Unable to report resolution."); } };
+  const addAttachment = async () => { if (!file) return; setBusy(true); try { await upload(`/api/tickets/${ticket.id}/attachments`, token, file); setFile(null); await refresh(); } catch (reason) { onError(reason instanceof Error ? reason.message : "Unable to upload attachment."); } finally { setBusy(false); } };
+  const download = async (attachment: Attachment) => { try { const response = await fetch(`${API}/api/attachments/${attachment.id}/download`, { headers: { Authorization: `Bearer ${token}` } }); if (!response.ok) throw new Error("Unable to download attachment."); const url = URL.createObjectURL(await response.blob()); const link = document.createElement("a"); link.href = url; link.download = attachment.originalFilename; link.click(); URL.revokeObjectURL(url); } catch (reason) { onError(reason instanceof Error ? reason.message : "Unable to download attachment."); } };
+  const remove = async (attachmentId: number) => { const reason = window.prompt("Why should this attachment be removed?", "No longer needed"); if (!reason) return; try { await api(`/api/attachments/${attachmentId}`, token, { method: "DELETE", body: JSON.stringify({ removalReason: reason }) }); await refresh(); } catch (error) { onError(error instanceof Error ? error.message : "Unable to remove attachment."); } };
+  return <section className="card shadow-sm border-0"><div className="card-body p-4"><button className="btn btn-toktickit-outline mb-3" onClick={onBack}>Back to My Tickets</button><h1 className="h3">{ticket.ticketNumber}</h1><p className="text-secondary">{ticket.category?.name} · {ticket.relatedSystem?.name} · {ticket.currentStatus}</p><h2 className="h5">{ticket.summary}</h2><p>{ticket.description}</p><button className="btn btn-outline-success mb-4" onClick={() => void reportResolved()}>Problem Appears Resolved</button><section aria-labelledby="requester-attachments"><h2 id="requester-attachments" className="h5">Attachments</h2><div className="d-flex gap-2 mb-2"><input aria-label="Attachment file" className="form-control" type="file" accept=".jpg,.jpeg,.png,.webp,.pdf" onChange={(event) => setFile(event.target.files?.[0] ?? null)} /><button className="btn btn-toktickit-primary" disabled={!file || busy} onClick={() => void addAttachment()}>Upload</button></div><ul className="list-group mb-4">{(ticket.attachments ?? []).map((attachment) => <li className="list-group-item" key={attachment.id}><span>{attachment.originalFilename}</span>{attachment.removedAt ? <span className="badge text-bg-secondary ms-2">Removed</span> : <><button className="btn btn-sm btn-toktickit-outline ms-2" onClick={() => void download(attachment)}>Download</button><button className="btn btn-sm btn-outline-danger ms-2" onClick={() => void remove(attachment.id)}>Remove</button></>}</li>)}</ul></section><section aria-labelledby="requester-comments"><h2 id="requester-comments" className="h5">Public comments</h2><ul className="list-group mb-3">{(ticket.publicComments ?? []).map((item) => <li className="list-group-item" key={item.id}><strong>{item.author?.name ?? "User"}</strong>: {item.content}</li>)}</ul><form onSubmit={addComment}><div className="input-group"><input className="form-control" required minLength={1} placeholder="Add a public comment" value={comment} onChange={(event) => setComment(event.target.value)} /><button className="btn btn-toktickit-primary">Comment</button></div></form></section></div></section>;
 }
 
 function Queue({ token, onError }: { token: string; onError: (message: string) => void }) {
-  const [items, setItems] = useState<any[]>([]);
-  useEffect(() => { api("/api/staff/tickets", token).then((data) => setItems(data.items)).catch((reason) => onError(reason.message)); }, [token, onError]);
-  return <section><h1 className="h3">Ticket Queue</h1><table className="table"><thead><tr><th>Number</th><th>Summary</th><th>Status</th><th>IT Priority</th><th>Owner</th></tr></thead><tbody>{items.map((ticket) => <tr key={ticket.id}><td>{ticket.ticketNumber}</td><td>{ticket.summary}</td><td><span className="badge text-bg-secondary">{ticket.currentStatus}</span></td><td>{ticket.itPriority}</td><td>{ticket.owner?.name ?? "Unassigned"}</td></tr>)}</tbody></table>{!items.length && <p className="text-secondary">No matching tickets.</p>}</section>;
+  const [items, setItems] = useState<Ticket[]>([]); const [selectedId, setSelectedId] = useState<number | null>(null); const [search, setSearch] = useState(""); const [status, setStatus] = useState(""); const [page, setPage] = useState(1); const [totalPages, setTotalPages] = useState(1); const [sort, setSort] = useState("updatedAt"); const [direction, setDirection] = useState("desc"); const [staff, setStaff] = useState<User[]>([]); const [owner, setOwner] = useState(""); const [counts, setCounts] = useState<any>(null);
+  const load = () => api(`/api/staff/tickets?search=${encodeURIComponent(search)}&page=${page}&pageSize=10&sort=${sort}&direction=${direction}${status ? `&status=${status}` : ""}${owner ? `&ownerUserId=${owner === "unassigned" ? "null" : owner}` : ""}`, token).then((data) => { setItems(data.items ?? []); setTotalPages(data.pagination?.totalPages ?? 1); setCounts(data.counts); }).catch((reason) => onError(reason instanceof Error ? reason.message : "Unable to load the ticket queue."));
+  useEffect(() => { void load(); api("/api/staff/users", token).then((data) => setStaff(data)).catch(() => undefined); }, [token, page, search, status, sort, direction, owner]);
+  if (selectedId !== null) return <StaffDetail token={token} ticketId={selectedId} staff={staff} onBack={() => setSelectedId(null)} onError={onError} onChanged={() => { void load(); }} />;
+  const toggleSort = (field: string) => { if (sort === field) setDirection(direction === "asc" ? "desc" : "asc"); else { setSort(field); setDirection("asc"); } setPage(1); };
+  return <section><h1 className="h3">Ticket Queue</h1><p className="text-secondary">Search, filter, claim, assign, and work tickets assigned to the IT team.</p><div className="row g-2 mb-3"><div className="col-md-5"><input className="form-control" placeholder="Search tickets" value={search} onChange={(event) => { setSearch(event.target.value); setPage(1); }} /></div><div className="col-md-3"><select className="form-select" aria-label="Queue status" value={status} onChange={(event) => { setStatus(event.target.value); setPage(1); }}><option value="">All statuses</option>{["NEW", "OPEN", "IN_PROGRESS", "WAITING_FOR_REQUESTER", "RESOLVED", "CLOSED", "REOPENED", "CANCELLED"].map((value) => <option key={value} value={value}>{value}</option>)}</select></div><div className="col-md-2"><select className="form-select" aria-label="Queue owner" value={owner} onChange={(event) => { setOwner(event.target.value); setPage(1); }}><option value="">All owners</option><option value="unassigned">Unassigned</option>{staff.map((person) => <option key={person.id} value={person.id}>{person.name}</option>)}</select></div><div className="col-md-2"><select className="form-select" aria-label="Queue sort" value={sort} onChange={(event) => { setSort(event.target.value); setPage(1); }}><option value="updatedAt">Updated</option><option value="createdAt">Created</option><option value="ticketNumber">Ticket number</option><option value="summary">Summary</option><option value="currentStatus">Status</option><option value="itPriority">IT priority</option></select></div></div>{counts && <p className="small text-secondary">{counts.totalItems} total · {counts.unassigned} unassigned · {counts.byItPriority?.HIGH ?? 0} high priority</p>}<table className="table align-middle d-none d-md-table"><thead><tr><th><button className="btn btn-link p-0" onClick={() => toggleSort("ticketNumber")}>Number</button></th><th><button className="btn btn-link p-0" onClick={() => toggleSort("summary")}>Summary</button></th><th>Status</th><th>IT Priority</th><th>Owner</th></tr></thead><tbody>{items.map((ticket) => <tr key={ticket.id}><td><button className="btn btn-link p-0" onClick={() => setSelectedId(ticket.id)}>{ticket.ticketNumber}</button></td><td>{ticket.summary}</td><td><span className="badge text-bg-secondary">{ticket.currentStatus}</span></td><td>{ticket.itPriority}</td><td>{ticket.owner?.name ?? "Unassigned"}</td></tr>)}</tbody></table>{!items.length && <p className="text-secondary">No matching tickets.</p>}<div className="d-flex gap-2 align-items-center"><button className="btn btn-sm btn-outline-secondary" disabled={page <= 1} onClick={() => setPage(page - 1)}>Previous</button><span>Page {page} of {totalPages}</span><button className="btn btn-sm btn-outline-secondary" disabled={page >= totalPages} onClick={() => setPage(page + 1)}>Next</button></div></section>;
+}
+
+function StaffDetail({ token, ticketId, staff, onBack, onError, onChanged }: { token: string; ticketId: number; staff: User[]; onBack: () => void; onError: (message: string) => void; onChanged: () => void }) {
+  const [ticket, setTicket] = useState<Ticket | null>(null); const [comment, setComment] = useState(""); const [note, setNote] = useState(""); const [status, setStatus] = useState(""); const [priority, setPriority] = useState("");
+  const load = () => api(`/api/staff/tickets/${ticketId}`, token).then((data) => { setTicket(data.ticket); setStatus(data.ticket.currentStatus); setPriority(data.ticket.itPriority); }).catch((reason) => onError(reason instanceof Error ? reason.message : "Unable to load ticket detail."));
+  useEffect(() => { void load(); }, [ticketId, token]);
+  if (!ticket) return <p role="status">Loading ticket detail…</p>;
+  const update = async (path: string, body: Record<string, unknown>) => { try { const data = await api(`/api/staff/tickets/${ticketId}/${path}`, token, { method: path === "claim" ? "POST" : "PATCH", body: JSON.stringify(body) }); setTicket(data.ticket); onChanged(); } catch (reason) { onError(reason instanceof Error ? reason.message : "Unable to update ticket."); } };
+  const add = async (kind: "comments" | "notes", content: string, clear: () => void) => { try { await api(`/api/staff/tickets/${ticketId}/${kind}`, token, { method: "POST", body: JSON.stringify({ content }) }); clear(); await load(); } catch (reason) { onError(reason instanceof Error ? reason.message : "Unable to add update."); } };
+  return <section className="card shadow-sm border-0"><div className="card-body p-4"><button className="btn btn-toktickit-outline mb-3" onClick={onBack}>Back to Queue</button><h1 className="h3">{ticket.ticketNumber}</h1><p className="text-secondary">{ticket.summary} · {ticket.requester?.name ?? "Requester"}</p><div className="row g-3 mb-4"><div className="col-md-4"><label className="form-label" htmlFor="staff-status">Workflow status</label><select id="staff-status" className="form-select" value={status} onChange={(event) => { setStatus(event.target.value); void update("status", { currentStatus: event.target.value }); }}><option value="NEW">NEW</option><option value="OPEN">OPEN</option><option value="IN_PROGRESS">IN_PROGRESS</option><option value="WAITING_FOR_REQUESTER">WAITING_FOR_REQUESTER</option><option value="RESOLVED">RESOLVED</option><option value="CLOSED">CLOSED</option><option value="REOPENED">REOPENED</option><option value="CANCELLED">CANCELLED</option></select></div><div className="col-md-4"><label className="form-label" htmlFor="staff-priority">IT priority</label><select id="staff-priority" className="form-select" value={priority} onChange={(event) => { setPriority(event.target.value); void update("priority", { itPriority: event.target.value }); }}><option value="LOW">LOW</option><option value="MEDIUM">MEDIUM</option><option value="HIGH">HIGH</option></select></div><div className="col-md-4"><label className="form-label" htmlFor="staff-owner">Owner</label><select id="staff-owner" className="form-select" value={ticket.owner?.id ?? ""} onChange={(event) => void update("owner", { ownerUserId: event.target.value ? Number(event.target.value) : null })}><option value="">Unassigned</option>{staff.map((person) => <option key={person.id} value={person.id}>{person.name}</option>)}</select></div><div className="col-md-4 d-flex align-items-end"><button className="btn btn-toktickit-primary w-100" onClick={() => void update("claim", {})}>Claim ticket</button></div></div><p>{ticket.description}</p><section className="mt-4"><h2 className="h5">Public comments</h2><ul className="list-group mb-3">{(ticket.publicComments ?? []).map((item) => <li className="list-group-item" key={item.id}>{item.author?.name ?? "User"}: {item.content}</li>)}</ul><form onSubmit={(event) => { event.preventDefault(); void add("comments", comment, () => setComment("")); }}><div className="input-group"><input className="form-control" required placeholder="Add public comment" value={comment} onChange={(event) => setComment(event.target.value)} /><button className="btn btn-toktickit-primary">Comment</button></div></form></section><section className="mt-4"><h2 className="h5">Internal notes</h2><ul className="list-group mb-3">{(ticket.internalNotes ?? []).map((item) => <li className="list-group-item" key={item.id}>{item.author?.name ?? "Staff"}: {item.content}</li>)}</ul><form onSubmit={(event) => { event.preventDefault(); void add("notes", note, () => setNote("")); }}><div className="input-group"><input className="form-control" required placeholder="Add internal note" value={note} onChange={(event) => setNote(event.target.value)} /><button className="btn btn-toktickit-outline">Add note</button></div></form></section></div></section>;
 }
 
 function Users({ token, onError }: { token: string; onError: (message: string) => void }) {
-  const [users, setUsers] = useState<User[]>([]);
-  useEffect(() => { api("/api/admin/users", token).then((data) => setUsers(Array.isArray(data) ? data : data.items)).catch((reason) => onError(reason.message)); }, [token, onError]);
-  return <section><h1 className="h3">User Management</h1><table className="table"><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th></tr></thead><tbody>{users.map((account) => <tr key={account.id}><td>{account.name}</td><td>{account.email}</td><td>{account.role}</td><td>{account.isActive ? "Active" : "Inactive"}</td></tr>)}</tbody></table></section>;
+  const [users, setUsers] = useState<User[]>([]); const [search, setSearch] = useState(""); const [name, setName] = useState(""); const [email, setEmail] = useState(""); const [role, setRole] = useState<Role>("REQUESTER"); const [initialPassword, setInitialPassword] = useState(""); const [isActive, setIsActive] = useState(true); const [message, setMessage] = useState("");
+  const load = () => api(`/api/admin/users?search=${encodeURIComponent(search)}`, token).then((data) => setUsers(data.items ?? [])).catch((reason) => onError(reason instanceof Error ? reason.message : "Unable to load users."));
+  useEffect(() => { void load(); }, [token, search]);
+  const create = async (event: FormEvent) => { event.preventDefault(); try { await api("/api/admin/users", token, { method: "POST", body: JSON.stringify({ name, email, role, initialPassword, isActive }) }); setName(""); setEmail(""); setInitialPassword(""); setMessage("User created with a required first-login password change."); await load(); } catch (reason) { onError(reason instanceof Error ? reason.message : "Unable to create user."); } };
+  const update = async (id: number, body: Record<string, unknown>) => { try { await api(`/api/admin/users/${id}`, token, { method: "PATCH", body: JSON.stringify(body) }); await load(); } catch (reason) { onError(reason instanceof Error ? reason.message : "Unable to update user."); } };
+  const resetPassword = async (id: number) => { const password = window.prompt("New initial password"); if (!password) return; try { await api(`/api/admin/users/${id}/initial-password`, token, { method: "POST", body: JSON.stringify({ initialPassword: password }) }); setMessage("Initial password reset; the user must change it at first login."); } catch (reason) { onError(reason instanceof Error ? reason.message : "Unable to reset password."); } };
+  return <section><h1 className="h3">User Management</h1><input className="form-control mb-3" aria-label="Search users" placeholder="Search name or email" value={search} onChange={(event) => setSearch(event.target.value)} /><table className="table align-middle d-none d-md-table"><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Actions</th></tr></thead><tbody>{users.map((user) => <tr key={user.id}><td>{user.name}</td><td>{user.email}</td><td><select className="form-select form-select-sm" value={user.role} onChange={(event) => void update(user.id, { role: event.target.value })}><option value="REQUESTER">REQUESTER</option><option value="IT_STAFF">IT_STAFF</option><option value="ADMINISTRATOR">ADMINISTRATOR</option></select></td><td>{user.isActive ? "Active" : "Inactive"}</td><td>{user.isActive ? <button className="btn btn-sm btn-outline-danger me-1" onClick={() => void update(user.id, { isActive: false })}>Deactivate</button> : <button className="btn btn-sm btn-outline-success me-1" onClick={() => void update(user.id, { isActive: true })}>Reactivate</button>}<button className="btn btn-sm btn-outline-secondary" onClick={() => void resetPassword(user.id)}>Reset password</button></td></tr>)}</tbody></table><form className="card mt-4" onSubmit={create}><div className="card-body"><h2 className="h5">Create user</h2><div className="row g-2"><div className="col-md-3"><input className="form-control" required minLength={2} placeholder="Name" value={name} onChange={(event) => setName(event.target.value)} /></div><div className="col-md-3"><input className="form-control" required type="email" placeholder="Email" value={email} onChange={(event) => setEmail(event.target.value)} /></div><div className="col-md-2"><select className="form-select" value={role} onChange={(event) => setRole(event.target.value as Role)}><option value="REQUESTER">Requester</option><option value="IT_STAFF">IT Staff</option><option value="ADMINISTRATOR">Administrator</option></select></div><div className="col-md-3"><input className="form-control" required minLength={12} placeholder="Initial password" value={initialPassword} onChange={(event) => setInitialPassword(event.target.value)} /></div><div className="col-md-1"><button className="btn btn-toktickit-primary">Add</button></div></div>{message && <div className="text-success mt-2">{message}</div>}</div></form></section>;
 }

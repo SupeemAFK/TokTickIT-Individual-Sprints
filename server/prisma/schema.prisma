@@ -50,10 +50,22 @@ model User {
  updatedAt DateTime @updatedAt
  legacyRequester DevelopmentRequester? @relation(fields: [legacyRequesterId], references: [id], onDelete: Restrict)
  ownedTickets Ticket[] @relation("TicketOwner")
+ sessions Session[]
  comments PublicComment[]
  notes InternalNote[]
  @@index([role, isActive])
  @@index([name])
+}
+model Session {
+ id Int @id @default(autoincrement())
+ tokenHash String @unique
+ userId Int
+ expiresAt DateTime
+ revokedAt DateTime?
+ createdAt DateTime @default(now())
+ user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+ @@index([userId, expiresAt])
+ @@index([expiresAt, revokedAt])
 }
 model Category {
  id Int @id @default(autoincrement())

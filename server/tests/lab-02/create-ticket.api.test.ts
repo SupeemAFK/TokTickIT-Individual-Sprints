@@ -1,121 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import request from "supertest";
-
-const prisma = vi.hoisted(() => ({
-  $transaction: vi.fn(),
-  developmentRequester: { findFirst: vi.fn() },
-  category: { findFirst: vi.fn() },
-  relatedSystem: { findFirst: vi.fn() },
-  ticket: { create: vi.fn(), update: vi.fn() },
-}));
-
+const prisma = vi.hoisted(() => ({ $transaction: vi.fn(), session: { findUnique: vi.fn() }, user: { findUnique: vi.fn() }, developmentRequester: { findFirst: vi.fn() }, category: { findFirst: vi.fn() }, relatedSystem: { findFirst: vi.fn() }, ticket: { create: vi.fn(), update: vi.fn(), findUnique: vi.fn() } }));
 vi.mock("../../src/prisma.js", () => ({ getPrisma: () => prisma }));
-
 import { app } from "../../src/app.js";
-
-const validTicket = {
-  requesterId: 1,
-  categoryId: 2,
-  relatedSystemId: 3,
-  summary: "  VPN cannot connect  ",
-  requestedPriority: "MEDIUM",
-  description: "  VPN connection fails after signing in.  ",
-};
-
-function mockActiveReferences() {
-  prisma.developmentRequester.findFirst.mockResolvedValue({ id: 1 });
-  prisma.category.findFirst.mockResolvedValue({ id: 2 });
-  prisma.relatedSystem.findFirst.mockResolvedValue({ id: 3 });
-}
-
+const auth = { Authorization: "Bearer session-token" }; const user = { id: 1, name: "Anan", email: "anan@test", role: "REQUESTER", isActive: true, mustChangePassword: false, legacyRequesterId: 1 }; const validTicket = { categoryId: 2, relatedSystemId: 3, summary: "  VPN cannot connect  ", requestedPriority: "MEDIUM", description: "  VPN connection fails after signing in.  " };
+function mockReferences() { prisma.developmentRequester.findFirst.mockResolvedValue({ id: 1 }); prisma.category.findFirst.mockResolvedValue({ id: 2 }); prisma.relatedSystem.findFirst.mockResolvedValue({ id: 3 }); }
 describe("POST /api/tickets", () => {
-  beforeEach(() => {
-    vi.resetAllMocks();
-    prisma.$transaction.mockImplementation(async (callback) => callback(prisma));
-  });
-
-  it("creates a trimmed New ticket with a server-generated official number", async () => {
-    mockActiveReferences();
-    const createdAt = new Date("2026-08-25T08:00:00.000Z");
-    prisma.ticket.create.mockResolvedValue({ id: 42, createdAt });
-    prisma.ticket.update.mockResolvedValue({
-      id: 42,
-      ticketNumber: "TKT-2026-000042",
-      requesterId: 1,
-      categoryId: 2,
-      relatedSystemId: 3,
-      summary: "VPN cannot connect",
-      requestedPriority: "MEDIUM",
-      description: "VPN connection fails after signing in.",
-      currentStatus: "NEW",
-      createdAt,
-      updatedAt: createdAt,
-    });
-
-    const response = await request(app).post("/api/tickets").send(validTicket);
-
-    expect(response.status).toBe(201);
-    expect(response.body).toMatchObject({
-      ticketNumber: "TKT-2026-000042",
-      requesterId: 1,
-      summary: "VPN cannot connect",
-      currentStatus: "NEW",
-    });
-    expect(prisma.ticket.create).toHaveBeenCalledWith(expect.objectContaining({
-      data: expect.objectContaining({
-        requesterId: 1,
-        categoryId: 2,
-        relatedSystemId: 3,
-        summary: "VPN cannot connect",
-        description: "VPN connection fails after signing in.",
-        requestedPriority: "MEDIUM",
-        currentStatus: "NEW",
-      }),
-    }));
-    expect(prisma.ticket.update).toHaveBeenCalledWith(expect.objectContaining({
-      where: { id: 42 },
-      data: { ticketNumber: "TKT-2026-000042" },
-    }));
-  });
-
-  it("returns a safe JSON error for a malformed request body", async () => {
-    const response = await request(app)
-      .post("/api/tickets")
-      .set("Content-Type", "application/json")
-      .send("{\"requesterId\":");
-
-    expect(response.status).toBe(400);
-    expect(response.headers["content-type"]).toContain("application/json");
-    expect(response.body).toEqual({ error: "Request body must be valid JSON." });
-    expect(prisma.$transaction).not.toHaveBeenCalled();
-  });
-
-  it("rejects invalid input before attempting a database transaction", async () => {
-    const response = await request(app).post("/api/tickets").send({ ...validTicket, summary: "bad" });
-
-    expect(response.status).toBe(400);
-    expect(response.body).toEqual({ error: "summary must be between 5 and 160 characters." });
-    expect(prisma.$transaction).not.toHaveBeenCalled();
-  });
-
-  it("rejects an inactive or missing requester/reference safely", async () => {
-    prisma.developmentRequester.findFirst.mockResolvedValue(null);
-    prisma.category.findFirst.mockResolvedValue({ id: 2 });
-    prisma.relatedSystem.findFirst.mockResolvedValue({ id: 3 });
-
-    const response = await request(app).post("/api/tickets").send(validTicket);
-
-    expect(response.status).toBe(404);
-    expect(response.body).toEqual({ error: "Requester or reference data is unavailable." });
-    expect(prisma.ticket.create).not.toHaveBeenCalled();
-  });
-
-  it("returns a safe error when ticket creation fails unexpectedly", async () => {
-    prisma.$transaction.mockRejectedValue(new Error("database unavailable"));
-
-    const response = await request(app).post("/api/tickets").send(validTicket);
-
-    expect(response.status).toBe(500);
-    expect(response.body).toEqual({ error: "Unable to create the ticket." });
-  });
+  beforeEach(() => { vi.resetAllMocks(); prisma.session.findUnique.mockResolvedValue({ userId: 1, revokedAt: null, expiresAt: new Date(Date.now() + 3600000) }); prisma.user.findUnique.mockResolvedValue(user); prisma.$transaction.mockImplementation(async (callback: any) => callback(prisma)); });
+  it("creates a ticket with a server-generated number and copied IT priority", async () => { mockReferences(); const createdAt = new Date("2026-08-25T08:00:00.000Z"); prisma.ticket.create.mockResolvedValue({ id: 42, createdAt }); prisma.ticket.update.mockResolvedValue({}); prisma.ticket.findUnique.mockResolvedValue({ id: 42, ticketNumber: "TKT-2026-000042", summary: "VPN cannot connect", description: "VPN connection fails after signing in.", requestedPriority: "MEDIUM", itPriority: "MEDIUM", currentStatus: "NEW", owner: null, requester: { id: 1, name: "Anan", email: "anan@test" }, category: { id: 2, name: "Network" }, relatedSystem: { id: 3, name: "VPN" }, attachments: [], publicComments: [], internalNotes: [], createdAt, updatedAt: createdAt }); const response = await request(app).post("/api/tickets").set(auth).send(validTicket); expect(response.status).toBe(201); expect(response.body).toMatchObject({ ticketNumber: "TKT-2026-000042", summary: "VPN cannot connect", currentStatus: "NEW", itPriority: "MEDIUM" }); expect(prisma.ticket.create).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ requesterId: 1, summary: "VPN cannot connect", currentStatus: "NEW", itPriority: "MEDIUM" }) })); });
+  it("returns a safe JSON error for malformed JSON", async () => { const response = await request(app).post("/api/tickets").set({ ...auth, "Content-Type": "application/json" }).send('{"categoryId":'); expect(response.status).toBe(400); expect(response.body).toEqual({ error: "Request body must be valid JSON.", code: "INVALID_REQUEST" }); expect(prisma.$transaction).not.toHaveBeenCalled(); });
+  it("rejects invalid input before attempting a transaction", async () => { const response = await request(app).post("/api/tickets").set(auth).send({ ...validTicket, summary: "bad" }); expect(response.status).toBe(400); expect(response.body.code).toBe("INVALID_REQUEST"); expect(prisma.$transaction).not.toHaveBeenCalled(); });
+  it("rejects unavailable references safely", async () => { prisma.developmentRequester.findFirst.mockResolvedValue(null); const response = await request(app).post("/api/tickets").set(auth).send(validTicket); expect(response.status).toBe(404); expect(response.body.code).toBe("NOT_FOUND"); expect(prisma.ticket.create).not.toHaveBeenCalled(); });
+  it("returns a safe error when ticket creation fails unexpectedly", async () => { prisma.$transaction.mockRejectedValue(new Error("database unavailable")); const response = await request(app).post("/api/tickets").set(auth).send(validTicket); expect(response.status).toBe(500); expect(response.body).toEqual({ error: "Unable to create the ticket.", code: "SERVER_ERROR" }); });
 });

@@ -7,12 +7,16 @@ const mocks = vi.hoisted(() => ({
   userUpdate: vi.fn(),
   ticketFindMany: vi.fn(),
   ticketCount: vi.fn(),
+  sessionCreate: vi.fn(),
+  sessionFindUnique: vi.fn(),
+  sessionUpdateMany: vi.fn(),
 }));
 
 vi.mock("../../src/prisma.js", () => ({
   getPrisma: () => ({
     user: { findUnique: mocks.userFindUnique, update: mocks.userUpdate },
     ticket: { findMany: mocks.ticketFindMany, count: mocks.ticketCount },
+    session: { create: mocks.sessionCreate, findUnique: mocks.sessionFindUnique, updateMany: mocks.sessionUpdateMany },
   }),
 }));
 
@@ -35,6 +39,11 @@ describe("Lab 3 authentication API", () => {
     mocks.userUpdate.mockReset();
     mocks.ticketFindMany.mockReset();
     mocks.ticketCount.mockReset();
+    mocks.sessionCreate.mockReset();
+    mocks.sessionFindUnique.mockReset();
+    mocks.sessionUpdateMany.mockReset();
+    mocks.sessionFindUnique.mockResolvedValue({ userId: 8, revokedAt: null, expiresAt: new Date(Date.now() + 3600000) });
+    mocks.sessionCreate.mockResolvedValue({});
   });
 
   it("returns a safe user and top-level password-change/session fields", async () => {
@@ -78,6 +87,7 @@ describe("Lab 3 authentication API", () => {
     mocks.userFindUnique.mockResolvedValue(user);
     const login = await request(app).post("/api/auth/login").send({ email: "ada@example.test", password: "Lab3Pass123" });
     const token = login.body.session.token;
+    mocks.sessionFindUnique.mockResolvedValueOnce({ userId: 8, revokedAt: null, expiresAt: new Date(Date.now() + 3600000) }).mockResolvedValueOnce(null);
 
     const logout = await request(app).post("/api/auth/logout").set("Authorization", `Bearer ${token}`);
     const afterLogout = await request(app).get("/api/auth/me").set("Authorization", `Bearer ${token}`);
