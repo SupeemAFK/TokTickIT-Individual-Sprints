@@ -7,7 +7,7 @@ import cors from "cors";
 import multer from "multer";
 import { getPrisma } from "./prisma.js";
 import { formatTicketNumber } from "./ticket-number.js";
-import { registerLab3 } from "./lab3.js";
+import { authenticatedRequesterId, registerLab3 } from "./lab3.js";
 
 const SUMMARY_MIN_LENGTH = 5;
 const SUMMARY_MAX_LENGTH = 160;
@@ -61,6 +61,15 @@ app.use((error: unknown, _req: Request, res: Response, next: NextFunction) => {
 });
 
 registerLab3(app);
+
+const authenticatedLegacyRequester = async (req: Request, res: Response, next: NextFunction) => {
+  const requesterId = await authenticatedRequesterId(req);
+  if (!requesterId) { res.status(401).json({ error: "Authentication is required." }); return; }
+  (req as any).authenticatedRequesterId = requesterId;
+  next();
+};
+app.use("/api/tickets", authenticatedLegacyRequester);
+app.use("/api/attachments", authenticatedLegacyRequester);
 
 app.get("/api/health", (_req: Request, res: Response) => {
   res.status(200).json({ status: "ok", service: "TokTickIT API" });
@@ -134,7 +143,7 @@ const PAGE_SIZES = new Set([10, 20, 50]);
 
 app.get("/api/tickets", async (req: Request, res: Response) => {
   try {
-    const requesterId = parseQueryInteger(req.query.requesterId, "requesterId");
+    const requesterId = parseQueryInteger(req.query.requesterId ?? (req as any).authenticatedRequesterId, "requesterId");
     if (!requesterId) throw new TicketRequestError(400, "requesterId is required.");
     const categoryId = parseQueryInteger(req.query.categoryId, "categoryId");
     const relatedSystemId = parseQueryInteger(req.query.relatedSystemId, "relatedSystemId");
@@ -187,7 +196,7 @@ app.get("/api/tickets", async (req: Request, res: Response) => {
 
 app.get("/api/tickets/:ticketId", async (req: Request, res: Response) => {
   try {
-    const requesterId = parseQueryInteger(req.query.requesterId, "requesterId");
+    const requesterId = parseQueryInteger(req.query.requesterId ?? (req as any).authenticatedRequesterId, "requesterId");
     if (!requesterId) throw new TicketRequestError(400, "requesterId is required.");
     const ticketId = parseQueryInteger(req.params.ticketId, "ticketId");
     if (!ticketId) throw new TicketRequestError(400, "ticketId is required.");
@@ -216,7 +225,7 @@ app.get("/api/tickets/:ticketId", async (req: Request, res: Response) => {
 
 app.get("/api/tickets/:ticketId/attachments", async (req: Request, res: Response) => {
   try {
-    const requesterId = parseQueryInteger(req.query.requesterId, "requesterId"); const ticketId = parseQueryInteger(req.params.ticketId, "ticketId");
+    const requesterId = parseQueryInteger(req.query.requesterId ?? (req as any).authenticatedRequesterId, "requesterId"); const ticketId = parseQueryInteger(req.params.ticketId, "ticketId");
     if (!requesterId || !ticketId) throw new TicketRequestError(400, "requesterId and ticketId are required.");
     const ticket = await getPrisma().ticket.findFirst({ where: { id: ticketId, requesterId, requester: { isActive: true } }, select: { id: true } });
     if (!ticket) throw new TicketRequestError(404, "Ticket not found.");
@@ -227,7 +236,7 @@ app.get("/api/tickets/:ticketId/attachments", async (req: Request, res: Response
 
 app.post("/api/tickets/:ticketId/attachments", upload.single("file"), async (req: Request, res: Response) => {
   try {
-    const requesterId = parseQueryInteger(req.body?.requesterId, "requesterId"); const ticketId = parseQueryInteger(req.params.ticketId, "ticketId");
+    const requesterId = parseQueryInteger(req.body?.requesterId ?? (req as any).authenticatedRequesterId, "requesterId"); const ticketId = parseQueryInteger(req.params.ticketId, "ticketId");
     if (!requesterId || !ticketId || !req.file) throw new TicketRequestError(400, "requesterId and file are required.");
     if (!ALLOWED_ATTACHMENT_TYPES.has(req.file.mimetype)) throw new TicketRequestError(415, "Only JPG, PNG, WEBP, and PDF files are allowed.");
     const ticket = await getPrisma().ticket.findFirst({ where: { id: ticketId, requesterId, requester: { isActive: true } }, select: { id: true } });
@@ -241,17 +250,17 @@ app.post("/api/tickets/:ticketId/attachments", upload.single("file"), async (req
 });
 
 app.get("/api/attachments/:attachmentId/download", async (req: Request, res: Response) => {
-  try { const requesterId = parseQueryInteger(req.query.requesterId, "requesterId"); const attachmentId = parseQueryInteger(req.params.attachmentId, "attachmentId"); if (!requesterId || !attachmentId) throw new TicketRequestError(400, "requesterId and attachmentId are required."); const attachment = await getPrisma().attachment.findFirst({ where: { id: attachmentId, ticket: { requesterId, requester: { isActive: true } } }, select: { storageKey: true, originalFilename: true, mimeType: true, removedAt: true } }); if (!attachment) throw new TicketRequestError(404, "Attachment not found."); if (attachment.removedAt) throw new TicketRequestError(410, "Attachment is no longer available."); const file = await readFile(join(ATTACHMENT_DIRECTORY, attachment.storageKey)); res.type(attachment.mimeType).attachment(attachment.originalFilename).send(file); } catch (error) { if (error instanceof TicketRequestError) return void res.status(error.status).json({ error: error.message }); res.status(500).json({ error: "Unable to download attachment." }); }
+  try { const requesterId = parseQueryInteger(req.query.requesterId ?? (req as any).authenticatedRequesterId, "requesterId"); const attachmentId = parseQueryInteger(req.params.attachmentId, "attachmentId"); if (!requesterId || !attachmentId) throw new TicketRequestError(400, "requesterId and attachmentId are required."); const attachment = await getPrisma().attachment.findFirst({ where: { id: attachmentId, ticket: { requesterId, requester: { isActive: true } } }, select: { storageKey: true, originalFilename: true, mimeType: true, removedAt: true } }); if (!attachment) throw new TicketRequestError(404, "Attachment not found."); if (attachment.removedAt) throw new TicketRequestError(410, "Attachment is no longer available."); const file = await readFile(join(ATTACHMENT_DIRECTORY, attachment.storageKey)); res.type(attachment.mimeType).attachment(attachment.originalFilename).send(file); } catch (error) { if (error instanceof TicketRequestError) return void res.status(error.status).json({ error: error.message }); res.status(500).json({ error: "Unable to download attachment." }); }
 });
 
 app.delete("/api/attachments/:attachmentId", async (req: Request, res: Response) => {
-  try { const requesterId = parseQueryInteger(req.query.requesterId, "requesterId"); const attachmentId = parseQueryInteger(req.params.attachmentId, "attachmentId"); const reason = parseText(req.body?.removalReason, "removalReason", 5, 500); if (!requesterId || !attachmentId) throw new TicketRequestError(400, "requesterId and attachmentId are required."); const attachment = await getPrisma().attachment.findFirst({ where: { id: attachmentId, ticket: { requesterId, requester: { isActive: true } } }, select: { id: true, removedAt: true } }); if (!attachment) throw new TicketRequestError(404, "Attachment not found."); if (attachment.removedAt) throw new TicketRequestError(409, "Attachment has already been removed."); const removed = await getPrisma().attachment.update({ where: { id: attachmentId }, data: { removedAt: new Date(), removalReason: reason, removedByRequesterId: requesterId }, select: { id: true, originalFilename: true, mimeType: true, byteSize: true, createdAt: true, removedAt: true, removalReason: true } }); res.status(200).json(removed); } catch (error) { if (error instanceof TicketRequestError) return void res.status(error.status).json({ error: error.message }); res.status(500).json({ error: "Unable to remove attachment." }); }
+  try { const requesterId = parseQueryInteger(req.query.requesterId ?? (req as any).authenticatedRequesterId, "requesterId"); const attachmentId = parseQueryInteger(req.params.attachmentId, "attachmentId"); const reason = parseText(req.body?.removalReason, "removalReason", 5, 500); if (!requesterId || !attachmentId) throw new TicketRequestError(400, "requesterId and attachmentId are required."); const attachment = await getPrisma().attachment.findFirst({ where: { id: attachmentId, ticket: { requesterId, requester: { isActive: true } } }, select: { id: true, removedAt: true } }); if (!attachment) throw new TicketRequestError(404, "Attachment not found."); if (attachment.removedAt) throw new TicketRequestError(409, "Attachment has already been removed."); const removed = await getPrisma().attachment.update({ where: { id: attachmentId }, data: { removedAt: new Date(), removalReason: reason, removedByRequesterId: requesterId }, select: { id: true, originalFilename: true, mimeType: true, byteSize: true, createdAt: true, removedAt: true, removalReason: true } }); res.status(200).json(removed); } catch (error) { if (error instanceof TicketRequestError) return void res.status(error.status).json({ error: error.message }); res.status(500).json({ error: "Unable to remove attachment." }); }
 });
 
 
 app.post("/api/tickets", async (req: Request, res: Response) => {
   try {
-    const requesterId = parsePositiveInteger(req.body?.requesterId, "requesterId");
+    const requesterId = parsePositiveInteger(req.body?.requesterId ?? (req as any).authenticatedRequesterId, "requesterId");
     const categoryId = parsePositiveInteger(req.body?.categoryId, "categoryId");
     const relatedSystemId = parsePositiveInteger(req.body?.relatedSystemId, "relatedSystemId");
     const summary = parseText(req.body?.summary, "summary", SUMMARY_MIN_LENGTH, SUMMARY_MAX_LENGTH);
