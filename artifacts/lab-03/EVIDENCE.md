@@ -1,12 +1,12 @@
 # TokTickIT Lab 3 — Verification and Evidence
 
-This evidence was captured from the `lab3-staging` branch after release-fix commit `e0a294f` (`fix: address remaining Lab 3 review blockers`). The release-evidence commit adds this record, the screenshots, AI-use disclosure, and `TokTickIT-Lab-3-Submission-Report.pdf`. Browser screenshots are deterministic Playwright API-fixture captures; the API and authorization claims are backed by the server Supertest suite.
+This evidence was captured from the `lab3-staging` branch after release-fix commit `cadeb37` (`fix: satisfy remaining Lab 3 review requirements`). The release-evidence commit adds this record, the screenshots, AI-use disclosure, and `TokTickIT-Lab-3-Submission-Report.pdf`. Browser screenshots are deterministic Playwright API-fixture captures; the API and authorization claims are backed by the server Supertest suite.
 
 ## Verification results
 
 | Check | Result |
 | --- | --- |
-| `cd server && npm test` | 20 files, 61 tests passed |
+| `cd server && npm test` | 20 files, 62 tests passed |
 | `cd server && npm run build` | TypeScript build passed |
 | `cd client && npm test` | 12 files, 27 tests passed |
 | `cd client && npm run build` | TypeScript + Vite production build passed |
