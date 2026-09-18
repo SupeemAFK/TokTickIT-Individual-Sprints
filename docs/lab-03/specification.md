@@ -86,15 +86,17 @@ The migration is additive and must not discard Lab 2 `Ticket`, `Attachment`, `Ca
 
 | Model | Required concepts |
 |---|---|
-| `User` | id, name, unique email, password hash, role enum, active state, `mustChangePassword`, timestamps |
+| `User` | id, name, unique email, password hash, role enum, active state, `mustChangePassword`, nullable unique `legacyRequesterId` FK, timestamps |
 | `Session` | id, hashed bearer token, user, created/expiry timestamps, revoked timestamp |
-| `DevelopmentRequester` | Existing row plus a unique nullable `legacyRequesterId`/User link as appropriate; existing Ticket requester IDs remain unchanged |
+| `DevelopmentRequester` | Existing row remains the owner target for `Ticket.requesterId`; add inverse optional one-to-one `user User?` relation. Existing Ticket requester IDs remain unchanged. |
 | `Ticket` | Existing fields plus nullable owner User, `itPriority`, requester-resolution signal/timestamp, and workflow fields required by the API |
 | `PublicComment` | ticket, author User, trimmed content, backend timestamp |
 | `InternalNote` | ticket, author User, trimmed content, backend timestamp |
 | `Attachment` | Existing metadata and ownership rules preserved; staff/admin authorized reads/downloads added |
 
-The implementation must choose exact Prisma relation names and indexes in the migration PR, document them in the final contract update, and test them. Existing Development Requesters are backfilled exactly once when no linked User exists. Existing Ticket requester IDs are not rewritten. New Requester users create/link one legacy requester inside the same transaction as the User write.
+The exact relationship is `User.legacyRequesterId Int? @unique` as a nullable foreign key from `User` to `DevelopmentRequester.id`, with the inverse optional one-to-one `DevelopmentRequester.user User?`. It is logically required when `User.role=REQUESTER` and null for new IT Staff/Administrators. The relation uses `onDelete: Restrict`; users are not deleted and legacy requester rows are never cascaded away. Existing `Ticket.requesterId Int` continues to reference `DevelopmentRequester.id` with `onDelete: Restrict`, so ticket ownership cannot drift.
+
+Existing Development Requesters are backfilled exactly once by creating one linked User per unlinked row. Existing Ticket requester IDs are not rewritten. A new Requester account creates a new DevelopmentRequester and User in one transaction. Editing a linked Requester updates the existing User and DevelopmentRequester rows in one transaction. If a Requester role is removed, the link is retained to preserve history; the user loses requester access until the role is restored, and another User cannot claim that linked legacy row. All link conflicts fail atomically.
 
 The idempotent seed provides at least four active and one inactive Requester, three active and one inactive IT Staff, and one active Administrator, plus tickets distributed across Requesters, statuses, priorities, assigned/unassigned ownership, Public Comments, and Internal Notes.
 For local development only, every seeded account starts with the documented initial password `Lab3Pass123` and `mustChangePassword=true`. The implementation PR must add a `Lab 3 local seed accounts` section to `README.md` and the final evidence record; this value is never used as a production secret and is never returned by an API.
@@ -138,7 +140,7 @@ The authenticated shell shows the current user's name and role, role-appropriate
 
 ## 11. Branch and integration decisions
 
-The clean flow is `main` → `lab3-staging` → feature branches/PRs → `lab3-staging` → reviewed PR → `main`. The new restart uses `codex/lab3-staging` locally and feature branches created from it. Old Lab 3 branches are retained as historical references and are not merged into this restart.
+The clean flow is `main` → `lab3-staging` → feature branches/PRs → `lab3-staging` → reviewed PR → `main`. The new restart uses `lab3-staging` and feature branches created from it. Old Lab 3 branches are retained as historical references and are not merged into this restart.
 
 ## 12. Deferred Lab 4 work
 

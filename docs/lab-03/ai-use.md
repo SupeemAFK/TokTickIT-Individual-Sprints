@@ -2,7 +2,7 @@
 
 OpenAI Codex is being used as a specification and coding assistant. The student remains responsible for reviewing the Lab 3 handout, decisions, code, migrations, tests, review feedback, and evidence.
 
-This document will be updated with the actual prompts used during implementation. The entries below are the planned prompt categories, not fabricated historical evidence.
+At this contract-only stage, this document records planned prompt categories rather than claiming final implementation evidence. Before the Lab 3 release PR, it must be replaced or extended with 6–10 selected actual prompts and a completed reflection; no final AI-use completion claim is made by this PR.
 
 ## Planned prompt traceability
 
@@ -15,6 +15,6 @@ This document will be updated with the actual prompts used during implementation
 7. Implement and test Administrator safeguards, role/link synchronization, activation, and initial-password reset.
 8. Review responsive UI states, accessibility, test traceability, peer-review evidence, and final PDF completeness.
 
-## My reflection
+## Required pre-release follow-up
 
-To be completed after implementation and review. It must explain which specification decisions were accepted, which were changed after testing or peer review, and how the student verified AI-generated work against the handout and repository.
+Before final Lab 3 evidence, add the actual 6–10 selected prompts used during implementation, link each to the resulting decision or change, and complete the reflection. The reflection must explain which specification decisions were accepted, which changed after testing or peer review, and how the student verified AI-generated work against the handout and repository.

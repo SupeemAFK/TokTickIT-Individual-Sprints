@@ -1,18 +1,18 @@
 # Lab 3 Peer Review Record
 
-This record is intentionally empty until a real collaborator reviews the corresponding pull requests. Do not fabricate reviewer identity, comments, approvals, or test results.
+This record contains the real collaborator review history for PR #50. Approval remains pending until the collaborator approves the corrected head. Do not fabricate reviewer identity, comments, approvals, or test results.
 
 ## Contract PR
 
-| Reviewer | PR | Review comments | Response commit | Approval |
+| Reviewer | PR | Review comments | Response commits | Approval |
 |---|---|---|---|---|
-| Pending | Pending | Pending | Pending | Pending |
+| `jarbbie` | [#50](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/50) | [Initial changes requested](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/50#pullrequestreview-5252496573); [re-review changes requested](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/50#pullrequestreview-5252628014) | `ef68866`, `982c4a1`, current follow-up commit | Pending re-review |
 
 ## Feature PRs
 
 | Issue | Feature branch | PR | Reviewer | Review result | Response commit | Approval |
 |---|---|---|---|---|---|---|
-| #35 | `feature/lab3-contract` | [#50](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/50) | `jarbbie` | Addressed in `ef68866`; re-review requested | `ef68866` | Pending |
+| #35 | `feature/lab3-contract` | [#50](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/50) | `jarbbie` | Second review addressed; re-review requested | `ef68866`, `982c4a1`, current follow-up commit | Pending |
 | #36 | Pending | Pending | Pending | Pending | Pending | Pending |
 | #37 | Pending | Pending | Pending | Pending | Pending | Pending |
 | #38 | Pending | Pending | Pending | Pending | Pending | Pending |

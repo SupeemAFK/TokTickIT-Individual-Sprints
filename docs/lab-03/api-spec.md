@@ -12,10 +12,11 @@ The safe User shape is:
   "name": "Ada Requester",
   "email": "ada@example.test",
   "role": "REQUESTER",
-  "isActive": true,
-  "mustChangePassword": false
+  "isActive": true
 }
 ```
+
+Authentication responses always wrap that shape as `{ "user": SafeUser, "mustChangePassword": true|false }`; `mustChangePassword` is never nested inside `user`.
 
 Every API error has this exact shape; `code` is stable and contains no account, database, filesystem, or credential detail:
 
@@ -51,8 +52,8 @@ These remain public read-only reference endpoints and return active records only
 | Purpose | Method and path | Success |
 |---|---|---|
 | Login | `POST /api/auth/login` | `200 { user, session: { token, expiresAt } }` |
-| Current user | `GET /api/auth/me` | `200 { user, mustChangePassword }` |
-| Change initial password | `POST /api/auth/change-password` | `200 { user, mustChangePassword:false }` |
+| Current user | `GET /api/auth/me` | `200 { "user": SafeUser, "mustChangePassword": true|false }` |
+| Change initial password | `POST /api/auth/change-password` | `200 { "user": SafeUser, "mustChangePassword": false }` |
 | Logout | `POST /api/auth/logout` | `204` |
 
 Login accepts:
@@ -65,7 +66,8 @@ A successful login returns:
 
 ```json
 {
-  "user": {"id":8,"name":"Ada Requester","email":"ada@example.test","role":"REQUESTER","isActive":true,"mustChangePassword":true},
+  "user": {"id":8,"name":"Ada Requester","email":"ada@example.test","role":"REQUESTER","isActive":true},
+  "mustChangePassword": true,
   "session": {"token":"opaque-bearer-value","expiresAt":"2026-09-19T12:00:00.000Z"}
 }
 ```
@@ -96,7 +98,32 @@ A ticket summary is:
 }
 ```
 
-A ticket detail adds `description`, safe `requester` identity, `attachments`, and `publicComments`; it never includes `internalNotes` for a Requester.
+A Requester ticket detail has this exact shape:
+
+```json
+{
+  "ticket": {
+    "id":12,
+    "ticketNumber":"TKT-2026-000012",
+    "summary":"VPN cannot connect",
+    "description":"VPN connection fails after signing in.",
+    "requestedPriority":"MEDIUM",
+    "itPriority":"MEDIUM",
+    "currentStatus":"NEW",
+    "owner":null,
+    "requester":{"id":8,"name":"Ada Requester","email":"ada@example.test"},
+    "category":{"id":1,"name":"Network"},
+    "relatedSystem":{"id":2,"name":"VPN"},
+    "attachments":[],
+    "publicComments":[],
+    "problemAppearsResolvedAt":null,
+    "createdAt":"2026-09-19T08:00:00.000Z",
+    "updatedAt":"2026-09-19T08:00:00.000Z"
+  }
+}
+```
+
+It never includes `internalNotes` for a Requester. A staff detail uses the same ticket fields and additionally returns `internalNotes`.
 
 | Purpose | Method and path | Success |
 |---|---|---|
@@ -104,13 +131,13 @@ A ticket detail adds `description`, safe `requester` identity, `attachments`, an
 | My tickets | `GET /api/tickets` | `200 { "items":[TicketSummary], "pagination":{...} }` |
 | Own ticket detail | `GET /api/tickets/:ticketId` | `200` ticket detail |
 | Attachments metadata | `GET /api/tickets/:ticketId/attachments` | `200 { "items":[Attachment] }` |
-| Upload attachment | `POST /api/tickets/:ticketId/attachments` | `201` Attachment |
+| Upload attachment | `POST /api/tickets/:ticketId/attachments` | `201 { "attachment": Attachment }` |
 | Download attachment | `GET /api/attachments/:attachmentId/download` | `200` file stream |
 | Soft-remove attachment | `DELETE /api/attachments/:attachmentId` | `200` removed Attachment |
 | Public Comments | `GET/POST /api/tickets/:ticketId/comments` | `200 { "items":[Comment] }` / `201` Comment |
 | Problem Appears Resolved | `POST /api/tickets/:ticketId/resolution-signal` | `200` updated ticket detail |
 
-`POST /api/tickets` accepts `{ categoryId, relatedSystemId, summary, requestedPriority, description }` and retains the Lab 2 multipart attachment flow. `GET /api/tickets` supports `search`, `categoryId`, `relatedSystemId`, `requestedPriority`, `status`, `sort`, `direction`, `page`, and `pageSize`; defaults are `sort=createdAt`, `direction=desc`, `page=1`, and `pageSize=10`. Allowed page sizes are 10, 20, and 50.
+`POST /api/tickets` accepts JSON `{ categoryId, relatedSystemId, summary, requestedPriority, description }`. The UI may immediately call the separate multipart attachment endpoint after ticket creation; if that upload fails, the ticket remains saved and the UI shows a warning rather than claiming the attachment succeeded. `GET /api/tickets` supports `search`, `categoryId`, `relatedSystemId`, `requestedPriority`, `status`, `sort`, `direction`, `page`, and `pageSize`; defaults are `sort=createdAt`, `direction=desc`, `page=1`, and `pageSize=10`. Allowed page sizes are 10, 20, and 50.
 
 Requester Public Comments use `{ "content":"The issue still occurs." }` and return:
 
@@ -124,12 +151,14 @@ Attachments return metadata only:
 {"id":4,"originalFilename":"screenshot.png","mimeType":"image/png","byteSize":2048,"createdAt":"2026-09-19T08:03:00.000Z","removedAt":null,"removalReason":null}
 ```
 
+`POST /api/tickets/:ticketId/attachments` uses `multipart/form-data` with one `file` field and no requester ID. Allowed types are `image/jpeg`, `image/png`, `image/webp`, and `application/pdf`; the maximum is 5 MiB and five active attachments per ticket. Success is `201 { "attachment": Attachment }`. Missing file, malformed ticket ID, or invalid metadata is `400 INVALID_REQUEST`; non-owned/missing tickets are safe `404 NOT_FOUND`; unsupported media is `415 UNSUPPORTED_MEDIA_TYPE`; oversized files are `413 PAYLOAD_TOO_LARGE`; the active-file limit is `409 CONFLICT`; storage/database failure is generic `500 SERVER_ERROR`. A failed upload never invalidates an already-created ticket.
+
 ## IT Staff queue and ticket operations
 
 | Purpose | Method and path | Success |
 |---|---|---|
 | Queue | `GET /api/staff/tickets` | `200 { "items":[QueueItem], "pagination":{...}, "counts":{...} }` |
-| Staff detail | `GET /api/staff/tickets/:ticketId` | `200` operational detail with comments, notes, and authorized attachments |
+| Staff detail | `GET /api/staff/tickets/:ticketId` | `200 { "ticket": StaffTicketDetail }` with comments, notes, and authorized attachments |
 | Claim | `POST /api/staff/tickets/:ticketId/claim` | `200` updated owner; `409` if already claimed |
 | Assign/reassign | `PATCH /api/staff/tickets/:ticketId/owner` | `200` updated owner or unassigned |
 | IT Priority | `PATCH /api/staff/tickets/:ticketId/priority` | `200` updated ticket |
@@ -138,7 +167,7 @@ Attachments return metadata only:
 | Internal Notes | `GET/POST /api/staff/tickets/:ticketId/notes` | `200 { "items":[Note] }` / `201` Note |
 | Staff/admin attachment download | `GET /api/staff/attachments/:attachmentId/download` | `200` file stream |
 
-`QueueItem` is the TicketSummary shape plus `requester:{id,name}`, `owner:{id,name,role}|null`, and `lastUpdatedAt`. Queue query parameters are `search`, `status`, `ownerUserId`, `requestedPriority`, `itPriority`, `categoryId`, `requesterId`, `sort`, `direction`, `page`, and `pageSize`.
+`QueueItem` is the TicketSummary shape plus `requester:{id,name}`, and `owner:{id,name,role}|null`. It uses the single `updatedAt` field from TicketSummary; `updatedAt` is the server timestamp of the latest Ticket row/workflow mutation, while comments and notes retain their own `createdAt`. Queue query parameters are `search`, `status`, `ownerUserId`, `requestedPriority`, `itPriority`, `categoryId`, `requesterId`, `sort`, `direction`, `page`, and `pageSize`.
 
 `counts` describes the current filtered result set before pagination:
 
@@ -147,6 +176,32 @@ Attachments return metadata only:
 ```
 
 The exact status keys present may have zero values, but all required statuses are represented. `totalItems` is the filtered total; `unassigned`, `byStatus`, and `byItPriority` count that same filtered set. Pagination is `{ "page":1, "pageSize":10, "totalItems":42, "totalPages":5 }`.
+
+A StaffTicketDetail response has this exact shape:
+
+```json
+{
+  "ticket": {
+    "id":12,
+    "ticketNumber":"TKT-2026-000012",
+    "summary":"VPN cannot connect",
+    "description":"VPN connection fails after signing in.",
+    "requestedPriority":"MEDIUM",
+    "itPriority":"HIGH",
+    "currentStatus":"IN_PROGRESS",
+    "owner":{"id":4,"name":"IT Staff One","role":"IT_STAFF"},
+    "requester":{"id":8,"name":"Ada Requester","email":"ada@example.test"},
+    "category":{"id":1,"name":"Network"},
+    "relatedSystem":{"id":2,"name":"VPN"},
+    "attachments":[{"id":4,"originalFilename":"screenshot.png","mimeType":"image/png","byteSize":2048,"createdAt":"2026-09-19T08:03:00.000Z","removedAt":null,"removalReason":null}],
+    "publicComments":[{"id":31,"content":"The issue still occurs.","author":{"id":4,"name":"IT Staff One","role":"IT_STAFF"},"createdAt":"2026-09-19T08:05:00.000Z"}],
+    "internalNotes":[{"id":9,"content":"Checked VPN gateway logs.","author":{"id":4,"name":"IT Staff One","role":"IT_STAFF"},"createdAt":"2026-09-19T08:06:00.000Z"}],
+    "problemAppearsResolvedAt":null,
+    "createdAt":"2026-09-19T08:00:00.000Z",
+    "updatedAt":"2026-09-19T08:07:00.000Z"
+  }
+}
+```
 
 Comments and notes are append-only and use `{ "content":"..." }`. Both return `{ id, content, author:{id,name,role}, createdAt }`; Internal Notes are never returned to Requesters. Owner deactivation/demotion with any owned ticket, including `CLOSED`, returns `409 OWNER_INTEGRITY_CONFLICT` and makes no change.
 
