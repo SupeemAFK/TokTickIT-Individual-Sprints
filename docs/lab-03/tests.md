@@ -7,11 +7,13 @@ Tests are planned before implementation. A row remains Planned until the named t
 | UNIT-01 | Unit | BR-02, BR-03 | Password rules, scrypt hash/verify, session expiry/token handling | `server/tests/lab-03/auth.unit.test.ts` | Planned |
 | API-01 | API | AC-01–04 | Valid/invalid/inactive login, `/me`, first-login gate, password change, logout | `server/tests/lab-03/auth.api.test.ts`, `password-change.api.test.ts` | Planned |
 | API-02 | Security | AC-05–07 | Session ownership overrides requester hints; requester cannot read notes or other tickets | `server/tests/lab-03/authorization.api.test.ts`, `requester-security.api.test.ts` | Planned |
-| API-03 | Migration | AC-06, AC-13 | Existing requester backfill preserves ticket ownership and is idempotent | `server/tests/lab-03/migration.api.test.ts` | Planned |
+| API-03 | Migration/seed | AC-06, AC-13 | Existing requester backfill preserves ticket ownership; a fresh database creates assigned tickets, comments, notes, and remains idempotent on reseed | `server/tests/lab-03/migration.api.test.ts`, `server/tests/lab-03/seed.integration.test.ts` | Planned |
 | API-04 | API | AC-08 | Queue search/filter/sort/pagination, invalid queries, counts, role protection | `server/tests/lab-03/staff-queue.api.test.ts` | Planned |
 | API-05 | API | AC-09–10 | Claim race, assignment, IT Priority, transitions, comments, notes, attachments | `server/tests/lab-03/staff-ticket-detail.api.test.ts`, `comments-notes.api.test.ts` | Planned |
-| API-06 | API | AC-11–12 | Admin list/search/role filter/create/edit/activation/reset and safety rules | `server/tests/lab-03/users-admin.api.test.ts` | Planned |
+| API-06 | API/security | AC-11–12, AC-17 | Admin list/search/role filter/create/edit/activation/reset, final-admin safeguards, and owner integrity for active, inactive, and CLOSED-ticket owners | `server/tests/lab-03/users-admin.api.test.ts` | Planned |
 | API-07 | Regression | AC-06 | Authenticated requester ticket/detail/attachment behavior retains Lab 2 validation | Existing Lab 2 tests migrated/extended under `server/tests/lab-02/` | Planned |
+| API-08 | Contract | AC-01, AC-08, AC-11, AC-15 | Exact success/error JSON shapes, stable error codes, queue count semantics, defaults, and status codes | `server/tests/lab-03/api-contract.test.ts` | Planned |
+| API-09 | Seed/regression | AC-13, AC-15 | Fresh-database first seed creates owner/comment/note workflow data and a second seed changes no counts or hashes | `server/tests/lab-03/seed.integration.test.ts` | Planned |
 | UI-01 | UI/accessibility | AC-01–04 | Login, safe errors, busy state, password labels/rules/change/logout | `client/tests/lab-03/Login.test.tsx`, `ChangePassword.test.tsx` | Planned |
 | UI-02 | UI/security | AC-05–07 | Authenticated Requester navigation, detail, comments, resolution signal, no notes | `client/tests/lab-03/Requester.test.tsx` | Planned |
 | UI-03 | UI/responsive | AC-08 | Queue controls, states, status/priority/owner badges, desktop/tablet/mobile representation | `client/tests/lab-03/StaffTicketQueue.test.tsx` | Planned |
@@ -37,10 +39,11 @@ Tests are planned before implementation. A row remains Planned until the named t
 - AC-10: API-02, API-05, UI-02, UI-04, E2E-01, E2E-02
 - AC-11: API-06, UI-05, E2E-03
 - AC-12: API-06, UI-05, E2E-03
-- AC-13: API-03, API-07, seed/idempotence regression tests
+- AC-13: API-03, API-07, API-09, seed/idempotence regression tests
 - AC-14: STYLE-01, UI-03, UI-05, E2E-04
-- AC-15: all planned rows and final command set
+- AC-15: API-08, API-09, all planned rows, and final command set
 - AC-16: release evidence and PDF review checklist
+- AC-17: API-06, UI-05, and owner-integrity regression cases
 
 ## Required verification commands
 

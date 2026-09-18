@@ -36,7 +36,7 @@ The service desk now needs real local users instead of a testing selector. Reque
 - **FR-06 Requester regression:** Requesters can create, list, search, filter, sort, paginate, view, and manage permitted attachments for their own tickets.
 - **FR-07 Requester communication:** Requesters can read/create Public Comments on owned tickets and submit a Problem Appears Resolved signal, but cannot formally resolve or close tickets.
 - **FR-08 Staff queue:** IT Staff and permitted Administrators can search, filter, sort, paginate, and open tickets from a responsive queue.
-- **FR-09 Staff operations:** IT Staff can claim/reassign tickets, set IT Priority, perform permitted status changes, create/read Public Comments, and create/read Internal Notes.
+- **FR-09 Staff operations:** IT Staff and Administrators can claim/reassign tickets, set IT Priority, perform permitted status changes, create/read Public Comments, and create/read Internal Notes.
 - **FR-10 Note privacy:** Internal Notes are never returned to Requesters.
 - **FR-11 Administrator management:** Administrators can list/search users, optionally filter by role, create/edit one-role accounts, activate/deactivate accounts, and set an initial password.
 - **FR-12 Migration and seed:** Existing ownership survives migration; the seed is idempotent and supplies realistic accounts and workflow data.
@@ -47,14 +47,14 @@ The service desk now needs real local users instead of a testing selector. Reque
 |---|---:|---:|---:|
 | Login, logout, `/me`, password change | Yes | Yes | Yes |
 | Own tickets and permitted attachments | Yes | No by requester route | No by requester route |
-| Public Comments | Own tickets | Queue tickets | Queue tickets if explicitly permitted |
+| Public Comments | Own tickets | Queue tickets | Queue tickets |
 | Problem Appears Resolved | Own tickets | No | No |
 | Staff queue and ticket detail | No | Yes | Yes, for operational visibility |
 | Claim/assign, IT Priority, status | No | Yes | Yes |
 | Internal Notes | No | Yes | Yes |
 | User list/create/edit/activation/role/reset | No | No | Yes |
 
-The backend enforces this matrix. Hidden or disabled UI controls are only usability feedback and are not security controls.
+The backend enforces this matrix. Hidden or disabled UI controls are only usability feedback and are not security controls. For this Lab 3 contract, Administrators are explicitly permitted to perform the listed staff-ticket operations; this does not give IT Staff any Administrator user-management permissions.
 
 ## 6. Business rules
 
@@ -66,6 +66,7 @@ The backend enforces this matrix. Hidden or disabled UI controls are only usabil
 - **BR-06** Missing or non-owned protected tickets and attachments return safe 404 responses without disclosing another user's data.
 - **BR-07** New tickets start `NEW`, unassigned, and their `itPriority` copies `requestedPriority`.
 - **BR-08** A ticket has at most one active owner, and an owner must be an active IT Staff or Administrator.
+- **BR-08a** An Administrator cannot deactivate or demote an IT Staff/Administrator user who owns any ticket, including a `CLOSED` ticket. The API rejects the complete account update with `409 OWNER_INTEGRITY_CONFLICT`; no partial change is saved. Reassignment/clearing is a separate explicit staff operation.
 - **BR-09** Permitted transitions are `NEW→OPEN|IN_PROGRESS|CANCELLED`; `OPEN→IN_PROGRESS|WAITING_FOR_REQUESTER|RESOLVED|CANCELLED`; `IN_PROGRESS→WAITING_FOR_REQUESTER|RESOLVED|CANCELLED`; `WAITING_FOR_REQUESTER→IN_PROGRESS|RESOLVED|CANCELLED`; `RESOLVED→CLOSED|REOPENED`; `CLOSED→REOPENED`; `REOPENED→IN_PROGRESS|WAITING_FOR_REQUESTER|RESOLVED|CANCELLED`.
 - **BR-10** Only IT Staff and Administrators can change owner, IT Priority, or formal status.
 - **BR-11** Public Comments are visible to Requesters, IT Staff, and Administrators; Internal Notes are visible only to IT Staff and Administrators.
@@ -76,7 +77,7 @@ The backend enforces this matrix. Hidden or disabled UI controls are only usabil
 - **BR-16** Users are deactivated rather than deleted.
 - **BR-17** A Requester role always has one linked legacy `DevelopmentRequester`; edits update the existing link so ticket ownership is preserved.
 - **BR-18** Seed execution is idempotent, preserves existing password hashes, creates realistic varied ticket data, and does not store real secrets.
-- **BR-19** Invalid input returns 400, unauthenticated access 401, forbidden access 403, missing protected resources 404, conflicts 409, and unexpected failures a generic 500.
+- **BR-19** Invalid input returns 400, unauthenticated access 401, forbidden access 403, missing protected resources 404, conflicts 409, and unexpected failures a generic 500. A malformed/unknown transition value is `400`; a valid status that is not allowed from the current status is `409`.
 - **BR-20** Every protected API validates IDs, query parameters, role, ownership, and state transitions on the server.
 
 ## 7. Data and migration decisions
@@ -96,6 +97,7 @@ The migration is additive and must not discard Lab 2 `Ticket`, `Attachment`, `Ca
 The implementation must choose exact Prisma relation names and indexes in the migration PR, document them in the final contract update, and test them. Existing Development Requesters are backfilled exactly once when no linked User exists. Existing Ticket requester IDs are not rewritten. New Requester users create/link one legacy requester inside the same transaction as the User write.
 
 The idempotent seed provides at least four active and one inactive Requester, three active and one inactive IT Staff, and one active Administrator, plus tickets distributed across Requesters, statuses, priorities, assigned/unassigned ownership, Public Comments, and Internal Notes.
+For local development only, every seeded account starts with the documented initial password `Lab3Pass123` and `mustChangePassword=true`. The implementation PR must add a `Lab 3 local seed accounts` section to `README.md` and the final evidence record; this value is never used as a production secret and is never returned by an API.
 
 ## 8. UI summary
 
@@ -119,12 +121,14 @@ The authenticated shell shows the current user's name and role, role-appropriate
 - **AC-14** All major screens work at desktop, tablet, and mobile widths with no clipping or horizontal overflow.
 - **AC-15** Every criterion maps to planned tests, and the final API/UI/E2E/build suite passes from `main`.
 - **AC-16** Final evidence contains authentic review links, readable screenshots, and exactly Answer Part 1 through Answer Part 9 in one PDF.
+- **AC-17** An Administrator cannot deactivate or demote any user who owns a ticket, including a `CLOSED` ticket; the API returns `409 OWNER_INTEGRITY_CONFLICT` and leaves the account and owner unchanged.
 
 ## 10. Definition of Done
 
 - Contract files were committed before implementation PRs are merged.
 - All FR, BR, and AC items are implemented, tested, and traceable.
 - Migration/backfill preserves Lab 2 data and seed is idempotent.
+- Seed tests verify a fresh database creates assigned workflow tickets, Public Comments, and Internal Notes on the first run and remains unchanged on a second run.
 - Server and client tests, builds, authorization tests, responsive checks, and E2E tests pass with no skipped required coverage.
 - Role navigation, loading, validation, success, empty, no-result, forbidden, not-found, conflict, and safe-failure states are verified.
 - Each feature branch has a reviewed PR into `lab3-staging`.
