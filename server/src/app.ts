@@ -349,3 +349,6 @@ app.use((error: unknown, _req: Request, res: Response, next: NextFunction) => {
   }
   next(error);
 });
+app.use((_error: unknown, _req: Request, res: Response, _next: NextFunction) => {
+  if (!res.headersSent) res.status(500).json({ error: "Internal server error." });
+});

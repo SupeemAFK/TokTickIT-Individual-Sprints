@@ -26,3 +26,10 @@ describe("Lab 2 seed data", () => {
     expect(prisma.developmentRequester.upsert).toHaveBeenCalledWith(expect.objectContaining({ where: { email: "nicha.somchai@toktickit.test" } }));
   });
 });
+
+
+it("backfills an existing legacy requester into a linked initial-password User", async () => {
+  const prisma = { category: { upsert: vi.fn().mockResolvedValue({}), findFirst: vi.fn() }, relatedSystem: { upsert: vi.fn().mockResolvedValue({}), findFirst: vi.fn() }, developmentRequester: { upsert: vi.fn().mockResolvedValue({ id: 1 }), findUnique: vi.fn().mockResolvedValue({ id: 1 }), findMany: vi.fn().mockResolvedValue([{ id: 1, name: "Legacy User", email: "legacy@test", isActive: true }]) }, user: { upsert: vi.fn().mockResolvedValue({}), findUnique: vi.fn().mockResolvedValue(null), create: vi.fn().mockResolvedValue({}) } };
+  await seedDatabase(prisma);
+  expect(prisma.user.create).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ role: "REQUESTER", legacyRequesterId: 1, mustChangePassword: true }) }));
+});

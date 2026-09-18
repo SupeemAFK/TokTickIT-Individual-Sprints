@@ -28,3 +28,7 @@ MG-01 Migration adds users, workflow fields, comments, and notes without changin
 
 ## Definition of Done
 DOD-01 migration/seed preserve Lab 2 data; DOD-02 all server/client/API/E2E/responsive checks and production builds pass; DOD-03 role UI implements only this matrix; DOD-04 README, authentic peer review, final evidence, and Answer Part 1–9 PDF are complete; DOD-05 lab3-staging merges to main only after all prior items pass.
+
+## Migration backfill
+
+The Lab 3 seed is also the idempotent application backfill for existing Lab 2 `DevelopmentRequester` rows: it creates one linked `User` per legacy requester only when no linked user exists, preserves existing users and password hashes, and sets `mustChangePassword` for newly created accounts. This preserves existing Ticket requester IDs and is covered by the seed idempotence tests.
