@@ -13,7 +13,7 @@ This record contains the real collaborator review history for PR #50. Approval r
 | Issue | Feature branch | PR | Reviewer | Review result | Response commit | Approval |
 |---|---|---|---|---|---|---|
 | #35 | `feature/lab3-contract` | [#50](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/50) | `jarbbie` | Latest review addressed; re-review requested | `ef68866`, `982c4a1`, `09b3cdb`, `fd4d09a`, `4703c7b` | Pending |
-| #36 | Pending | Pending | Pending | Pending | Pending | Pending |
+| #36 | `feature/lab3-auth-foundation` | [#51](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/51) | `jarbbie` | Awaiting review | `e1ab670` | Pending |
 | #37 | Pending | Pending | Pending | Pending | Pending | Pending |
 | #38 | Pending | Pending | Pending | Pending | Pending | Pending |
 | #39 | Pending | Pending | Pending | Pending | Pending | Pending |
