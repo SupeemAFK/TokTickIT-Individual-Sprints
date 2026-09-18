@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import request from "supertest";
 import { adminUser, configureUserAuth, loginAs } from "../helpers/auth.js";
 
-const prisma = vi.hoisted(() => ({ user: { findUnique: vi.fn(), findMany: vi.fn(), findFirst: vi.fn(), create: vi.fn(), update: vi.fn(), count: vi.fn() }, developmentRequester: { upsert: vi.fn() } }));
+const prisma = vi.hoisted(() => ({ user: { findUnique: vi.fn(), findMany: vi.fn(), findFirst: vi.fn(), create: vi.fn(), update: vi.fn(), count: vi.fn() }, developmentRequester: { upsert: vi.fn(), update: vi.fn() } }));
 vi.mock("../../src/prisma.js", () => ({ getPrisma: () => prisma }));
 import { app } from "../../src/app.js";
 
@@ -42,6 +42,24 @@ describe("Lab 3 administrator user-management API", () => {
     prisma.user.create.mockRejectedValue({ code: "P2002" });
     const response = await request(app).post("/api/admin/users").set("Authorization", authHeader).send({ name: "Duplicate", email: "new@test", role: "IT_STAFF", initialPassword: "InitialPassword123" });
     expect(response.status).toBe(409); expect(response.body).toEqual({ error: "Email is already in use." });
+  });
+
+  it("preserves the linked requester record when a requester email changes", async () => {
+    prisma.user.findUnique.mockResolvedValueOnce(adminUser).mockResolvedValueOnce({ id: 5, name: "Old Name", email: "old@test", role: "REQUESTER", isActive: true, legacyRequesterId: 12 });
+    prisma.developmentRequester.update.mockResolvedValue({ id: 12, name: "New Name", email: "new@test", isActive: true });
+    prisma.user.update.mockResolvedValue({ id: 5, name: "New Name", email: "new@test", role: "REQUESTER", isActive: true, mustChangePassword: false, legacyRequesterId: 12 });
+    const response = await request(app).patch("/api/admin/users/5").set("Authorization", authHeader).send({ name: "New Name", email: "new@test" });
+    expect(response.status).toBe(200);
+    expect(prisma.developmentRequester.update).toHaveBeenCalledWith({ where: { id: 12 }, data: { name: "New Name", email: "new@test", isActive: true } });
+    expect(prisma.developmentRequester.upsert).not.toHaveBeenCalled();
+  });
+
+  it("rejects invalid role and boolean input safely", async () => {
+    const invalidRole = await request(app).get("/api/admin/users?role=NOPE").set("Authorization", authHeader);
+    expect(invalidRole.status).toBe(400);
+    prisma.user.findUnique.mockResolvedValueOnce(adminUser).mockResolvedValueOnce({ id: 5, name: "User", email: "user@test", role: "IT_STAFF", isActive: true, legacyRequesterId: null });
+    const invalidBoolean = await request(app).patch("/api/admin/users/5").set("Authorization", authHeader).send({ isActive: "false" });
+    expect(invalidBoolean.status).toBe(400);
   });
 
 });

@@ -6,7 +6,7 @@ This evidence was captured from the `lab3-staging` branch after the requested-ch
 
 | Check | Result |
 | --- | --- |
-| `cd server && npm test` | 20 files, 64 tests passed |
+| `cd server && npm test` | 20 files, 67 tests passed |
 | `cd server && npm run build` | TypeScript build passed |
 | `cd client && npm test` | 12 files, 27 tests passed |
 | `cd client && npm run build` | TypeScript + Vite production build passed |
@@ -23,13 +23,14 @@ This evidence was captured from the `lab3-staging` branch after the requested-ch
 
 ## Browser captures
 
+- `screenshots/authentication/login-shell.png`
 - `screenshots/requester-detail.png`
 - `screenshots/requester-1440.png`
 - `screenshots/requester-768.png`
 - `screenshots/requester-375.png`
-- `screenshots/staff-queue.png`
-- `screenshots/staff-detail.png`
-- `screenshots/user-management.png`
+- `screenshots/staff-queue/queue.png`
+- `screenshots/staff-ticket-detail/detail.png`
+- `screenshots/user-management/users.png`
 
 These captures use the same authenticated browser fixtures as `client/e2e/lab-03/authenticated-requester.spec.ts`; they are not presented as live production records.
 

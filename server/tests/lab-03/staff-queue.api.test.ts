@@ -46,4 +46,12 @@ describe("Lab 3 staff workflow API", () => {
     expect((await request(app).post("/api/staff/tickets/42/comments").set("Authorization", authHeader).send({ content: "Public" })).status).toBe(201);
     expect((await request(app).post("/api/staff/tickets/42/notes").set("Authorization", authHeader).send({ content: "Internal" })).status).toBe(201);
   });
+  it("rejects malformed queue parameters and IDs", async () => {
+    expect((await request(app).get("/api/staff/tickets?page=zero").set("Authorization", authHeader)).status).toBe(400);
+    expect((await request(app).get("/api/staff/tickets?sort=unknown").set("Authorization", authHeader)).status).toBe(400);
+    expect((await request(app).get("/api/staff/tickets?direction=sideways").set("Authorization", authHeader)).status).toBe(400);
+    expect((await request(app).get("/api/staff/tickets?assigned=abc").set("Authorization", authHeader)).status).toBe(400);
+    expect((await request(app).get("/api/staff/tickets/not-an-id").set("Authorization", authHeader)).status).toBe(400);
+  });
+
 });
