@@ -6,13 +6,13 @@ This record contains the real collaborator review history for PR #50. Approval r
 
 | Reviewer | PR | Review comments | Response commits | Approval |
 |---|---|---|---|---|
-| `jarbbie` | [#50](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/50) | [Initial changes requested](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/50#pullrequestreview-5252496573); [re-review changes requested](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/50#pullrequestreview-5252628014); [latest changes requested](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/50#pullrequestreview-5252701091) | `ef68866`, `982c4a1`, `09b3cdb`, `fd4d09a` | Pending re-review |
+| `jarbbie` | [#50](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/50) | [Initial changes requested](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/50#pullrequestreview-5252496573); [re-review changes requested](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/50#pullrequestreview-5252628014); [latest changes requested](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/50#pullrequestreview-5252701091); [final changes requested](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/50#pullrequestreview-5252778195) | `ef68866`, `982c4a1`, `09b3cdb`, `fd4d09a`, `4703c7b` | Pending re-review |
 
 ## Feature PRs
 
 | Issue | Feature branch | PR | Reviewer | Review result | Response commit | Approval |
 |---|---|---|---|---|---|---|
-| #35 | `feature/lab3-contract` | [#50](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/50) | `jarbbie` | Third review addressed; re-review requested | `ef68866`, `982c4a1`, `09b3cdb`, `fd4d09a` | Pending |
+| #35 | `feature/lab3-contract` | [#50](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/50) | `jarbbie` | Latest review addressed; re-review requested | `ef68866`, `982c4a1`, `09b3cdb`, `fd4d09a`, `4703c7b` | Pending |
 | #36 | Pending | Pending | Pending | Pending | Pending | Pending |
 | #37 | Pending | Pending | Pending | Pending | Pending | Pending |
 | #38 | Pending | Pending | Pending | Pending | Pending | Pending |

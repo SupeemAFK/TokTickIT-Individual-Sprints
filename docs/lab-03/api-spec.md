@@ -30,7 +30,8 @@ Error codes are `INVALID_REQUEST`, `LOGIN_FAILED`, `UNAUTHENTICATED`, `FORBIDDEN
 - `401 UNAUTHENTICATED` or `LOGIN_FAILED`: missing/invalid/expired/revoked session or invalid/inactive login credentials.
 - `403 FORBIDDEN` or `PASSWORD_CHANGE_REQUIRED`: authenticated but role-forbidden, ownership-forbidden, or normal access blocked by first-login gate.
 - `404 NOT_FOUND`: missing or non-owned protected resource without existence disclosure.
-- `409 CONFLICT`: duplicate email, claim race, owner-integrity conflict, stale state, or a valid status transition that is not allowed from the current status.
+- `409 CONFLICT`: duplicate email, claim race, stale state, or a valid status transition that is not allowed from the current status.
+- `409 OWNER_INTEGRITY_CONFLICT`: an owner would become inactive or non-staff while retaining ticket ownership; the transaction makes no change.
 - `410 GONE`: removed/unavailable attachment.
 - `413 PAYLOAD_TOO_LARGE` / `415 UNSUPPORTED_MEDIA_TYPE`: attachment size/type violations.
 - `500 SERVER_ERROR`: generic unexpected failure.
