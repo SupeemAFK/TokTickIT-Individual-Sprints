@@ -51,7 +51,7 @@ These remain public read-only reference endpoints and return active records only
 
 | Purpose | Method and path | Success |
 |---|---|---|
-| Login | `POST /api/auth/login` | `200 { user, session: { token, expiresAt } }` |
+| Login | `POST /api/auth/login` | `200 { "user": SafeUser, "mustChangePassword": true|false, "session": { "token": "...", "expiresAt": "..." } }` |
 | Current user | `GET /api/auth/me` | `200 { "user": SafeUser, "mustChangePassword": true|false }` |
 | Change initial password | `POST /api/auth/change-password` | `200 { "user": SafeUser, "mustChangePassword": false }` |
 | Logout | `POST /api/auth/logout` | `204` |
@@ -128,7 +128,7 @@ It never includes `internalNotes` for a Requester. A staff detail uses the same 
 | Purpose | Method and path | Success |
 |---|---|---|
 | Create ticket | `POST /api/tickets` | `201` ticket detail with server ticket number, status `NEW`, and copied `itPriority` |
-| My tickets | `GET /api/tickets` | `200 { "items":[TicketSummary], "pagination":{...} }` |
+| My tickets | `GET /api/tickets` | `200 { "items":[TicketSummary], "pagination": Pagination }` |
 | Own ticket detail | `GET /api/tickets/:ticketId` | `200` ticket detail |
 | Attachments metadata | `GET /api/tickets/:ticketId/attachments` | `200 { "items":[Attachment] }` |
 | Upload attachment | `POST /api/tickets/:ticketId/attachments` | `201 { "attachment": Attachment }` |
@@ -138,6 +138,8 @@ It never includes `internalNotes` for a Requester. A staff detail uses the same 
 | Problem Appears Resolved | `POST /api/tickets/:ticketId/resolution-signal` | `200` updated ticket detail |
 
 `POST /api/tickets` accepts JSON `{ categoryId, relatedSystemId, summary, requestedPriority, description }`. The UI may immediately call the separate multipart attachment endpoint after ticket creation; if that upload fails, the ticket remains saved and the UI shows a warning rather than claiming the attachment succeeded. `GET /api/tickets` supports `search`, `categoryId`, `relatedSystemId`, `requestedPriority`, `status`, `sort`, `direction`, `page`, and `pageSize`; defaults are `sort=createdAt`, `direction=desc`, `page=1`, and `pageSize=10`. Allowed page sizes are 10, 20, and 50.
+
+`Pagination` is the canonical shape `{ "page":1, "pageSize":10, "totalItems":42, "totalPages":5 }`; every list endpoint uses these four fields.
 
 Requester Public Comments use `{ "content":"The issue still occurs." }` and return:
 
@@ -157,19 +159,19 @@ Attachments return metadata only:
 
 | Purpose | Method and path | Success |
 |---|---|---|
-| Queue | `GET /api/staff/tickets` | `200 { "items":[QueueItem], "pagination":{...}, "counts":{...} }` |
+| Queue | `GET /api/staff/tickets` | `200 { "items":[QueueItem], "pagination": Pagination, "counts": QueueCounts }` |
 | Staff detail | `GET /api/staff/tickets/:ticketId` | `200 { "ticket": StaffTicketDetail }` with comments, notes, and authorized attachments |
-| Claim | `POST /api/staff/tickets/:ticketId/claim` | `200` updated owner; `409` if already claimed |
-| Assign/reassign | `PATCH /api/staff/tickets/:ticketId/owner` | `200` updated owner or unassigned |
-| IT Priority | `PATCH /api/staff/tickets/:ticketId/priority` | `200` updated ticket |
-| Status | `PATCH /api/staff/tickets/:ticketId/status` | `200` updated ticket |
+| Claim | `POST /api/staff/tickets/:ticketId/claim` with `{}` | `200 { "ticket": TicketSummary }`; `409 CONFLICT` if already claimed |
+| Assign/reassign | `PATCH /api/staff/tickets/:ticketId/owner` with `{ "ownerUserId": 4 }` or `{ "ownerUserId": null }` | `200 { "ticket": TicketSummary }` |
+| IT Priority | `PATCH /api/staff/tickets/:ticketId/priority` with `{ "itPriority":"HIGH" }` | `200 { "ticket": TicketSummary }` |
+| Status | `PATCH /api/staff/tickets/:ticketId/status` with `{ "currentStatus":"IN_PROGRESS" }` | `200 { "ticket": TicketSummary }` |
 | Public Comments | `GET/POST /api/staff/tickets/:ticketId/comments` | `200 { "items":[Comment] }` / `201` Comment |
 | Internal Notes | `GET/POST /api/staff/tickets/:ticketId/notes` | `200 { "items":[Note] }` / `201` Note |
 | Staff/admin attachment download | `GET /api/staff/attachments/:attachmentId/download` | `200` file stream |
 
 `QueueItem` is the TicketSummary shape plus `requester:{id,name}`, and `owner:{id,name,role}|null`. It uses the single `updatedAt` field from TicketSummary; `updatedAt` is the server timestamp of the latest Ticket row/workflow mutation, while comments and notes retain their own `createdAt`. Queue query parameters are `search`, `status`, `ownerUserId`, `requestedPriority`, `itPriority`, `categoryId`, `requesterId`, `sort`, `direction`, `page`, and `pageSize`.
 
-`counts` describes the current filtered result set before pagination:
+`QueueCounts` describes the current filtered result set before pagination and has this exact shape:
 
 ```json
 {"totalItems":42,"unassigned":7,"byStatus":{"NEW":10,"OPEN":8,"IN_PROGRESS":12,"WAITING_FOR_REQUESTER":4,"RESOLVED":3,"CLOSED":2,"REOPENED":2,"CANCELLED":1},"byItPriority":{"LOW":8,"MEDIUM":21,"HIGH":13}}
@@ -216,4 +218,6 @@ The permitted transition matrix is the one in `docs/lab-03/specification.md`. An
 | Edit account | `PATCH /api/admin/users/:userId` | `200` SafeUser |
 | Set initial password | `POST /api/admin/users/:userId/initial-password` | `204`; `mustChangePassword=true` |
 
-Create accepts `{ name, email, role, isActive, initialPassword }`; edit accepts `{ name, email, role, isActive }`. Exactly one valid role is required. Duplicate email returns `409 CONFLICT`. Administrators cannot deactivate themselves, remove the final active Administrator, or delete users. A role/activation update that would leave a ticket owned by an inactive/non-staff account returns `409 OWNER_INTEGRITY_CONFLICT`, including for `CLOSED` tickets. User and linked Requester writes are transactional.
+Create accepts `{ name, email, role, isActive, initialPassword }`; edit accepts `{ name, email, role, isActive }`. Exactly one valid role is required. Duplicate email returns `409 CONFLICT`. Administrators cannot deactivate themselves, remove the final active Administrator, or delete users. A role/activation update that would leave a ticket owned by an inactive/non-staff account returns `409 OWNER_INTEGRITY_CONFLICT`, including for `CLOSED` tickets.
+
+When an Administrator changes an IT Staff or Administrator to `REQUESTER`, the transaction reuses that User's existing `legacyRequesterId` if present, synchronizes the linked DevelopmentRequester name/email/active state, or creates one new DevelopmentRequester and links it if no legacy link exists. When an existing Requester is restored to `REQUESTER`, its retained link is reused; no second legacy row is created. If a Requester is changed to another role, its link is retained for ticket history. The User role, legacy link, legacy requester fields, and any owner-integrity check succeed or fail atomically. User and linked Requester writes are transactional.
