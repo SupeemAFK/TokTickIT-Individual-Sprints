@@ -7,6 +7,7 @@ import cors from "cors";
 import multer from "multer";
 import { getPrisma } from "./prisma.js";
 import { formatTicketNumber } from "./ticket-number.js";
+import { registerLab3 } from "./lab3.js";
 
 const SUMMARY_MIN_LENGTH = 5;
 const SUMMARY_MAX_LENGTH = 160;
@@ -58,6 +59,8 @@ app.use((error: unknown, _req: Request, res: Response, next: NextFunction) => {
 
   next(error);
 });
+
+registerLab3(app);
 
 app.get("/api/health", (_req: Request, res: Response) => {
   res.status(200).json({ status: "ok", service: "TokTickIT API" });

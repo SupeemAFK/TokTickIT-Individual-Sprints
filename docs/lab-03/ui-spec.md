@@ -1,0 +1,2 @@
+# Lab 3 UI Specification
+Login and Change Password precede the authenticated shell. Requesters see My Tickets and Create Ticket only. IT Staff see Ticket Queue and Ticket Detail. Administrators see User Management. Desktop queues use tables; tablet/mobile use stacked cards. Status, requested priority, IT priority, and role use consistent badges. Public Comments and Internal Notes are visibly distinct. Every screen provides loading, validation, empty/no-result, forbidden, success, and safe failure feedback.
