@@ -62,11 +62,12 @@ app.use((error: unknown, _req: Request, res: Response, next: NextFunction) => {
 
 registerLab3(app);
 
-const authenticatedLegacyRequester = async (req: Request, res: Response, next: NextFunction) => {
-  const requesterId = await authenticatedRequesterId(req);
-  if (!requesterId) { res.status(401).json({ error: "Authentication is required." }); return; }
-  (req as any).authenticatedRequesterId = requesterId;
-  next();
+const authenticatedLegacyRequester = (req: Request, res: Response, next: NextFunction) => {
+  authenticatedRequesterId(req).then((requesterId) => {
+    if (!requesterId) { res.status(401).json({ error: "Authentication is required." }); return; }
+    (req as any).authenticatedRequesterId = requesterId;
+    next();
+  }).catch(() => res.status(500).json({ error: "Internal server error." }));
 };
 app.use("/api/tickets", authenticatedLegacyRequester);
 app.use("/api/attachments", authenticatedLegacyRequester);
@@ -78,6 +79,7 @@ app.get("/api/health", (_req: Request, res: Response) => {
 app.get("/api/categories", async (_req: Request, res: Response) => {
   try {
     const categories = await getPrisma().category.findMany({
+      where: { isActive: true },
       orderBy: { id: "asc" },
       select: { id: true, name: true },
     });

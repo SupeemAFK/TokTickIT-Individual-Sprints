@@ -32,6 +32,7 @@ describe("GET /api/categories", () => {
 
     expect(res.status).toBe(200);
     expect(prismaMock.findMany).toHaveBeenCalledWith({
+      where: { isActive: true },
       orderBy: { id: "asc" },
       select: { id: true, name: true },
     });
