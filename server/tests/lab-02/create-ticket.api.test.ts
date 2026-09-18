@@ -1,11 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import request from "supertest";
+import { configureRequesterAuth, loginRequester } from "../helpers/auth.js";
 
 const prisma = vi.hoisted(() => ({
   $transaction: vi.fn(),
   developmentRequester: { findFirst: vi.fn() },
   category: { findFirst: vi.fn() },
   relatedSystem: { findFirst: vi.fn() },
+  user: { findUnique: vi.fn() },
   ticket: { create: vi.fn(), update: vi.fn() },
 }));
 
@@ -22,6 +24,8 @@ const validTicket = {
   description: "  VPN connection fails after signing in.  ",
 };
 
+let authHeader = "";
+
 function mockActiveReferences() {
   prisma.developmentRequester.findFirst.mockResolvedValue({ id: 1 });
   prisma.category.findFirst.mockResolvedValue({ id: 2 });
@@ -29,8 +33,10 @@ function mockActiveReferences() {
 }
 
 describe("POST /api/tickets", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.resetAllMocks();
+    configureRequesterAuth(prisma.user.findUnique);
+    authHeader = "Bearer " + await loginRequester(app);
     prisma.$transaction.mockImplementation(async (callback) => callback(prisma));
   });
 
@@ -52,7 +58,7 @@ describe("POST /api/tickets", () => {
       updatedAt: createdAt,
     });
 
-    const response = await request(app).post("/api/tickets").send(validTicket);
+    const response = await request(app).post("/api/tickets").set("Authorization", authHeader).send(validTicket);
 
     expect(response.status).toBe(201);
     expect(response.body).toMatchObject({
@@ -81,6 +87,7 @@ describe("POST /api/tickets", () => {
   it("returns a safe JSON error for a malformed request body", async () => {
     const response = await request(app)
       .post("/api/tickets")
+      .set("Authorization", authHeader)
       .set("Content-Type", "application/json")
       .send("{\"requesterId\":");
 
@@ -91,7 +98,7 @@ describe("POST /api/tickets", () => {
   });
 
   it("rejects invalid input before attempting a database transaction", async () => {
-    const response = await request(app).post("/api/tickets").send({ ...validTicket, summary: "bad" });
+    const response = await request(app).post("/api/tickets").set("Authorization", authHeader).send({ ...validTicket, summary: "bad" });
 
     expect(response.status).toBe(400);
     expect(response.body).toEqual({ error: "summary must be between 5 and 160 characters." });
@@ -103,7 +110,7 @@ describe("POST /api/tickets", () => {
     prisma.category.findFirst.mockResolvedValue({ id: 2 });
     prisma.relatedSystem.findFirst.mockResolvedValue({ id: 3 });
 
-    const response = await request(app).post("/api/tickets").send(validTicket);
+    const response = await request(app).post("/api/tickets").set("Authorization", authHeader).send(validTicket);
 
     expect(response.status).toBe(404);
     expect(response.body).toEqual({ error: "Requester or reference data is unavailable." });
@@ -113,7 +120,7 @@ describe("POST /api/tickets", () => {
   it("returns a safe error when ticket creation fails unexpectedly", async () => {
     prisma.$transaction.mockRejectedValue(new Error("database unavailable"));
 
-    const response = await request(app).post("/api/tickets").send(validTicket);
+    const response = await request(app).post("/api/tickets").set("Authorization", authHeader).send(validTicket);
 
     expect(response.status).toBe(500);
     expect(response.body).toEqual({ error: "Unable to create the ticket." });
