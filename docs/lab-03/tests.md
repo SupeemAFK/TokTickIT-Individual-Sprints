@@ -4,7 +4,7 @@ Lab 3 coverage is intentionally split between API authorization, client role scr
 | ID | Coverage | Automated evidence |
 | --- | --- | --- |
 | API-01 | valid, invalid, and inactive login; safe errors | `server/tests/lab-03/auth.api.test.ts` |
-| API-02 | session `/me`, password validation/change | `server/tests/lab-03/auth.api.test.ts` |
+| API-02 | session `/me`, first-login access, password validation/change | `server/tests/lab-03/auth.api.test.ts`, `server/tests/lab-03/password-change.api.test.ts` |
 | API-03 | bearer-session ownership overrides legacy requester hints | `server/tests/lab-03/requester-security.api.test.ts`; authenticated Lab 2 regressions |
 | API-04 | requester cannot access staff queue/internal notes; internal notes omitted from requester detail | `server/tests/lab-03/requester-security.api.test.ts` |
 | API-05 | staff queue filtering, pagination, and detail | `server/tests/lab-03/staff-workflow.api.test.ts` |

@@ -29,3 +29,7 @@ This evidence was captured from the `lab3-staging` branch after implementation c
 - `screenshots/requester-375.png`
 
 These captures use the same authenticated browser fixtures as `client/e2e/lab-03/authenticated-requester.spec.ts`; they are not presented as live production records.
+
+## Seeded local-lab accounts
+
+All seeded accounts use the documented initial password `Lab3Pass123` and require a first-login password change. The active roles are four Requesters, three IT Staff, and one Administrator; one Requester and one IT Staff account are inactive. The seed also creates idempotent sample tickets with a public comment and staff-only internal note for workflow verification.
