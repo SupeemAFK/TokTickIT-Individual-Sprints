@@ -6,13 +6,13 @@ This record contains the real collaborator review history for PR #50. Approval r
 
 | Reviewer | PR | Review comments | Response commits | Approval |
 |---|---|---|---|---|
-| `jarbbie` | [#50](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/50) | [Initial changes requested](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/50#pullrequestreview-5252496573); [re-review changes requested](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/50#pullrequestreview-5252628014) | `ef68866`, `982c4a1`, current follow-up commit | Pending re-review |
+| `jarbbie` | [#50](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/50) | [Initial changes requested](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/50#pullrequestreview-5252496573); [re-review changes requested](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/50#pullrequestreview-5252628014) | `ef68866`, `982c4a1`, `09b3cdb` | Pending re-review |
 
 ## Feature PRs
 
 | Issue | Feature branch | PR | Reviewer | Review result | Response commit | Approval |
 |---|---|---|---|---|---|---|
-| #35 | `feature/lab3-contract` | [#50](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/50) | `jarbbie` | Second review addressed; re-review requested | `ef68866`, `982c4a1`, current follow-up commit | Pending |
+| #35 | `feature/lab3-contract` | [#50](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/50) | `jarbbie` | Second review addressed; re-review requested | `ef68866`, `982c4a1`, `09b3cdb` | Pending |
 | #36 | Pending | Pending | Pending | Pending | Pending | Pending |
 | #37 | Pending | Pending | Pending | Pending | Pending | Pending |
 | #38 | Pending | Pending | Pending | Pending | Pending | Pending |
