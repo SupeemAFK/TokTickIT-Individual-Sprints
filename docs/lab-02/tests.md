@@ -19,7 +19,7 @@ Tests are planned before implementation and trace to the approved specification.
 | UI-03 | UI | AC-06–08,14 | list states, query controls, requester reload, and accessible navigation | `client/tests/lab-02/MyTickets.test.tsx` | Pass |
 | UI-04 | UI | AC-09–12,14 | detail display/failure plus upload, download, and removal controls | `client/tests/lab-02/TicketDetail.test.tsx` | Pass |
 | STYLE-01 | UI style | AC-13 | Zen Green tokens, labels, asterisks, focus, busy/disabled and responsive classes | `client/tests/lab-02/zen-green-style.test.tsx` | Automated |
-| E2E-01 | E2E/responsive | AC-01–14 | select requester, validate/create/find/view ticket, upload/remove attachment, switch requester, and verify three widths | `client/e2e/lab-02/requester-ticket-flow.spec.ts` | Automated |
+| E2E-01 | E2E/responsive | AC-01–14 | select requester, validate/create/find/view ticket, upload/remove attachment, switch requester, and verify three widths | `client/e2e/lab-03/authenticated-requester.spec.ts (Lab 3 supersedes the selector flow)` | Automated |
 
 ## 3. Acceptance-Criterion Traceability
 

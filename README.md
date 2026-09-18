@@ -77,20 +77,21 @@ Once the backend is running, the following REST API endpoints are available:
 
 ## Running Tests
 
-Run the complete Lab 2 verification suite from the repository root:
+Run the complete Lab 3 verification suite from the repository root:
 
 ```text
 cd server && npm test
 cd server && npm run build
 cd client && npm test
 cd client && npm run build
+cd client && npm run test:e2e
 ```
 
-The backend suite covers API and unit behavior; the client suite covers component and style behavior.
+The backend suite covers authentication, requester ownership, staff workflow, comments/notes, and administrator safeguards. The client suite covers role-specific screens; the Playwright suite covers authenticated requester behavior and responsive widths.
 
 ### End-to-End Tests
 
-Install the Playwright browser once after installing client dependencies, then run the requester workflow:
+Install the Playwright browser once after installing client dependencies, then run the authenticated requester workflow:
 
 ```text
 cd client
@@ -98,8 +99,8 @@ npx playwright install chromium
 npm run test:e2e
 ```
 
-The E2E flow uses stateful browser API fixtures, so it is reproducible without a running PostgreSQL database. It covers requester selection/switching, validation, ticket creation, search, Ticket Detail, attachment upload/removal, and desktop/tablet/mobile layouts.
+The E2E flow uses authenticated browser API fixtures, so it is reproducible without a running PostgreSQL database. It covers login-session restoration, ticket creation, Ticket Detail, attachments, Public Comments, Problem Appears Resolved, and desktop/tablet/mobile layouts.
 
-## Lab 2 Documentation and Evidence
+## Lab 2 and Lab 3 Documentation and Evidence
 
-The engineering contract, API/UI specifications, test traceability, peer-review record, AI-use record, and responsive screenshots are versioned under [`docs/lab-02/`](docs/lab-02/) and [`artifacts/lab-02/screenshots/`](artifacts/lab-02/screenshots/).
+The Lab 2 engineering contract and evidence remain under [`docs/lab-02/`](docs/lab-02/) and [`artifacts/lab-02/`](artifacts/lab-02/). Lab 3 engineering/API/UI/test contracts and review records are under [`docs/lab-03/`](docs/lab-03/); release screenshots and the final submission PDF belong under `artifacts/lab-03/` when release evidence is captured.
