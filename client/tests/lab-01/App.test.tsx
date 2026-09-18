@@ -12,6 +12,6 @@ describe("App", () => {
   it("renders the TokTickIT heading and requester selection", async () => {
     render(<App />);
     expect(screen.getByText(/TokTickIT/i)).toBeInTheDocument();
-    expect(await screen.findByRole("button", { name: /continue/i })).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: /sign in/i })).toBeInTheDocument();
   });
 })
