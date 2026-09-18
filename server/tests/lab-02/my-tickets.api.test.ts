@@ -22,9 +22,9 @@ describe("GET /api/tickets", () => {
   });
   it("applies the supported filters and pagination", async () => {
     prisma.ticket.findMany.mockResolvedValue([]); prisma.ticket.count.mockResolvedValue(21);
-    const response = await request(app).get("/api/tickets?search=vpn&categoryId=2&relatedSystemId=3&requestedPriority=HIGH&status=NEW&sort=summary&direction=asc&page=2&pageSize=20").set(auth);
+    const response = await request(app).get("/api/tickets?search=vpn&categoryId=2&relatedSystemId=3&requestedPriority=HIGH&status=CLOSED&sort=summary&direction=asc&page=2&pageSize=20").set(auth);
     expect(response.status).toBe(200); expect(response.body.pagination).toEqual({ page: 2, pageSize: 20, totalItems: 21, totalPages: 2 });
-    expect(prisma.ticket.findMany).toHaveBeenCalledWith(expect.objectContaining({ where: expect.objectContaining({ requesterId: 1, categoryId: 2, relatedSystemId: 3, requestedPriority: "HIGH", currentStatus: "NEW" }), orderBy: [{ summary: "asc" }, { id: "desc" }], skip: 20, take: 20 }));
+    expect(prisma.ticket.findMany).toHaveBeenCalledWith(expect.objectContaining({ where: expect.objectContaining({ requesterId: 1, categoryId: 2, relatedSystemId: 3, requestedPriority: "HIGH", currentStatus: "CLOSED" }), orderBy: [{ summary: "asc" }, { id: "desc" }], skip: 20, take: 20 }));
   });
   it("requires a bearer session", async () => { const response = await request(app).get("/api/tickets"); expect(response.status).toBe(401); expect(response.body.code).toBe("UNAUTHENTICATED"); expect(prisma.ticket.findMany).not.toHaveBeenCalled(); });
   it("rejects malformed query values safely", async () => { const response = await request(app).get("/api/tickets?pageSize=7").set(auth); expect(response.status).toBe(400); expect(response.body.code).toBe("INVALID_REQUEST"); expect(prisma.ticket.findMany).not.toHaveBeenCalled(); });

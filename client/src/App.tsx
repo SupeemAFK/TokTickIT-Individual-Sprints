@@ -56,18 +56,93 @@ function Password({ token, onDone }: { token: string; onDone: () => void }) {
 }
 
 function Requester({ token, onError }: { token: string; onError: (message: string) => void }) {
-  const [items, setItems] = useState<Ticket[]>([]); const [selected, setSelected] = useState<Ticket | null>(null); const [summary, setSummary] = useState(""); const [description, setDescription] = useState(""); const [createFile, setCreateFile] = useState<File | null>(null); const [message, setMessage] = useState(""); const [categories, setCategories] = useState<Reference[]>([]); const [systems, setSystems] = useState<Reference[]>([]); const [categoryId, setCategoryId] = useState(""); const [systemId, setSystemId] = useState("");
-  const load = () => api("/api/tickets", token).then((data) => setItems(data.items ?? [])).catch((reason) => onError(reason instanceof Error ? reason.message : "Unable to load tickets."));
-  useEffect(() => { void load(); Promise.all([api("/api/categories", token), api("/api/related-systems", token)]).then(([loadedCategories, loadedSystems]) => { setCategories(loadedCategories); setSystems(loadedSystems); if (loadedCategories[0]) setCategoryId(String(loadedCategories[0].id)); if (loadedSystems[0]) setSystemId(String(loadedSystems[0].id)); }).catch(() => undefined); }, [token]);
-  const create = async (event: FormEvent) => { event.preventDefault(); try { const created = await api("/api/tickets", token, { method: "POST", body: JSON.stringify({ categoryId: Number(categoryId), relatedSystemId: Number(systemId), summary, description, requestedPriority: "MEDIUM" }) }); setSummary(""); setDescription(""); setMessage("Ticket created."); if (createFile) { try { await upload(`/api/tickets/${created.id}/attachments`, token, createFile); } catch (reason) { setMessage(`Ticket created, but the attachment was not uploaded: ${reason instanceof Error ? reason.message : "upload failed."}`); } setCreateFile(null); } await load(); } catch (reason) { onError(reason instanceof Error ? reason.message : "Unable to create ticket."); } };
-  const open = async (id: number) => { try { setSelected(await api(`/api/tickets/${id}`, token)); } catch (reason) { onError(reason instanceof Error ? reason.message : "Unable to load ticket."); } };
+  const [items, setItems] = useState<Ticket[]>([]);
+  const [selected, setSelected] = useState<Ticket | null>(null);
+  const [summary, setSummary] = useState("");
+  const [description, setDescription] = useState("");
+  const [createFile, setCreateFile] = useState<File | null>(null);
+  const [message, setMessage] = useState("");
+  const [categories, setCategories] = useState<Reference[]>([]);
+  const [systems, setSystems] = useState<Reference[]>([]);
+  const [categoryId, setCategoryId] = useState("");
+  const [systemId, setSystemId] = useState("");
+  const [search, setSearch] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("");
+  const [systemFilter, setSystemFilter] = useState("");
+  const [priorityFilter, setPriorityFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [sort, setSort] = useState("createdAt");
+  const [direction, setDirection] = useState("desc");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [pagination, setPagination] = useState({ page: 1, pageSize: 10, totalItems: 0, totalPages: 0 });
+
+  const load = async () => {
+    try {
+      const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize), sort, direction });
+      if (search.trim()) params.set("search", search.trim());
+      if (categoryFilter) params.set("categoryId", categoryFilter);
+      if (systemFilter) params.set("relatedSystemId", systemFilter);
+      if (priorityFilter) params.set("requestedPriority", priorityFilter);
+      if (statusFilter) params.set("status", statusFilter);
+      const data = await api(`/api/tickets?${params.toString()}`, token);
+      setItems(data.items ?? []);
+      setPagination(data.pagination ?? { page, pageSize, totalItems: 0, totalPages: 0 });
+    } catch (reason) { onError(reason instanceof Error ? reason.message : "Unable to load tickets."); }
+  };
+
+  useEffect(() => {
+    Promise.all([api("/api/categories", token), api("/api/related-systems", token)]).then(([loadedCategories, loadedSystems]) => {
+      setCategories(loadedCategories); setSystems(loadedSystems);
+      if (loadedCategories[0]) setCategoryId(String(loadedCategories[0].id));
+      if (loadedSystems[0]) setSystemId(String(loadedSystems[0].id));
+    }).catch(() => undefined);
+  }, [token]);
+  useEffect(() => { void load(); }, [token, search, categoryFilter, systemFilter, priorityFilter, statusFilter, sort, direction, page, pageSize]);
+
+  const resetToFirstPage = () => setPage(1);
+  const create = async (event: FormEvent) => {
+    event.preventDefault();
+    try {
+      const data = await api("/api/tickets", token, { method: "POST", body: JSON.stringify({ categoryId: Number(categoryId), relatedSystemId: Number(systemId), summary, description, requestedPriority: "MEDIUM" }) });
+      const created = data.ticket as Ticket;
+      setSummary(""); setDescription(""); setMessage("Ticket created.");
+      if (createFile) {
+        try { await upload(`/api/tickets/${created.id}/attachments`, token, createFile); }
+        catch (reason) { setMessage(`Ticket created, but the attachment was not uploaded: ${reason instanceof Error ? reason.message : "upload failed."}`); }
+        setCreateFile(null);
+      }
+      await load();
+    } catch (reason) { onError(reason instanceof Error ? reason.message : "Unable to create ticket."); }
+  };
+  const open = async (id: number) => { try { setSelected((await api(`/api/tickets/${id}`, token)).ticket); } catch (reason) { onError(reason instanceof Error ? reason.message : "Unable to load ticket."); } };
   if (selected) return <RequesterDetail ticket={selected} token={token} onBack={() => setSelected(null)} onError={onError} onChanged={(next) => { setSelected(next); void load(); }} />;
-  return <section><h1 className="h3">My Tickets</h1><p className="text-secondary">Authenticated tickets belonging to your account.</p><div className="row g-3">{items.map((ticket) => <article className="col-md-6" key={ticket.id}><div className="card h-100"><div className="card-body"><button className="btn btn-link p-0" onClick={() => void open(ticket.id)}>{ticket.ticketNumber}</button><h2 className="h5 mt-2">{ticket.summary}</h2><span className="badge text-bg-secondary">{ticket.currentStatus}</span></div></div></article>)}</div>{!items.length && <p className="text-secondary mt-3">No tickets yet.</p>}<form className="card mt-4" onSubmit={create}><div className="card-body"><h2 className="h5">Create ticket</h2><select className="form-select mb-2" aria-label="Category" value={categoryId} onChange={(event) => setCategoryId(event.target.value)}>{categories.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select><select className="form-select mb-2" aria-label="Related system" value={systemId} onChange={(event) => setSystemId(event.target.value)}>{systems.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select><input className="form-control mb-2" required minLength={5} placeholder="Summary" value={summary} onChange={(event) => setSummary(event.target.value)} /><textarea className="form-control mb-2" required minLength={10} placeholder="Description" value={description} onChange={(event) => setDescription(event.target.value)} /><input className="form-control mb-2" type="file" accept=".jpg,.jpeg,.png,.webp,.pdf" aria-label="Creation attachment" onChange={(event) => setCreateFile(event.target.files?.[0] ?? null)} /><button className="btn btn-toktickit-primary">Create ticket</button>{message && <span className="ms-2 text-success">{message}</span>}</div></form></section>;
+
+  const statuses = ["NEW", "OPEN", "IN_PROGRESS", "WAITING_FOR_REQUESTER", "RESOLVED", "CLOSED", "REOPENED", "CANCELLED"];
+  const totalPages = Math.max(1, pagination.totalPages || 1);
+  return <section>
+    <h1 className="h3">My Tickets</h1>
+    <p className="text-secondary">Authenticated tickets belonging to your account.</p>
+    <section className="card mb-4" aria-label="Ticket filters"><div className="card-body"><div className="row g-2">
+      <div className="col-md-4"><label className="form-label" htmlFor="requester-search">Search</label><input id="requester-search" className="form-control" placeholder="Search ticket number or summary" value={search} onChange={(event) => { setSearch(event.target.value); resetToFirstPage(); }} /></div>
+      <div className="col-md-2"><label className="form-label" htmlFor="requester-category-filter">Category</label><select id="requester-category-filter" className="form-select" value={categoryFilter} onChange={(event) => { setCategoryFilter(event.target.value); resetToFirstPage(); }}><option value="">All categories</option>{categories.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></div>
+      <div className="col-md-2"><label className="form-label" htmlFor="requester-system-filter">System</label><select id="requester-system-filter" className="form-select" value={systemFilter} onChange={(event) => { setSystemFilter(event.target.value); resetToFirstPage(); }}><option value="">All systems</option>{systems.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></div>
+      <div className="col-md-2"><label className="form-label" htmlFor="requester-priority-filter">Priority</label><select id="requester-priority-filter" className="form-select" value={priorityFilter} onChange={(event) => { setPriorityFilter(event.target.value); resetToFirstPage(); }}><option value="">All priorities</option><option value="LOW">LOW</option><option value="MEDIUM">MEDIUM</option><option value="HIGH">HIGH</option></select></div>
+      <div className="col-md-2"><label className="form-label" htmlFor="requester-status-filter">Status</label><select id="requester-status-filter" className="form-select" value={statusFilter} onChange={(event) => { setStatusFilter(event.target.value); resetToFirstPage(); }}><option value="">All statuses</option>{statuses.map((value) => <option key={value} value={value}>{value}</option>)}</select></div>
+      <div className="col-md-3"><label className="form-label" htmlFor="requester-sort">Sort by</label><select id="requester-sort" className="form-select" value={sort} onChange={(event) => { setSort(event.target.value); resetToFirstPage(); }}><option value="createdAt">Created</option><option value="updatedAt">Updated</option><option value="ticketNumber">Ticket number</option><option value="summary">Summary</option><option value="requestedPriority">Requested priority</option></select></div>
+      <div className="col-md-2"><label className="form-label" htmlFor="requester-direction">Direction</label><select id="requester-direction" className="form-select" value={direction} onChange={(event) => { setDirection(event.target.value); resetToFirstPage(); }}><option value="desc">Newest first</option><option value="asc">Oldest first</option></select></div>
+      <div className="col-md-2"><label className="form-label" htmlFor="requester-page-size">Page size</label><select id="requester-page-size" className="form-select" value={pageSize} onChange={(event) => { setPageSize(Number(event.target.value)); resetToFirstPage(); }}><option value={10}>10</option><option value={20}>20</option><option value={50}>50</option></select></div>
+    </div></div></section>
+    <div className="row g-3">{items.map((ticket) => <article className="col-md-6" key={ticket.id}><div className="card h-100"><div className="card-body"><button className="btn btn-link p-0" onClick={() => void open(ticket.id)}>{ticket.ticketNumber}</button><h2 className="h5 mt-2">{ticket.summary}</h2><span className="badge text-bg-secondary">{ticket.currentStatus}</span></div></div></article>)}</div>
+    {!items.length && <p className="text-secondary mt-3">{pagination.totalItems ? "No matching tickets." : "No tickets yet."}</p>}
+    <div className="d-flex gap-2 align-items-center mt-3"><button className="btn btn-sm btn-outline-secondary" disabled={page <= 1} onClick={() => setPage(page - 1)}>Previous</button><span>Page {page} of {totalPages}</span><button className="btn btn-sm btn-outline-secondary" disabled={page >= totalPages} onClick={() => setPage(page + 1)}>Next</button></div>
+    <form className="card mt-4" onSubmit={create}><div className="card-body"><h2 className="h5">Create ticket</h2><select className="form-select mb-2" aria-label="Category" value={categoryId} onChange={(event) => setCategoryId(event.target.value)}>{categories.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select><select className="form-select mb-2" aria-label="Related system" value={systemId} onChange={(event) => setSystemId(event.target.value)}>{systems.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select><input className="form-control mb-2" required minLength={5} placeholder="Summary" value={summary} onChange={(event) => setSummary(event.target.value)} /><textarea className="form-control mb-2" required minLength={10} placeholder="Description" value={description} onChange={(event) => setDescription(event.target.value)} /><input className="form-control mb-2" type="file" accept=".jpg,.jpeg,.png,.webp,.pdf" aria-label="Creation attachment" onChange={(event) => setCreateFile(event.target.files?.[0] ?? null)} /><button className="btn btn-toktickit-primary">Create ticket</button>{message && <span className="ms-2 text-success">{message}</span>}</div></form>
+  </section>;
 }
 
 function RequesterDetail({ ticket, token, onBack, onError, onChanged }: { ticket: Ticket; token: string; onBack: () => void; onError: (message: string) => void; onChanged: (ticket: Ticket) => void }) {
   const [comment, setComment] = useState(""); const [file, setFile] = useState<File | null>(null); const [busy, setBusy] = useState(false);
-  const refresh = async () => { try { onChanged(await api(`/api/tickets/${ticket.id}`, token)); } catch (reason) { onError(reason instanceof Error ? reason.message : "Unable to refresh ticket."); } };
+  const refresh = async () => { try { onChanged((await api(`/api/tickets/${ticket.id}`, token)).ticket); } catch (reason) { onError(reason instanceof Error ? reason.message : "Unable to refresh ticket."); } };
   const addComment = async (event: FormEvent) => { event.preventDefault(); try { await api(`/api/tickets/${ticket.id}/comments`, token, { method: "POST", body: JSON.stringify({ content: comment }) }); setComment(""); await refresh(); } catch (reason) { onError(reason instanceof Error ? reason.message : "Unable to add comment."); } };
   const reportResolved = async () => { try { await api(`/api/tickets/${ticket.id}/resolution-signal`, token, { method: "POST" }); await refresh(); } catch (reason) { onError(reason instanceof Error ? reason.message : "Unable to report resolution."); } };
   const addAttachment = async () => { if (!file) return; setBusy(true); try { await upload(`/api/tickets/${ticket.id}/attachments`, token, file); setFile(null); await refresh(); } catch (reason) { onError(reason instanceof Error ? reason.message : "Unable to upload attachment."); } finally { setBusy(false); } };

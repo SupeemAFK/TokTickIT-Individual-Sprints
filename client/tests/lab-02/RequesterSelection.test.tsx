@@ -13,8 +13,8 @@ function setupFetch() {
     if (url.endsWith("/api/auth/me")) return response({ user, mustChangePassword: false });
     if (url.endsWith("/api/categories")) return response([{ id: 1, name: "Network" }]);
     if (url.endsWith("/api/related-systems")) return response([{ id: 2, name: "VPN" }]);
-    if (url.endsWith("/api/tickets/8")) return response(ticket);
-    if (url.endsWith("/api/tickets")) return response({ items: [ticket], pagination: { page: 1, pageSize: 10, totalItems: 1, totalPages: 1 } });
+    if (url.endsWith("/api/tickets/8")) return response({ ticket });
+    if (url.endsWith("/api/tickets") || url.includes("/api/tickets?")) return response({ items: [ticket], pagination: { page: 1, pageSize: 10, totalItems: 1, totalPages: 1 } });
     return response({});
   });
   vi.stubGlobal("fetch", fetchMock);
@@ -28,5 +28,5 @@ describe("authenticated requester regression", () => {
   it("shows the signed-in requester workspace instead of the Lab 2 selector", async () => { render(<App />); expect(await screen.findByRole("heading", { name: "My Tickets" })).toBeInTheDocument(); expect(screen.queryByText(/not a sign-in method/i)).not.toBeInTheDocument(); });
   it("opens an authenticated ticket detail", async () => { render(<App />); await userEvent.click(await screen.findByRole("button", { name: ticket.ticketNumber })); expect(await screen.findByRole("heading", { name: ticket.ticketNumber })).toBeInTheDocument(); });
   it("keeps requester ownership out of the browser API calls", async () => { const fetchMock = setupFetch(); render(<App />); await screen.findByRole("heading", { name: "My Tickets" }); expect(fetchMock.mock.calls.some(([url]) => String(url).includes("requesterId"))).toBe(false); });
-  it("renders the authenticated ticket creation flow", async () => { render(<App />); expect(await screen.findByRole("heading", { name: "Create ticket" })).toBeInTheDocument(); expect(screen.getByRole("button", { name: "Create ticket" })).toBeInTheDocument(); });
+  it("renders the authenticated requester filters and ticket creation flow", async () => { render(<App />); expect(await screen.findByRole("heading", { name: "Create ticket" })).toBeInTheDocument(); expect(screen.getByLabelText("Search")).toBeInTheDocument(); expect(screen.getByLabelText("Status")).toBeInTheDocument(); expect(screen.getByLabelText("Page size")).toBeInTheDocument(); expect(screen.getByRole("button", { name: "Create ticket" })).toBeInTheDocument(); });
 });
