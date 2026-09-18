@@ -1,16 +1,16 @@
 # TokTickIT Lab 3 — Verification and Evidence
 
-This evidence was captured from the `lab3-staging` branch after implementation commit `f4be28a` (`fix: complete authenticated Lab 3 workflows and coverage`). The release-evidence commit adds this record, the screenshots, AI-use disclosure, and `TokTickIT-Lab-3-Submission-Report.pdf`. Browser screenshots are deterministic Playwright API-fixture captures; the API and authorization claims are backed by the server Supertest suite.
+This evidence was captured from the `lab3-staging` branch after release-fix commit `e0a294f` (`fix: address remaining Lab 3 review blockers`). The release-evidence commit adds this record, the screenshots, AI-use disclosure, and `TokTickIT-Lab-3-Submission-Report.pdf`. Browser screenshots are deterministic Playwright API-fixture captures; the API and authorization claims are backed by the server Supertest suite.
 
 ## Verification results
 
 | Check | Result |
 | --- | --- |
-| `cd server && npm test` | 14 files, 45 tests passed |
+| `cd server && npm test` | 20 files, 61 tests passed |
 | `cd server && npm run build` | TypeScript build passed |
-| `cd client && npm test` | 8 files, 20 tests passed |
+| `cd client && npm test` | 12 files, 27 tests passed |
 | `cd client && npm run build` | TypeScript + Vite production build passed |
-| `cd client && npm run test:e2e` | 2 authenticated requester/responsive tests passed |
+| `cd client && npm run test:e2e` | 5 authentication/requester/staff/admin/responsive tests passed |
 
 ## Lab 3 scope verified
 
@@ -27,6 +27,9 @@ This evidence was captured from the `lab3-staging` branch after implementation c
 - `screenshots/requester-1440.png`
 - `screenshots/requester-768.png`
 - `screenshots/requester-375.png`
+- `screenshots/staff-queue.png`
+- `screenshots/staff-detail.png`
+- `screenshots/user-management.png`
 
 These captures use the same authenticated browser fixtures as `client/e2e/lab-03/authenticated-requester.spec.ts`; they are not presented as live production records.
 
