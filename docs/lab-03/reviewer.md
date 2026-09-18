@@ -12,7 +12,7 @@ This record is intentionally empty until a real collaborator reviews the corresp
 
 | Issue | Feature branch | PR | Reviewer | Review result | Response commit | Approval |
 |---|---|---|---|---|---|---|
-| #35 | `feature/lab3-contract` | [#50](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/50) | `jarbbie` | Changes requested; response pending | Pending | Pending |
+| #35 | `feature/lab3-contract` | [#50](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/50) | `jarbbie` | Addressed in `ef68866`; re-review requested | `ef68866` | Pending |
 | #36 | Pending | Pending | Pending | Pending | Pending | Pending |
 | #37 | Pending | Pending | Pending | Pending | Pending | Pending |
 | #38 | Pending | Pending | Pending | Pending | Pending | Pending |
