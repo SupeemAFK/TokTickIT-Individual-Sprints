@@ -25,7 +25,7 @@ const queueItem = {
 const detail = { ...queueItem, description: "VPN fails after sign in.", requester, attachments: [], publicComments: [], internalNotes: [] };
 const counts = { totalItems: 21, unassigned: 7, byStatus: { NEW: 4, OPEN: 3, IN_PROGRESS: 8, WAITING_FOR_REQUESTER: 2, RESOLVED: 2, CLOSED: 1, REOPENED: 1, CANCELLED: 0 }, byItPriority: { LOW: 3, MEDIUM: 10, HIGH: 8 } };
 
-type QueueMode = "normal" | "empty" | "error";
+type QueueMode = "normal" | "empty" | "no-results" | "error";
 function response(body: unknown, status = 200) {
   return { ok: status >= 200 && status < 300, status, json: async () => body, blob: async () => new Blob(["file"]) } as Response;
 }
@@ -42,7 +42,10 @@ function installQueueApi(mode: QueueMode = "normal", currentUser: typeof staff |
       if (mode === "error") return response({ error: "Queue unavailable.", code: "SERVER_ERROR" }, 500);
       if (mode === "empty") return response({ items: [], pagination: { page: 1, pageSize: 10, totalItems: 0, totalPages: 0 }, counts: { totalItems: 0, unassigned: 0, byStatus: {}, byItPriority: {} } });
       const params = new URL(url).searchParams;
-      return response({ items: [queueItem], pagination: { page: Number(params.get("page") ?? 1), pageSize: Number(params.get("pageSize") ?? 10), totalItems: 21, totalPages: 2 }, counts });
+      if (mode === "no-results") return response({ items: [], pagination: { page: Number(params.get("page") ?? 1), pageSize: Number(params.get("pageSize") ?? 10), totalItems: 21, totalPages: 2 }, counts });
+      const page = Number(params.get("page") ?? 1);
+      const item = page === 2 ? { ...queueItem, id: 13, ticketNumber: "TKT-2026-000013", summary: "Second page ticket" } : queueItem;
+      return response({ items: [item], pagination: { page, pageSize: Number(params.get("pageSize") ?? 10), totalItems: 21, totalPages: 2 }, counts });
     }
     if (url.endsWith("/api/staff/tickets/12") && method === "GET") return response({ ticket: detail });
     return response({});
@@ -112,6 +115,41 @@ describe("Issue #38 IT Staff Ticket Queue UI", () => {
     expect(fetchMock.mock.calls.some(([url]) => String(url).endsWith("/api/staff/tickets/12"))).toBe(true);
   });
 
+  it("moves between pages and clears queue filters back to documented defaults", async () => {
+    const user = userEvent.setup();
+    sessionStorage.setItem("toktickit.token", "queue-session");
+    const fetchMock = installQueueApi();
+    render(<App />);
+
+    await user.click(await screen.findByRole("button", { name: "Ticket Queue" }));
+    await screen.findAllByText("TKT-2026-000012");
+    await user.click(screen.getByRole("button", { name: "Next" }));
+    await waitFor(() => expect(screen.getByText("Page 2 of 2")).toBeInTheDocument());
+    await waitFor(() => expect(queueRequests(fetchMock).at(-1)?.searchParams.get("page")).toBe("2"));
+    expect(await screen.findAllByText("TKT-2026-000013")).toHaveLength(2);
+
+    await user.click(screen.getByRole("button", { name: "Previous" }));
+    await waitFor(() => expect(screen.getByText("Page 1 of 2")).toBeInTheDocument());
+    await waitFor(() => expect(queueRequests(fetchMock).at(-1)?.searchParams.get("page")).toBe("1"));
+
+    await user.type(screen.getByLabelText("Search"), "VPN");
+    await user.selectOptions(screen.getByLabelText("Status"), "IN_PROGRESS");
+    await user.selectOptions(screen.getByLabelText("Page size"), "20");
+    await user.click(screen.getByRole("button", { name: "Clear filters" }));
+    await waitFor(() => {
+      const latest = queueRequests(fetchMock).at(-1);
+      expect(latest?.searchParams.get("page")).toBe("1");
+      expect(latest?.searchParams.get("pageSize")).toBe("10");
+      expect(latest?.searchParams.get("sort")).toBe("updatedAt");
+      expect(latest?.searchParams.get("direction")).toBe("desc");
+      expect(latest?.searchParams.has("search")).toBe(false);
+      expect(latest?.searchParams.has("status")).toBe(false);
+    });
+    expect(screen.getByLabelText("Search")).toHaveValue("");
+    expect(screen.getByLabelText("Status")).toHaveValue("");
+    expect(screen.getByLabelText("Page size")).toHaveValue("10");
+  });
+
   it("shows safe queue failure feedback with retry", async () => {
     const user = userEvent.setup();
     sessionStorage.setItem("toktickit.token", "queue-session");
@@ -131,6 +169,18 @@ describe("Issue #38 IT Staff Ticket Queue UI", () => {
 
     await user.click(await screen.findByRole("button", { name: "Ticket Queue" }));
     expect(await screen.findByText("No tickets in the queue.")).toBeInTheDocument();
+  });
+
+  it("shows a distinct no-results message when the queue has tickets outside the current filters", async () => {
+    const user = userEvent.setup();
+    sessionStorage.setItem("toktickit.token", "queue-session");
+    installQueueApi("no-results");
+    render(<App />);
+
+    await user.click(await screen.findByRole("button", { name: "Ticket Queue" }));
+    expect(await screen.findByText("No matching tickets.")).toBeInTheDocument();
+    expect(screen.queryByText("No tickets in the queue.")).not.toBeInTheDocument();
+    expect(screen.getByText("21 matching tickets")).toBeInTheDocument();
   });
 
   it("does not expose queue navigation to a Requester", async () => {
