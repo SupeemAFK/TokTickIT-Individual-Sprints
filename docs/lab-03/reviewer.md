@@ -17,7 +17,7 @@ This record contains the real collaborator review history for the Lab 3 contract
 | #37 | `feature/lab3-requester-verification` | [#53](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/53) | `jarbbie` | [Approval](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/53#pullrequestreview-5255338709) | `d4e547e`, `9f252c7` | Approved; merged |
 | #38 | `feature/lab3-issue-38-staff-queue` | [#54](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/54) | `jarbbie` | [Approval](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/54#pullrequestreview-5255628192) | `b22750f`, `ce85219`, `bf4134b` | Approved; merged |
 | #39 | `feature/lab3-issue-39-ticket-operations` | [#55](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/55) | `jarbbie` | [Changes requested](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/55#pullrequestreview-5255678079); [approval](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/55#pullrequestreview-5255703617) | `60423ec`, `9a52b09`, `17cd79c` | Approved; merged |
-| #40 | `feature/lab3-issue-40-user-management` | [#56](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/56) | `jarbbie` | Implementation and coverage submitted; review pending | `f3e9941` | Pending |
+| #40 | `feature/lab3-issue-40-user-management` | [#56](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/56) | `jarbbie` | [Changes requested](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/56#pullrequestreview-5255864243); AC-08 traceability corrected; re-review requested | `f3e9941`, `67e6e74` | Pending |
 | #41 | Pending | Pending | Pending | Pending | Pending | Pending |
 | #42 | Pending | Pending | Pending | Pending | Pending | Pending |
 
