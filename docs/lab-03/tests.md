@@ -6,7 +6,7 @@ Tests are planned before implementation. A row remains Planned until the named t
 |---|---|---|---|---|---|
 | UNIT-01 | Unit | BR-02, BR-03 | Password rules, scrypt hash/verify, session expiry/token handling | `server/tests/lab-03/auth.unit.test.ts` | Planned |
 | API-01 | API | AC-01–04 | Valid/invalid/inactive login, `/me`, first-login gate, password change, logout | `server/tests/lab-03/auth.api.test.ts`, `password-change.api.test.ts` | Planned |
-| API-02 | Security | AC-05–07 | Session ownership overrides requester hints; requester cannot read notes or other tickets | `server/tests/lab-03/authorization.api.test.ts`, `requester-security.api.test.ts` | Planned |
+| API-02 | Security/workflow | AC-05–07 | Session ownership overrides requester hints; owned versus non-owned Public Comments; blank-content rejection; authenticated author derivation; resolution signal without formal close | `server/tests/lab-03/requester-workflow.api.test.ts` | Implemented on PR #53; pending main |
 | API-03 | Migration/seed | AC-06, AC-13 | Existing requester backfill preserves ticket ownership; a fresh database creates assigned tickets, comments, notes, and remains idempotent on reseed | `server/tests/lab-03/migration.api.test.ts`, `server/tests/lab-03/seed.integration.test.ts` | Planned |
 | API-04 | API | AC-08 | Queue search/filter/sort/pagination, invalid queries, counts, role protection | `server/tests/lab-03/staff-queue.api.test.ts` | Planned |
 | API-05 | API | AC-09–10 | Claim race, assignment, IT Priority, transitions, comments, notes, attachments | `server/tests/lab-03/staff-ticket-detail.api.test.ts`, `comments-notes.api.test.ts` | Planned |
@@ -16,7 +16,7 @@ Tests are planned before implementation. A row remains Planned until the named t
 | API-09 | Seed/regression | AC-13, AC-15 | Fresh-database first seed creates owner/comment/note workflow data and a second seed changes no counts or hashes | `server/tests/lab-03/seed.integration.test.ts` | Planned |
 | API-10 | Migration/admin regression | AC-11, AC-13, AC-17 | IT Staff/Administrator → Requester reuses an existing link or creates one transactionally; restored Requester reuses its link; existing ticket ownership is preserved | `server/tests/lab-03/users-admin.api.test.ts`, `server/tests/lab-03/migration.api.test.ts` | Planned |
 | UI-01 | UI/accessibility | AC-01–04 | Login, safe errors, busy state, password labels/rules/change/logout | `client/tests/lab-03/Login.test.tsx`, `ChangePassword.test.tsx` | Planned |
-| UI-02 | UI/security | AC-05–07 | Authenticated Requester navigation, detail, comments, resolution signal, no notes | `client/tests/lab-03/Requester.test.tsx` | Planned |
+| UI-02 | UI/security | AC-05–07 | Authenticated Requester navigation, detail, Public Comment and resolution interactions, no notes | `client/tests/lab-03/RequesterInteractions.test.tsx` | Implemented on PR #53; pending main |
 | UI-03 | UI/responsive | AC-08 | Queue controls, states, status/priority/owner badges, desktop/tablet/mobile representation | `client/tests/lab-03/StaffTicketQueue.test.tsx` | Planned |
 | UI-04 | UI/security | AC-09–10 | Staff detail ownership/workflow/comments/notes/attachments and privacy | `client/tests/lab-03/StaffTicketDetail.test.tsx` | Planned |
 | UI-05 | UI/responsive | AC-11–12 | Admin search/list/create/edit/activation/role/reset and safeguards | `client/tests/lab-03/UserManagement.test.tsx` | Planned |

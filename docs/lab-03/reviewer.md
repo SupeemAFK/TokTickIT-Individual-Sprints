@@ -14,7 +14,7 @@ This record contains the real collaborator review history for the Lab 3 contract
 |---|---|---|---|---|---|---|
 | #35 | `feature/lab3-contract` | [#50](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/50) | `jarbbie` | Approved; merged | `ef68866`, `982c4a1`, `09b3cdb`, `fd4d09a`, `4703c7b`, `faf1f68` | Approved; merged |
 | #36 | `feature/lab3-auth-foundation` | [#51](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/51) | `jarbbie` | [Final approval](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/51#pullrequestreview-5253387411) | `25f268c`, `3a7e959`, `972a727`, `e45d541` | Approved; merged |
-| #37 | `feature/lab3-requester-verification` | [#53](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/53) | `jarbbie` | Focused requester regression and authorization coverage; review pending | `d4e547e` | Pending |
+| #37 | `feature/lab3-requester-verification` | [#53](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/53) | `jarbbie` | Requested changes addressed; re-review pending | `d4e547e`, `9f252c7` | Pending |
 | #38 | Pending | Pending | Pending | Pending | Pending | Pending |
 | #39 | Pending | Pending | Pending | Pending | Pending | Pending |
 | #40 | Pending | Pending | Pending | Pending | Pending | Pending |
