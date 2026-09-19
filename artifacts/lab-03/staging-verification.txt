@@ -136,3 +136,17 @@ Running 9 tests using 2 workers
 (Use `node --trace-warnings ...` to show where the warning was created)
 
 Exit code: 0
+===== repository integrity checks =====
+Command: git diff --check
+Exit code: 0
+
+Command: git check-ignore -v --no-index server/.env server/uploads/example.txt client/playwright-report/example.html client/test-results/example.txt
+.gitignore:5:*.env	server/.env
+.gitignore:17:server/uploads/	server/uploads/example.txt
+.gitignore:20:client/playwright-report/	client/playwright-report/example.html
+.gitignore:21:client/test-results/	client/test-results/example.txt
+Exit code: 0
+
+Command: git ls-files | scan for tracked .env, uploads, playwright-report, test-results, dist, or build paths
+No matching tracked files.
+Exit code: 0
