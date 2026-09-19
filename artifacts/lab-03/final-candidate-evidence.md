@@ -1,18 +1,19 @@
 # Lab 3 Final Candidate Evidence
 
-This evidence set is prepared on `feature/lab3-issue-59-final-evidence` from the merged `origin/lab3-staging` candidate after PR #58. It is intentionally **not** the final `main` evidence yet. The complete verification and screenshot capture must be repeated after `lab3-staging` is merged into `main` before the submission PDF is created.
+This evidence set is prepared on `feature/lab3-issue-59-final-evidence` from the merged `origin/lab3-staging` candidate after PR #58. It is intentionally **not** final `main` evidence yet. The complete verification and screenshot capture must be repeated after `lab3-staging` is merged into `main` before the submission PDF is created.
 
 ## Source and capture provenance
 
 - Staging base: `805e88c` (PR #58 merge into `lab3-staging`)
-- Evidence commit: `16aac15`
+- Evidence PR: [PR #60](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/60)
 - Capture script: [`client/scripts/capture-lab3-final-evidence.ts`](../../client/scripts/capture-lab3-final-evidence.ts)
 - Capture command: `PATH=/home/supeem/.nvm/versions/node/v24.15.0/bin:$PATH server/node_modules/.bin/tsx client/scripts/capture-lab3-final-evidence.ts`
 - Captured UI states use the same authenticated Lab 3 Playwright fixture behavior exercised by the E2E suite; no production secrets are included.
+- Every error capture waits for the expected visible heading, alert, or empty/no-results message before writing the PNG.
 
 ## Screen-capture inventory
 
-All required Lab 3 evidence screens are captured at 1440px desktop, 768px tablet, and 390px mobile widths.
+The candidate contains 24 readable PNG captures. The 15 required major-screen captures cover desktop (1440px), tablet (768px), and mobile (390px). The 9 additional desktop captures cover representative failure and boundary states required by the labsheet.
 
 | Screen | Desktop | Tablet | Mobile |
 |---|---|---|---|
@@ -22,14 +23,38 @@ All required Lab 3 evidence screens are captured at 1440px desktop, 768px tablet
 | IT Staff Ticket Detail | [`staff-ticket-detail-desktop.png`](screenshots/final/staff-ticket-detail/staff-ticket-detail-desktop.png) | [`staff-ticket-detail-tablet.png`](screenshots/final/staff-ticket-detail/staff-ticket-detail-tablet.png) | [`staff-ticket-detail-mobile.png`](screenshots/final/staff-ticket-detail/staff-ticket-detail-mobile.png) |
 | Administrator User Management | [`user-management-desktop.png`](screenshots/final/user-management/user-management-desktop.png) | [`user-management-tablet.png`](screenshots/final/user-management/user-management-tablet.png) | [`user-management-mobile.png`](screenshots/final/user-management/user-management-mobile.png) |
 
+### Error and boundary-state captures
+
+| Requirement/state | Evidence capture | UI test mapping |
+|---|---|---|
+| Invalid credentials safe failure | [`login-invalid-desktop.png`](screenshots/final/authentication/login-invalid-desktop.png) | `client/tests/lab-03/Login.test.tsx` |
+| Inactive account does not reveal account state | [`login-inactive-desktop.png`](screenshots/final/authentication/login-inactive-desktop.png) | `client/tests/lab-03/Login.test.tsx`; `server/tests/lab-03/api-contract.test.ts` |
+| Invalid first-login password and mismatch | [`change-password-invalid-desktop.png`](screenshots/final/authentication/change-password-invalid-desktop.png) | `client/tests/lab-03/ChangePassword.test.tsx` |
+| Queue empty state | [`queue-empty-desktop.png`](screenshots/final/staff-queue/queue-empty-desktop.png) | `client/tests/lab-03/StaffTicketQueue.test.tsx` |
+| Queue no-results state | [`queue-no-results-desktop.png`](screenshots/final/staff-queue/queue-no-results-desktop.png) | `client/tests/lab-03/StaffTicketQueue.test.tsx` |
+| Queue safe API failure and retry state | [`queue-failure-desktop.png`](screenshots/final/staff-queue/queue-failure-desktop.png) | `client/tests/lab-03/StaffTicketQueue.test.tsx` |
+| Staff Public Comment safe failure | [`staff-ticket-comment-failure-desktop.png`](screenshots/final/staff-ticket-detail/staff-ticket-comment-failure-desktop.png) | `client/tests/lab-03/StaffTicketDetail.test.tsx` |
+| Administrator list safe API failure | [`user-management-failure-desktop.png`](screenshots/final/user-management/user-management-failure-desktop.png) | `client/tests/lab-03/UserManagement.test.tsx` failure fixture and UI load-error branch |
+| Duplicate-email conflict feedback | [`user-management-conflict-desktop.png`](screenshots/final/user-management/user-management-conflict-desktop.png) | `client/tests/lab-03/UserManagement.test.tsx` |
+
 The visual requirements are defined in [`docs/lab-03/ui-spec.md`](../../docs/lab-03/ui-spec.md), and the required Lab 3 screen/evidence scope is defined in the labsheet Part 5–9 requirements.
+
+## Coverage audit against the labsheet
+
+- Authentication: valid login, invalid credentials, inactive-account safe response, busy state, mandatory first-login change, logout, and session invalidation are covered by the server auth suites, `Login.test.tsx`, `ChangePassword.test.tsx`, and `authentication.spec.ts`.
+- Authorization and safe errors: unauthenticated/forbidden access, requester ownership protection, internal-note restrictions, missing resources, invalid input, conflicts, and unexpected server failures are covered in `server/tests/lab-03/`.
+- Queue: search, filters, sorting, pagination, ownership/status/priority display, responsive representations, empty, no-results, retryable failure, and requester navigation restriction are covered by `StaffTicketQueue.test.tsx`, `staff-queue.spec.ts`, and the responsive captures.
+- Ticket detail: claim/reassign, IT Priority, status transitions, Public Comments, Internal Notes, attachment continuity, requester restrictions, and safe comment failure are covered by `StaffTicketDetail.test.tsx`, `staff-ticket-flow.spec.ts`, and API tests.
+- Administrator safety: search/filter, create/edit/deactivate/reset, duplicate email, invalid values, self-deactivation/final-administrator safeguards, forbidden access, and safe failures are covered by `UserManagement.test.tsx`, `user-administration.spec.ts`, and `users-admin.api.test.ts`.
+- Migration/seed/regression: additive backfill, idempotent seed data, preserved Lab 2 requester behavior, and existing ticket/attachment flows are covered by migration, seed, requester-security, requester-workflow, and Lab 2 regression suites.
+- Responsive/accessibility/style: desktop/tablet/mobile E2E checks, responsive no-overflow assertions, semantic roles/labels, focus/style checks, and the 15 responsive PNGs cover the visual and usability requirements.
 
 ## Automated test evidence
 
 Full captured output is in [`staging-verification.txt`](staging-verification.txt). The candidate run passed:
 
 - Server: 24 test files, 122 tests; TypeScript build.
-- Client: 15 test files, 45 tests; TypeScript/Vite production build.
+- Client: 15 test files, 47 tests; TypeScript/Vite production build.
 - Playwright: 9 E2E tests covering authentication, authenticated Requester regression, Staff Queue, Staff Ticket Detail, Administrator flow, and responsive behavior.
 - `git diff --check` passed.
 
