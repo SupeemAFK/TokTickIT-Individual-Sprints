@@ -26,7 +26,7 @@ describe("authenticated requester regression", () => {
   afterEach(() => { sessionStorage.clear(); vi.unstubAllGlobals(); });
 
   it("shows the signed-in requester workspace instead of the Lab 2 selector", async () => { render(<App />); expect(await screen.findByRole("heading", { name: "My Tickets" })).toBeInTheDocument(); expect(screen.queryByText(/not a sign-in method/i)).not.toBeInTheDocument(); });
-  it("opens an authenticated ticket detail", async () => { render(<App />); await userEvent.click(await screen.findByRole("button", { name: ticket.ticketNumber })); expect(await screen.findByRole("heading", { name: ticket.ticketNumber })).toBeInTheDocument(); });
+  it("opens an authenticated ticket detail", async () => { render(<App />); await userEvent.click(await screen.findByRole("button", { name: `Open ticket ${ticket.ticketNumber}` })); expect(await screen.findByRole("heading", { name: ticket.ticketNumber })).toBeInTheDocument(); });
   it("keeps requester ownership out of the browser API calls", async () => { const fetchMock = setupFetch(); render(<App />); await screen.findByRole("heading", { name: "My Tickets" }); expect(fetchMock.mock.calls.some(([url]) => String(url).includes("requesterId"))).toBe(false); });
   it("renders the authenticated requester filters and ticket creation flow", async () => { render(<App />); expect(await screen.findByRole("heading", { name: "Create ticket" })).toBeInTheDocument(); expect(screen.getByLabelText("Search")).toBeInTheDocument(); expect(screen.getByLabelText("Status")).toBeInTheDocument(); expect(screen.getByLabelText("Page size")).toBeInTheDocument(); expect(screen.getByRole("button", { name: "Create ticket" })).toBeInTheDocument(); });
 });
