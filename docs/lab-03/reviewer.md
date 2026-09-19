@@ -1,20 +1,20 @@
 # Lab 3 Peer Review Record
 
-This record contains the real collaborator review history for the Lab 3 contract and feature PRs. Approval remains pending until the collaborator approves the corrected heads. Do not fabricate reviewer identity, comments, approvals, or test results.
+This record contains the real collaborator review history for the Lab 3 contract and feature PRs. Merged approvals are recorded from GitHub; the current requester-verification PR remains pending until reviewed. Do not fabricate reviewer identity, comments, approvals, or test results.
 
 ## Contract PR
 
 | Reviewer | PR | Review comments | Response commits | Approval |
 |---|---|---|---|---|
-| `jarbbie` | [#50](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/50) | [Initial changes requested](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/50#pullrequestreview-5252496573); [re-review changes requested](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/50#pullrequestreview-5252628014); [latest changes requested](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/50#pullrequestreview-5252701091); [final changes requested](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/50#pullrequestreview-5252778195) | `ef68866`, `982c4a1`, `09b3cdb`, `fd4d09a`, `4703c7b` | Pending re-review |
+| `jarbbie` | [#50](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/50) | [Initial changes requested](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/50#pullrequestreview-5252496573); [re-review changes requested](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/50#pullrequestreview-5252628014); [latest changes requested](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/50#pullrequestreview-5252701091); [final changes requested](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/50#pullrequestreview-5252778195); [approval](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/50#pullrequestreview-5252896915) | `ef68866`, `982c4a1`, `09b3cdb`, `fd4d09a`, `4703c7b`, `faf1f68` | Approved; merged |
 
 ## Feature PRs
 
 | Issue | Feature branch | PR | Reviewer | Review result | Response commit | Approval |
 |---|---|---|---|---|---|---|
-| #35 | `feature/lab3-contract` | [#50](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/50) | `jarbbie` | Latest review addressed; re-review requested | `ef68866`, `982c4a1`, `09b3cdb`, `fd4d09a`, `4703c7b` | Pending |
-| #36 | `feature/lab3-auth-foundation` | [#51](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/51) | `jarbbie` | Latest re-review addressed; re-review requested | [#51 review](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/51#pullrequestreview-5253387411) | `25f268c`, `3a7e959`, `972a727` | Pending |
-| #37 | Pending | Pending | Pending | Pending | Pending | Pending |
+| #35 | `feature/lab3-contract` | [#50](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/50) | `jarbbie` | Approved; merged | `ef68866`, `982c4a1`, `09b3cdb`, `fd4d09a`, `4703c7b`, `faf1f68` | Approved; merged |
+| #36 | `feature/lab3-auth-foundation` | [#51](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/51) | `jarbbie` | [Final approval](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/51#pullrequestreview-5253387411) | `25f268c`, `3a7e959`, `972a727`, `e45d541` | Approved; merged |
+| #37 | `feature/lab3-requester-verification` | [#53](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/53) | `jarbbie` | Focused requester regression and authorization coverage; review pending | `d4e547e` | Pending |
 | #38 | Pending | Pending | Pending | Pending | Pending | Pending |
 | #39 | Pending | Pending | Pending | Pending | Pending | Pending |
 | #40 | Pending | Pending | Pending | Pending | Pending | Pending |
