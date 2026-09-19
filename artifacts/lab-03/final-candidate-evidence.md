@@ -13,12 +13,13 @@ This evidence set is prepared on `feature/lab3-issue-59-final-evidence` from the
 
 ## Screen-capture inventory
 
-The candidate contains 24 readable PNG captures. The 15 required major-screen captures cover desktop (1440px), tablet (768px), and mobile (390px). The 9 additional desktop captures cover representative failure and boundary states required by the labsheet.
+The candidate contains 27 readable PNG captures. The 18 required major-screen captures cover desktop (1440px), tablet (768px), and mobile (390px). The 9 additional desktop captures cover representative failure and boundary states required by the labsheet.
 
 | Screen | Desktop | Tablet | Mobile |
 |---|---|---|---|
 | Login | [`login-desktop.png`](screenshots/final/authentication/login-desktop.png) | [`login-tablet.png`](screenshots/final/authentication/login-tablet.png) | [`login-mobile.png`](screenshots/final/authentication/login-mobile.png) |
 | Mandatory Change Password | [`change-password-desktop.png`](screenshots/final/authentication/change-password-desktop.png) | [`change-password-tablet.png`](screenshots/final/authentication/change-password-tablet.png) | [`change-password-mobile.png`](screenshots/final/authentication/change-password-mobile.png) |
+| Requester My Tickets and Create Ticket | [`requester-desktop.png`](screenshots/final/requester/requester-desktop.png) | [`requester-tablet.png`](screenshots/final/requester/requester-tablet.png) | [`requester-mobile.png`](screenshots/final/requester/requester-mobile.png) |
 | IT Staff Ticket Queue | [`ticket-queue-desktop.png`](screenshots/final/staff-queue/ticket-queue-desktop.png) | [`ticket-queue-tablet.png`](screenshots/final/staff-queue/ticket-queue-tablet.png) | [`ticket-queue-mobile.png`](screenshots/final/staff-queue/ticket-queue-mobile.png) |
 | IT Staff Ticket Detail | [`staff-ticket-detail-desktop.png`](screenshots/final/staff-ticket-detail/staff-ticket-detail-desktop.png) | [`staff-ticket-detail-tablet.png`](screenshots/final/staff-ticket-detail/staff-ticket-detail-tablet.png) | [`staff-ticket-detail-mobile.png`](screenshots/final/staff-ticket-detail/staff-ticket-detail-mobile.png) |
 | Administrator User Management | [`user-management-desktop.png`](screenshots/final/user-management/user-management-desktop.png) | [`user-management-tablet.png`](screenshots/final/user-management/user-management-tablet.png) | [`user-management-mobile.png`](screenshots/final/user-management/user-management-mobile.png) |
@@ -43,11 +44,12 @@ The visual requirements are defined in [`docs/lab-03/ui-spec.md`](../../docs/lab
 
 - Authentication: valid login, invalid credentials, inactive-account safe response, busy state, mandatory first-login change, logout, and session invalidation are covered by the server auth suites, `Login.test.tsx`, `ChangePassword.test.tsx`, and `authentication.spec.ts`.
 - Authorization and safe errors: unauthenticated/forbidden access, requester ownership protection, internal-note restrictions, missing resources, invalid input, conflicts, and unexpected server failures are covered in `server/tests/lab-03/`.
+- Requester regression: authenticated My Tickets/Create Ticket and requester-only navigation are covered by `Requester.test.tsx`, `RequesterInteractions.test.tsx`, `authenticated-requester.spec.ts`, and the three responsive Requester captures.
 - Queue: search, filters, sorting, pagination, ownership/status/priority display, responsive representations, empty, no-results, retryable failure, and requester navigation restriction are covered by `StaffTicketQueue.test.tsx`, `staff-queue.spec.ts`, and the responsive captures.
 - Ticket detail: claim/reassign, IT Priority, status transitions, Public Comments, Internal Notes, attachment continuity, requester restrictions, and safe comment failure are covered by `StaffTicketDetail.test.tsx`, `staff-ticket-flow.spec.ts`, and API tests.
 - Administrator safety: search/filter, create/edit/deactivate/reset, duplicate email, invalid values, self-deactivation/final-administrator safeguards, forbidden access, and safe failures are covered by `UserManagement.test.tsx`, `user-administration.spec.ts`, and `users-admin.api.test.ts`.
 - Migration/seed/regression: additive backfill, idempotent seed data, preserved Lab 2 requester behavior, and existing ticket/attachment flows are covered by migration, seed, requester-security, requester-workflow, and Lab 2 regression suites.
-- Responsive/accessibility/style: desktop/tablet/mobile E2E checks, responsive no-overflow assertions, semantic roles/labels, focus/style checks, and the 15 responsive PNGs cover the visual and usability requirements.
+- Responsive/accessibility/style: desktop/tablet/mobile E2E checks, responsive no-overflow assertions, semantic roles/labels, focus/style checks, and the 18 responsive PNGs cover the visual and usability requirements.
 
 ## Automated test evidence
 

@@ -162,6 +162,13 @@ try {
   }
 
   for (const viewport of viewports) {
+    const { context, page } = await authenticatedPage("REQUESTER", viewport);
+    await page.getByRole("heading", { name: "My Tickets" }).waitFor();
+    await save(page, `requester/requester-${viewport.name}.png`);
+    await context.close();
+  }
+
+  for (const viewport of viewports) {
     const { context, page } = await authenticatedPage("IT_STAFF", viewport);
     await page.getByRole("button", { name: "Ticket Queue" }).click();
     await page.getByRole("heading", { name: "Ticket Queue" }).waitFor();

@@ -47,4 +47,4 @@ One responsive screen provides a user list with Name, Email, Role, Status, and E
 
 ## Visual inspection checklist
 
-Capture Login, Change Password, Requester, Staff Queue, Staff Detail, and User Management at desktop, tablet, and mobile widths. Check tokens, role navigation, labels, focus, badges, editable/read-only distinction, validation placement, busy/disabled controls, loading/retry/empty/no-results/forbidden states, attachment actions, clipping, overlap, and horizontal overflow. Store evidence under `artifacts/lab-03/screenshots/{authentication,staff-queue,staff-ticket-detail,user-management}/`.
+Capture Login, Change Password, Requester, Staff Queue, Staff Detail, and User Management at desktop, tablet, and mobile widths. Check tokens, role navigation, labels, focus, badges, editable/read-only distinction, validation placement, busy/disabled controls, loading/retry/empty/no-results/forbidden states, attachment actions, clipping, overlap, and horizontal overflow. Store evidence under `artifacts/lab-03/screenshots/{authentication,requester,staff-queue,staff-ticket-detail,user-management}/`.
