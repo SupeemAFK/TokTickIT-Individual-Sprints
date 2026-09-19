@@ -61,6 +61,18 @@ Open a new terminal window, navigate to the `client/` directory, install depende
 
 ---
 
+## Lab 3 local seed accounts
+
+Running `npx prisma db seed` creates local-only accounts with the initial password `Lab3Pass123`. Every seeded account has `mustChangePassword=true` and must change this password after login.
+
+| Role | Email examples |
+|---|---|
+| Requester | `nicha.somchai@toktickit.test`, `anan.kittisak@toktickit.test`, `mali.charoen@toktickit.test`, `preecha.wattanakul@toktickit.test` |
+| IT Staff | `arun.support@toktickit.test`, `bua.support@toktickit.test`, `chai.support@toktickit.test` |
+| Administrator | `admin@toktickit.test` |
+
+These credentials are for local development only. Passwords are stored as unique-salt scrypt hashes and are never returned by the API.
+
 ## Available API Endpoints
 
 Once the backend is running, the following REST API endpoints are available:

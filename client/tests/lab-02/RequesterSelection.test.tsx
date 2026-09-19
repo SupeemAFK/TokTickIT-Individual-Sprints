@@ -1,66 +1,32 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import * as api from "../../src/api";
 import App from "../../src/App";
 
-const requesters = [
-  { id: 1, name: "Anan Kittisak", email: "anan.kittisak@toktickit.test" },
-  { id: 2, name: "Mali Charoen", email: "mali.charoen@toktickit.test" },
-];
+const user = { id: 8, name: "Ada Requester", email: "ada@example.test", role: "REQUESTER", isActive: true };
+const ticket = { id: 8, ticketNumber: "TKT-2026-000008", summary: "VPN cannot connect", description: "VPN fails after signing in.", requestedPriority: "HIGH", itPriority: "HIGH", currentStatus: "NEW", owner: null, category: { id: 1, name: "Network" }, relatedSystem: { id: 2, name: "VPN" }, attachments: [], publicComments: [] };
 
-describe("Requester selection", () => {
-  beforeEach(() => {
-    sessionStorage.clear();
-    vi.spyOn(api, "fetchCategories").mockResolvedValue([]);
-    vi.spyOn(api, "fetchRelatedSystems").mockResolvedValue([]);
-    vi.spyOn(api, "fetchTickets").mockResolvedValue({ items: [], pagination: { page: 1, pageSize: 10, totalItems: 0, totalPages: 0 } });
+function response(body: unknown, status = 200) { return { ok: status >= 200 && status < 300, status, json: async () => body } as Response; }
+function setupFetch() {
+  const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = String(input);
+    if (url.endsWith("/api/auth/me")) return response({ user, mustChangePassword: false });
+    if (url.endsWith("/api/categories")) return response([{ id: 1, name: "Network" }]);
+    if (url.endsWith("/api/related-systems")) return response([{ id: 2, name: "VPN" }]);
+    if (url.endsWith("/api/tickets/8")) return response({ ticket });
+    if (url.endsWith("/api/tickets") || url.includes("/api/tickets?")) return response({ items: [ticket], pagination: { page: 1, pageSize: 10, totalItems: 1, totalPages: 1 } });
+    return response({});
   });
-
-  afterEach(() => vi.restoreAllMocks());
-
-  it("shows a loading state and active requester choices with the testing-only explanation", async () => {
-    vi.spyOn(api, "fetchDevelopmentRequesters").mockResolvedValue(requesters);
-    render(<App />);
-    expect(screen.getByText(/loading requesters/i)).toBeInTheDocument();
-    expect(await screen.findByRole("option", { name: /anan kittisak/i })).toBeInTheDocument();
-    expect(screen.getByText(/not a sign-in method/i)).toBeInTheDocument();
-  });
-
-  it("shows a retryable safe error when loading requesters fails", async () => {
-    const fetchRequesters = vi.spyOn(api, "fetchDevelopmentRequesters")
-      .mockRejectedValueOnce(new Error("Development Requester request failed with HTTP 500."))
-      .mockResolvedValueOnce(requesters);
-    render(<App />);
-    expect(await screen.findByText("Requesters unavailable")).toBeInTheDocument();
-    await userEvent.click(screen.getByRole("button", { name: /try again/i }));
-    expect(await screen.findByRole("option", { name: /mali charoen/i })).toBeInTheDocument();
-    expect(fetchRequesters).toHaveBeenCalledTimes(2);
-  });
-
-  it("shows an empty state when there are no active requesters", async () => {
-    vi.spyOn(api, "fetchDevelopmentRequesters").mockResolvedValue([]);
-    render(<App />);
-    expect(await screen.findByText("No active requesters available")).toBeInTheDocument();
-  });
-
-  it("stores, displays, and changes context while reloading requester data", async () => {
-    vi.spyOn(api, "fetchDevelopmentRequesters").mockResolvedValue(requesters);
-    const fetchCategories = vi.spyOn(api, "fetchCategories").mockResolvedValue([]);
-    render(<App />);
-    await chooseRequester("1");
-    expect(await screen.findByText("Requester context active for", { exact: false })).toBeInTheDocument();
-    expect(sessionStorage.getItem("toktickit.requesterId")).toBe("1");
-    expect(fetchCategories).toHaveBeenCalledTimes(1);
-    await userEvent.click(screen.getByRole("button", { name: /change requester/i }));
-    await chooseRequester("2");
-    expect((await screen.findAllByText(/mali charoen/i)).length).toBeGreaterThan(0);
-    expect(sessionStorage.getItem("toktickit.requesterId")).toBe("2");
-    expect(fetchCategories).toHaveBeenCalledTimes(2);
-  });
-});
-
-async function chooseRequester(id: string) {
-  await userEvent.selectOptions(await screen.findByRole("combobox", { name: "Development Requester" }), id);
-  await userEvent.click(screen.getByRole("button", { name: /continue/i }));
+  vi.stubGlobal("fetch", fetchMock);
+  return fetchMock;
 }
+
+describe("authenticated requester regression", () => {
+  beforeEach(() => { sessionStorage.setItem("toktickit.token", "opaque-session"); setupFetch(); });
+  afterEach(() => { sessionStorage.clear(); vi.unstubAllGlobals(); });
+
+  it("shows the signed-in requester workspace instead of the Lab 2 selector", async () => { render(<App />); expect(await screen.findByRole("heading", { name: "My Tickets" })).toBeInTheDocument(); expect(screen.queryByText(/not a sign-in method/i)).not.toBeInTheDocument(); });
+  it("opens an authenticated ticket detail", async () => { render(<App />); await userEvent.click(await screen.findByRole("button", { name: `Open ticket ${ticket.ticketNumber}` })); expect(await screen.findByRole("heading", { name: ticket.ticketNumber })).toBeInTheDocument(); });
+  it("keeps requester ownership out of the browser API calls", async () => { const fetchMock = setupFetch(); render(<App />); await screen.findByRole("heading", { name: "My Tickets" }); expect(fetchMock.mock.calls.some(([url]) => String(url).includes("requesterId"))).toBe(false); });
+  it("renders the authenticated requester filters and ticket creation flow", async () => { render(<App />); expect(await screen.findByRole("heading", { name: "Create ticket" })).toBeInTheDocument(); expect(screen.getByLabelText("Search")).toBeInTheDocument(); expect(screen.getByLabelText("Status")).toBeInTheDocument(); expect(screen.getByLabelText("Page size")).toBeInTheDocument(); expect(screen.getByRole("button", { name: "Create ticket" })).toBeInTheDocument(); });
+});
