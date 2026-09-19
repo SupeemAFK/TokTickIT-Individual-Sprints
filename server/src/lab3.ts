@@ -62,6 +62,14 @@ function requiredText(value: unknown, field: string, min = 1, max = 2000) {
   return value.trim();
 }
 
+function strongPassword(value: unknown, field: string) {
+  const password = requiredText(value, field, 12, 200);
+  if (!/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password)) {
+    throw new RequestError(400, `${field} must include upper-case, lower-case, and number characters.`);
+  }
+  return password;
+}
+
 class RequestError extends Error {
   constructor(readonly status: number, message: string, readonly code = "INVALID_REQUEST") { super(message); }
 }
@@ -197,10 +205,9 @@ export function registerLab3(app: Express) {
 
   app.post("/api/auth/change-password", protect(), async (req, res) => {
     try {
-      const password = requiredText(req.body?.newPassword, "New password", 12, 200);
+      const password = strongPassword(req.body?.newPassword, "New password");
       const confirmation = requiredText(req.body?.confirmation, "Confirmation", 12, 200);
       if (password !== confirmation) throw new RequestError(400, "New password and confirmation must match.");
-      if (!/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password)) throw new RequestError(400, "Password must include upper-case, lower-case, and number characters.");
       const user = await getPrisma().user.update({ where: { id: (req as any).user.id }, data: { passwordHash: hashPassword(password), mustChangePassword: false } });
       res.json({ user: safeUser(user), mustChangePassword: false });
     } catch (error) { handleError(res, error, "Unable to change the password."); }
@@ -341,7 +348,8 @@ export function registerLab3(app: Express) {
     try {
       const body = req.body ?? {}; const name = requiredText(body.name, "Name", 2, 120); const email = requiredText(body.email, "Email", 3, 320).toLowerCase(); const role = body.role;
       if (typeof role !== "string" || !ROLES.has(role as UserRole)) throw new RequestError(400, "role is invalid.");
-      const initialPassword = requiredText(body.initialPassword, "Initial password", 12, 200); const isActive = body.isActive !== false; const prisma = getPrisma() as any;
+      if (typeof body.isActive !== "boolean") throw new RequestError(400, "isActive is invalid.");
+      const initialPassword = strongPassword(body.initialPassword, "Initial password"); const isActive = body.isActive; const prisma = getPrisma() as any;
       const user = await prisma.$transaction(async (tx: any) => { let legacyRequesterId: number | null = null; if (role === UserRole.REQUESTER) { const legacy = await tx.developmentRequester.upsert({ where: { email }, update: { name, isActive }, create: { name, email, isActive } }); legacyRequesterId = legacy.id; } return tx.user.create({ data: { name, email, role, isActive, passwordHash: hashPassword(initialPassword), mustChangePassword: true, legacyRequesterId } }); });
       res.status(201).json(safeUser(user));
     } catch (error) { handleError(res, error, "Unable to create the user."); }
@@ -354,7 +362,7 @@ export function registerLab3(app: Express) {
       const nextName = body.name === undefined ? target.name : requiredText(body.name, "Name", 2, 120); const nextEmail = body.email === undefined ? target.email : requiredText(body.email, "Email", 3, 320).toLowerCase(); const nextRole = body.role === undefined ? target.role : body.role; const nextActive = body.isActive === undefined ? target.isActive : body.isActive;
       if (typeof nextRole !== "string" || !ROLES.has(nextRole as UserRole) || typeof nextActive !== "boolean") throw new RequestError(400, "role and isActive are invalid.");
       if (id === me.id && !nextActive) return sendError(res, 409, "You cannot deactivate your own account.", "CONFLICT");
-      const passwordData = body.initialPassword === undefined ? {} : { passwordHash: hashPassword(requiredText(body.initialPassword, "Initial password", 12, 200)), mustChangePassword: true };
+      const passwordData = body.initialPassword === undefined ? {} : { passwordHash: hashPassword(strongPassword(body.initialPassword, "Initial password")), mustChangePassword: true };
       const user = await prisma.$transaction(async (tx: any) => {
         if (target.role === UserRole.ADMINISTRATOR && (nextRole !== UserRole.ADMINISTRATOR || !nextActive) && await tx.user.count({ where: { role: UserRole.ADMINISTRATOR, isActive: true } }) <= 1) throw new RequestError(409, "At least one active Administrator is required.", "CONFLICT");
         if (await tx.ticket.count({ where: { ownerUserId: id } }) > 0 && (!nextActive || !staffRole(nextRole))) throw new RequestError(409, "The user owns tickets and cannot be deactivated or demoted.", "OWNER_INTEGRITY_CONFLICT");
@@ -368,7 +376,7 @@ export function registerLab3(app: Express) {
   });
 
   app.post("/api/admin/users/:userId/initial-password", protect([UserRole.ADMINISTRATOR]), async (req, res) => {
-    try { const id = idParam(req.params.userId, "userId"); const password = requiredText(req.body?.initialPassword, "Initial password", 12, 200); const user = await (getPrisma() as any).user.findUnique({ where: { id }, select: { id: true } }); if (!user) return sendError(res, 404, "User not found.", "NOT_FOUND"); await (getPrisma() as any).$transaction((tx: any) => tx.user.update({ where: { id }, data: { passwordHash: hashPassword(password), mustChangePassword: true } })); res.status(204).end(); }
+    try { const id = idParam(req.params.userId, "userId"); const password = strongPassword(req.body?.initialPassword, "Initial password"); const user = await (getPrisma() as any).user.findUnique({ where: { id }, select: { id: true } }); if (!user) return sendError(res, 404, "User not found.", "NOT_FOUND"); await (getPrisma() as any).$transaction((tx: any) => tx.user.update({ where: { id }, data: { passwordHash: hashPassword(password), mustChangePassword: true } })); res.status(204).end(); }
     catch (error) { handleError(res, error, "Unable to set the initial password."); }
   });
 }
