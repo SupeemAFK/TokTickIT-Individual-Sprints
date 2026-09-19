@@ -20,7 +20,7 @@ This record contains the real collaborator review history for the Lab 3 contract
 | #40 | `feature/lab3-issue-40-user-management` | [#56](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/56) | `jarbbie` | [Changes requested](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/56#pullrequestreview-5255864243); [approval](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/56#pullrequestreview-5255885977) | `f3e9941`, `67e6e74`, `10c7c33` | Approved; merged |
 | #41 | `feature/lab3-issue-41-test-coverage` | [#57](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/57) | `jarbbie` | [Approval](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/57#pullrequestreview-5255967602) | `1f8d7d6` | Approved; merged |
 | #42 | `feature/lab3-issue-42-release-evidence` | [#58](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/58) | `jarbbie` | [Approval](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/58#pullrequestreview-5256033745) | `4851ebf` | Approved; merged |
-| #59 | `feature/lab3-issue-59-final-evidence` | Pending | Pending | Pending | Pending | Pending |
+| #59 | `feature/lab3-issue-59-final-evidence` | [#60](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/60) | `jarbbie` | Changes requested: add Requester responsive captures and fix the 768px User Management Role clipping; [response](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/60#issuecomment-5743114287) | `a74ddc7` | Re-review pending |
 
 ## Final integration PR
 
