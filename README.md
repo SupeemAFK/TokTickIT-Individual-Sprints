@@ -89,7 +89,7 @@ Once the backend is running, the following REST API endpoints are available:
 
 ## Running Tests
 
-Run the complete Lab 2 verification suite from the repository root:
+Run the complete Lab 3 verification suite from the repository root:
 
 ```text
 cd server && npm test
@@ -98,11 +98,11 @@ cd client && npm test
 cd client && npm run build
 ```
 
-The backend suite covers API and unit behavior; the client suite covers component and style behavior.
+The backend suite covers authentication, authorization, migration/seed, Requester regression, staff workflow, Administrator safeguards, and Lab 2 regression. The client suite covers the production Lab 3 screens, accessibility, responsive structure, and Lab 2 components.
 
 ### End-to-End Tests
 
-Install the Playwright browser once after installing client dependencies, then run the requester workflow:
+Install the Playwright browser once after installing client dependencies, then run the complete Lab 2 regression and Lab 3 acceptance workflows:
 
 ```text
 cd client
@@ -110,8 +110,8 @@ npx playwright install chromium
 npm run test:e2e
 ```
 
-The E2E flow uses stateful browser API fixtures, so it is reproducible without a running PostgreSQL database. It covers requester selection/switching, validation, ticket creation, search, Ticket Detail, attachment upload/removal, and desktop/tablet/mobile layouts.
+The E2E suite uses stateful browser API fixtures, so it is reproducible without a running PostgreSQL database. It covers authenticated login and first-login password change, Requester regression, staff queue/detail operations, Administrator access, forbidden navigation, and desktop/tablet/mobile layouts.
 
-## Lab 2 Documentation and Evidence
+## Lab 3 Documentation and Evidence
 
-The engineering contract, API/UI specifications, test traceability, peer-review record, AI-use record, and responsive screenshots are versioned under [`docs/lab-02/`](docs/lab-02/) and [`artifacts/lab-02/screenshots/`](artifacts/lab-02/screenshots/).
+The engineering contract, API/UI specifications, test traceability, peer-review record, AI-use record, and responsive screenshots are versioned under [`docs/lab-03/`](docs/lab-03/) and [`artifacts/lab-03/screenshots/`](artifacts/lab-03/screenshots/). Lab 2 documentation remains under [`docs/lab-02/`](docs/lab-02/) for historical traceability.
