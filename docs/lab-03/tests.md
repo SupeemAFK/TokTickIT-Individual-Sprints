@@ -22,9 +22,11 @@ Tests are planned before implementation. A row remains Planned until the named t
 | UI-05 | UI/responsive | AC-11–12 | Admin search/list/create/edit/activation/role/reset and safeguards | `client/tests/lab-03/UserManagement.test.tsx` | Planned |
 | STYLE-01 | Style/a11y | AC-14 | Zen Green tokens, labels, focus, badges, readable states, overflow | `client/tests/lab-03/ZenGreenLab3.test.tsx` | Planned |
 | E2E-01 | E2E | AC-01–07 | Login, first-login change, requester create/detail/comment/resolution/attachments/logout | `client/e2e/lab-03/authentication.spec.ts`, `authenticated-requester.spec.ts` | Planned |
-| E2E-02 | E2E | AC-08–10 | Staff queue search/filters/page, claim, status, priority, public comment, internal note | `client/e2e/lab-03/staff-queue.spec.ts`, `client/e2e/lab-03/staff-ticket-flow.spec.ts` | Implemented on PR #55; pending merge |
+| E2E-02 | E2E | AC-09–10 | Staff ticket detail claim, status, IT Priority, Public Comment, Internal Note, existing attachment action, and responsive detail behavior | `client/e2e/lab-03/staff-ticket-flow.spec.ts` | Implemented on PR #55; pending merge |
 | E2E-03 | E2E | AC-11–12 | Admin search/create/edit/activation/reset and forbidden non-admin access | `client/e2e/lab-03/user-administration.spec.ts` | Planned |
 | E2E-04 | Responsive | AC-14 | Major screens at desktop/tablet/mobile widths with no overflow | `client/e2e/lab-03/responsive.spec.ts` | Planned |
+
+Queue search, filtering, pagination, reset, and queue responsive representation are traced by API-04 and UI-03. E2E-02 intentionally covers the staff-ticket detail workflow only; it does not claim queue-query interaction coverage.
 
 ## Acceptance traceability
 
