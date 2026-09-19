@@ -37,7 +37,7 @@ Queue search, filtering, pagination, reset, and queue responsive representation 
 - AC-05: API-02, API-07, UI-02
 - AC-06: API-02, API-03, API-07, UI-02, E2E-01
 - AC-07: API-02, API-05, UI-02, UI-04, E2E-01
-- AC-08: API-04, UI-03, E2E-02
+- AC-08: API-04, UI-03
 - AC-09: API-05, UI-04, E2E-02
 - AC-10: API-02, API-05, UI-02, UI-04, E2E-01, E2E-02
 - AC-11: API-06, API-10, UI-05, E2E-03
