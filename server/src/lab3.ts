@@ -299,7 +299,9 @@ export function registerLab3(app: Express) {
       const prisma = getPrisma() as any; const current = await prisma.ticket.findUnique({ where: { id }, select: { id: true, currentStatus: true } });
       if (!current) return sendError(res, 404, "Ticket not found.", "NOT_FOUND");
       if (!ALLOWED_TRANSITIONS[current.currentStatus]?.includes(value)) return sendError(res, 409, "Status transition is not permitted.", "CONFLICT");
-      await prisma.ticket.update({ where: { id }, data: { currentStatus: value } }); res.json({ ticket: await findSummary(id) });
+      const updated = await prisma.ticket.updateMany({ where: { id, currentStatus: current.currentStatus }, data: { currentStatus: value } });
+      if (!updated.count) return sendError(res, 409, "Ticket changed; reload and retry.", "CONFLICT");
+      res.json({ ticket: await findSummary(id) });
     } catch (error) { handleError(res, error, "Unable to update ticket status."); }
   });
 
