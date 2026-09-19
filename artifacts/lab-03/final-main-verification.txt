@@ -1,0 +1,34 @@
+# Lab 3 Final Main Verification
+
+This log records the final Lab 3 verification from `main` commit `da505ee`, the merge commit for PR #61. It is the source record for the final evidence set before PDF creation.
+
+## Verification results
+
+- `PATH=/home/supeem/.nvm/versions/node/v24.15.0/bin:$PATH npm test -- --run` from `server/`: **PASS** — 24 test files, 122 tests.
+- `PATH=/home/supeem/.nvm/versions/node/v24.15.0/bin:$PATH npm run build` from `server/`: **PASS** — TypeScript build.
+- `PATH=/home/supeem/.nvm/versions/node/v24.15.0/bin:$PATH npm test -- --run` from `client/`: **PASS** — 15 test files, 47 tests.
+- `PATH=/home/supeem/.nvm/versions/node/v24.15.0/bin:$PATH npm run build` from `client/`: **PASS** — TypeScript/Vite production build.
+- `PATH=/home/supeem/.nvm/versions/node/v24.15.0/bin:$PATH npm run test:e2e` from `client/`: **PASS** — 9 tests, including authentication, Requester regression, Staff Queue, Staff Detail, Administrator, and responsive behavior.
+- `git diff --check`: **PASS** before the final evidence-record update.
+
+## Required Lab 3 coverage confirmed
+
+- Seed/idempotence: **PASS** within the server suite — realistic users, 12 workflow tickets plus the preserved Lab 2 legacy row, all required statuses/priorities, assigned/unassigned ownership, Public Comments, and Internal Notes.
+- Responsive behavior: **PASS** — the final-main E2E suite includes the 768px Requester filter-width/readability assertion and no-overflow checks.
+- Repository integrity: **PASS** — `.gitignore` ignores `server/.env`, `server/uploads/`, `client/playwright-report/`, and `client/test-results/`; no tracked secret/upload/report paths were found.
+- README/setup: **PASS** — local seed command, development-only credentials, password-change behavior, and test commands are documented.
+
+## Final-main evidence capture
+
+- Command: `PATH=/home/supeem/.nvm/versions/node/v24.15.0/bin:$PATH server/node_modules/.bin/tsx client/scripts/capture-lab3-final-evidence.ts`
+- Result: **PASS** — 27 PNGs recaptured from final `main`.
+- Responsive captures: Login, Change Password, Requester, Staff Queue, Staff Detail, and User Management at desktop/tablet/mobile (18 PNGs).
+- Error/boundary captures: invalid login, inactive login, invalid password, queue empty/no-results/failure, staff comment failure, user-list failure, and duplicate-email conflict (9 desktop PNGs).
+
+## Release boundary
+
+- Final integration: PR #61 merged `lab3-staging` into `main` at `da505ee`.
+- Reviewer record includes collaborator approval for PR #60 and final integration review history.
+- Project #10 status still requires confirmation with a GitHub credential that has `read:project` access.
+- Final PDF is intentionally not created in this verification change; it must be the single submission PDF with `Answer Part 1` through `Answer Part 9` after the remaining release checks are complete.
+- Pre-existing unrelated untracked Lab 2 evidence and older Lab 3 screenshots were not staged.

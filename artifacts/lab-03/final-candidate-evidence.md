@@ -1,10 +1,11 @@
-# Lab 3 Final Candidate Evidence
+# Lab 3 Final Main Evidence
 
-This evidence set is prepared on `feature/lab3-issue-59-final-evidence` from the merged `origin/lab3-staging` candidate after PR #58. It is intentionally **not** final `main` evidence yet. The complete verification and screenshot capture must be repeated after `lab3-staging` is merged into `main` before the submission PDF is created.
+This evidence set was recaptured from final `main` commit `da505ee` after PR #61 merged `lab3-staging` into `main`. The final-main verification and screenshot capture passed before the submission PDF stage.
 
 ## Source and capture provenance
 
-- Staging base: `805e88c` (PR #58 merge into `lab3-staging`)
+- Staging base: `f343e6d` (PR #60 merge into `lab3-staging`)
+- Final main: `da505ee` ([PR #61](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/61) merge)
 - Evidence PR: [PR #60](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/60)
 - Capture script: [`client/scripts/capture-lab3-final-evidence.ts`](../../client/scripts/capture-lab3-final-evidence.ts)
 - Capture command: `PATH=/home/supeem/.nvm/versions/node/v24.15.0/bin:$PATH server/node_modules/.bin/tsx client/scripts/capture-lab3-final-evidence.ts`
@@ -14,7 +15,7 @@ This evidence set is prepared on `feature/lab3-issue-59-final-evidence` from the
 
 ## Screen-capture inventory
 
-The candidate contains 27 readable PNG captures. The 18 required major-screen captures cover desktop (1440px), tablet (768px), and mobile (390px). The 9 additional desktop captures cover representative failure and boundary states required by the labsheet.
+Final `main` contains 27 readable PNG captures. The 18 required major-screen captures cover desktop (1440px), tablet (768px), and mobile (390px). The 9 additional desktop captures cover representative failure and boundary states required by the labsheet.
 
 | Screen | Desktop | Tablet | Mobile |
 |---|---|---|---|
@@ -54,7 +55,7 @@ The visual requirements are defined in [`docs/lab-03/ui-spec.md`](../../docs/lab
 
 ## Automated test evidence
 
-Full captured output is in [`staging-verification.txt`](staging-verification.txt). The candidate run passed:
+Full captured output is in [`final-main-verification.txt`](final-main-verification.txt). The final `main` run passed:
 
 - Server: 24 test files, 122 tests; TypeScript build.
 - Client: 15 test files, 47 tests; TypeScript/Vite production build.
@@ -74,7 +75,7 @@ The current `.gitignore` was checked with `git check-ignore` for `server/.env`, 
 ## Review and release boundary
 
 - Reviewer history: [`docs/lab-03/reviewer.md`](../../docs/lab-03/reviewer.md)
-- PR for this evidence set: [PR #60](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/60)
+- Evidence implementation PR: [PR #60](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/60)
+- Final integration PR: [PR #61](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/61), merged into `main` at `da505ee`
 - Continuation issue: [Issue #59](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/issues/59)
-- Final PDF: intentionally not present in this PR.
-- Final `main` integration and final-main verification: still required before the PDF stage.
+- Final PDF: intentionally not present yet; it is the next deliverable after final-main evidence review.
