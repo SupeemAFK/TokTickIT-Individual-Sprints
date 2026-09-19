@@ -1,6 +1,6 @@
 # Lab 3 Peer Review Record
 
-This record contains the real collaborator review history for the Lab 3 contract and feature PRs. Merged approvals are recorded from GitHub. Issues #35 through #41 have approved feature PRs merged into `lab3-staging`; the Issue #42 release and final `main` integration review remain pending. Do not fabricate reviewer identity, comments, approvals, or test results.
+This record contains the real collaborator review history for the Lab 3 contract, feature, and release PRs. Merged approvals are recorded from GitHub. Issues #35 through #42 have approved PRs merged into `lab3-staging`; Issue #59 tracks the remaining final evidence, `main` integration, and submission report. Do not fabricate reviewer identity, comments, approvals, or test results.
 
 ## Contract PR
 
@@ -19,7 +19,8 @@ This record contains the real collaborator review history for the Lab 3 contract
 | #39 | `feature/lab3-issue-39-ticket-operations` | [#55](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/55) | `jarbbie` | [Changes requested](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/55#pullrequestreview-5255678079); [approval](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/55#pullrequestreview-5255703617) | `60423ec`, `9a52b09`, `17cd79c` | Approved; merged |
 | #40 | `feature/lab3-issue-40-user-management` | [#56](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/56) | `jarbbie` | [Changes requested](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/56#pullrequestreview-5255864243); [approval](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/56#pullrequestreview-5255885977) | `f3e9941`, `67e6e74`, `10c7c33` | Approved; merged |
 | #41 | `feature/lab3-issue-41-test-coverage` | [#57](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/57) | `jarbbie` | [Approval](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/57#pullrequestreview-5255967602) | `1f8d7d6` | Approved; merged |
-| #42 | Pending | Pending | Pending | Pending | Pending | Pending |
+| #42 | `feature/lab3-issue-42-release-evidence` | [#58](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/58) | `jarbbie` | [Approval](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/58#pullrequestreview-5256033745) | `4851ebf` | Approved; merged |
+| #59 | `feature/lab3-issue-59-final-evidence` | [#60](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/60) | `jarbbie` | Changes requested: add Requester responsive captures and fix the 768px User Management Role clipping; [response](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/60#issuecomment-5743114287). Re-review changes requested: fix readable Requester tablet filters; [response](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/60#issuecomment-5743344249). Latest review: correct stale 15/45 client validation text in the PR description; [response](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/60#issuecomment-5743390567) | `a74ddc7`, `30b833d`, `c0fd14a`, PR description update | Re-review pending |
 
 ## Final integration PR
 

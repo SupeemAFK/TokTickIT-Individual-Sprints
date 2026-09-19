@@ -16,6 +16,13 @@ test("Requester, Staff Queue, and Administrator screens fit desktop, tablet, and
         await page.getByRole("button", { name: "User Management" }).click();
         await expect(page.getByRole("heading", { name: "User Management" })).toBeVisible();
       }
+      if (role === "REQUESTER" && viewport.width === 768) {
+        for (const id of ["requester-search", "requester-category-filter", "requester-system-filter", "requester-priority-filter", "requester-status-filter", "requester-sort", "requester-direction", "requester-page-size"]) {
+          const control = page.locator(`#${id}`);
+          await expect(control).toBeVisible();
+          expect(await control.evaluate((element) => element.getBoundingClientRect().width >= 260)).toBe(true);
+        }
+      }
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
     }
   }

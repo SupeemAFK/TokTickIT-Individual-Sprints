@@ -71,6 +71,13 @@ test("Administrator can search, filter, create, edit, deactivate, and reset user
   await page.getByLabel("Name for ada@example.test").fill("Ada Updated");
   await page.getByRole("button", { name: "Save changes" }).first().click();
   await expect(page.getByLabel("Name for ada@example.test")).toHaveValue("Ada Updated");
+
+  await page.setViewportSize({ width: 768, height: 1024 });
+  const tabletRoleSelect = page.locator("#new-user-role");
+  await expect(tabletRoleSelect).toBeVisible();
+  expect(await tabletRoleSelect.evaluate((element) => element.getBoundingClientRect().width)).toBeGreaterThan(200);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+
   await page.getByRole("button", { name: "Deactivate" }).first().click();
   await expect(page.getByRole("button", { name: "Reactivate" }).first()).toBeVisible();
 
