@@ -19,7 +19,7 @@ type JsonBody = Record<string, unknown>;
 async function authenticatedPage(role: Role, viewport: (typeof viewports)[number]) {
   const context = await browser.newContext({ viewport: { width: viewport.width, height: viewport.height } });
   const page = await context.newPage();
-  await installLab3ApiMock(page, role);
+  await installLab3ApiMock(page, role, { realistic: true });
   await page.goto(baseURL);
   await page.evaluate(() => sessionStorage.setItem("toktickit.token", "final-evidence-session"));
   await page.reload();
@@ -67,7 +67,7 @@ async function queueRoute(page: Page, mode: "empty" | "no-results" | "error") {
 async function captureLoginFailure(kind: "invalid" | "inactive") {
   const context = await browser.newContext({ viewport: { width: desktop.width, height: desktop.height } });
   const page = await context.newPage();
-  await installLab3ApiMock(page, "REQUESTER");
+  await installLab3ApiMock(page, "REQUESTER", { realistic: true });
   await failRoute(page, "/api/auth/login", "POST", { error: "Invalid email or password.", code: "LOGIN_FAILED" }, 401);
   await page.goto(baseURL);
   await page.getByLabel("Email").fill(kind === "inactive" ? "inactive@example.test" : "unknown@example.test");
@@ -81,7 +81,7 @@ async function captureLoginFailure(kind: "invalid" | "inactive") {
 async function captureInvalidPassword() {
   const context = await browser.newContext({ viewport: { width: desktop.width, height: desktop.height } });
   const page = await context.newPage();
-  await installLab3ApiMock(page, "REQUESTER");
+  await installLab3ApiMock(page, "REQUESTER", { realistic: true });
   await page.goto(baseURL);
   await page.getByLabel("Email").fill("ada@example.test");
   await page.getByLabel("Password").fill("Lab3Pass123");
@@ -150,7 +150,7 @@ try {
   for (const viewport of viewports) {
     const context = await browser.newContext({ viewport: { width: viewport.width, height: viewport.height } });
     const page = await context.newPage();
-    await installLab3ApiMock(page, "REQUESTER");
+    await installLab3ApiMock(page, "REQUESTER", { realistic: true });
     await page.goto(baseURL);
     await page.getByLabel("Email").fill("ada@example.test");
     await page.getByLabel("Password").fill("Lab3Pass123");

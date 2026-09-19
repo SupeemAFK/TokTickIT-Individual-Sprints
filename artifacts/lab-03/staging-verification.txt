@@ -14,10 +14,16 @@ This log records the post-review candidate evidence verification on `feature/lab
 
 The first serialized post-review log attempt encountered a shared Playwright web-server port collision and was discarded; the isolated full E2E rerun above passed. No collision output is treated as candidate evidence.
 
+## Seed and fixture coverage
+
+- Real server seed: **PASS** — 12 workflow tickets plus the preserved Lab 2 legacy row; 5 Requesters (4 active, 1 inactive), 4 IT Staff accounts (3 active, 1 inactive), and 1 active Administrator.
+- Seed distribution: **PASS** — all eight required statuses, all LOW/MEDIUM/HIGH priorities, assigned and unassigned ownership, and non-sensitive Public Comments/Internal Notes; focused idempotency suite passed.
+- Evidence fixture: **PASS** — 10 workflow tickets, 3 tickets for the captured authenticated Requester, multiple owners, and 10 user-management rows; deterministic functional E2E fixtures remain unchanged by default.
+
 ## Capture generation
 
 - Command: `PATH=/home/supeem/.nvm/versions/node/v24.15.0/bin:$PATH server/node_modules/.bin/tsx client/scripts/capture-lab3-final-evidence.ts`
-- Result: **PASS** — 27 screenshots generated; each capture waits for its expected visible UI state before writing the PNG.
+- Result: **PASS** — 27 screenshots regenerated from the realistic fixture; each capture waits for its expected visible UI state before writing the PNG.
 - Responsive groups: Login, Change Password, Requester, Staff Queue, Staff Detail, and User Management at desktop/tablet/mobile (18 PNGs).
 - Error/boundary groups: invalid login, inactive login, invalid password, queue empty/no-results/failure, staff comment failure, user-list failure, duplicate-email conflict (9 desktop PNGs).
 
