@@ -8,7 +8,8 @@ This log records the post-review candidate evidence verification on `feature/lab
 - `PATH=/home/supeem/.nvm/versions/node/v24.15.0/bin:$PATH npm run build` from `server/`: **PASS** — TypeScript build.
 - `PATH=/home/supeem/.nvm/versions/node/v24.15.0/bin:$PATH npm test -- --run` from `client/`: **PASS** — 15 test files, 47 tests.
 - `PATH=/home/supeem/.nvm/versions/node/v24.15.0/bin:$PATH npm run build` from `client/`: **PASS** — TypeScript/Vite production build.
-- `PATH=/home/supeem/.nvm/versions/node/v24.15.0/bin:$PATH npm run test:e2e` from `client/`: **PASS** — 9 tests, including the new 768px User Management role-width/no-overflow assertion.
+- `PATH=/home/supeem/.nvm/versions/node/v24.15.0/bin:$PATH npm run test:e2e` from `client/`: **PASS** — 9 tests, including the 768px Requester filter-width/readability assertion and the User Management role-width/no-overflow assertion.
+- Focused `e2e/lab-03/responsive.spec.ts`: **PASS** — 1 test, including eight Requester filter controls at least 260px wide at 768px with no horizontal overflow.
 - Focused `e2e/lab-03/user-administration.spec.ts`: **PASS** — 2 tests.
 - `git diff --check`: **PASS**.
 
@@ -23,7 +24,7 @@ The first serialized post-review log attempt encountered a shared Playwright web
 ## Capture generation
 
 - Command: `PATH=/home/supeem/.nvm/versions/node/v24.15.0/bin:$PATH server/node_modules/.bin/tsx client/scripts/capture-lab3-final-evidence.ts`
-- Result: **PASS** — 27 screenshots regenerated from the realistic fixture; each capture waits for its expected visible UI state before writing the PNG.
+- Result: **PASS** — 27 screenshots regenerated from the realistic fixture after the Requester tablet layout fix; each capture waits for its expected visible UI state before writing the PNG.
 - Responsive groups: Login, Change Password, Requester, Staff Queue, Staff Detail, and User Management at desktop/tablet/mobile (18 PNGs).
 - Error/boundary groups: invalid login, inactive login, invalid password, queue empty/no-results/failure, staff comment failure, user-list failure, duplicate-email conflict (9 desktop PNGs).
 

@@ -50,7 +50,7 @@ The visual requirements are defined in [`docs/lab-03/ui-spec.md`](../../docs/lab
 - Ticket detail: claim/reassign, IT Priority, status transitions, Public Comments, Internal Notes, attachment continuity, requester restrictions, and safe comment failure are covered by `StaffTicketDetail.test.tsx`, `staff-ticket-flow.spec.ts`, and API tests.
 - Administrator safety: search/filter, create/edit/deactivate/reset, duplicate email, invalid values, self-deactivation/final-administrator safeguards, forbidden access, and safe failures are covered by `UserManagement.test.tsx`, `user-administration.spec.ts`, and `users-admin.api.test.ts`.
 - Migration/seed/regression: additive backfill, idempotent seed data with all required role/status/priority/ownership distributions, preserved Lab 2 requester behavior, and existing ticket/attachment flows are covered by migration, seed, requester-security, requester-workflow, and Lab 2 regression suites.
-- Responsive/accessibility/style: desktop/tablet/mobile E2E checks, responsive no-overflow assertions, semantic roles/labels, focus/style checks, and the 18 responsive PNGs cover the visual and usability requirements.
+- Responsive/accessibility/style: desktop/tablet/mobile E2E checks, Requester tablet filter-width/readability and no-overflow assertions, semantic roles/labels, focus/style checks, and the 18 responsive PNGs cover the visual and usability requirements.
 
 ## Automated test evidence
 
@@ -58,7 +58,7 @@ Full captured output is in [`staging-verification.txt`](staging-verification.txt
 
 - Server: 24 test files, 122 tests; TypeScript build.
 - Client: 15 test files, 47 tests; TypeScript/Vite production build.
-- Playwright: 9 E2E tests covering authentication, authenticated Requester regression, Staff Queue, Staff Ticket Detail, Administrator flow, and responsive behavior.
+- Playwright: 9 E2E tests covering authentication, authenticated Requester regression, Staff Queue, Staff Ticket Detail, Administrator flow, and responsive behavior, including the Requester tablet filter-width assertion.
 - `git diff --check` passed.
 
 The traceability plan is [`docs/lab-03/tests.md`](../../docs/lab-03/tests.md). The implementation test sources are retained in the staging base:
