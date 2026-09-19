@@ -1,43 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import request from "supertest";
-
-const prisma = vi.hoisted(() => ({ ticket: { findFirst: vi.fn() }, attachment: { findMany: vi.fn(), findFirst: vi.fn(), count: vi.fn(), create: vi.fn(), update: vi.fn() } }));
+const prisma = vi.hoisted(() => ({ session: { findUnique: vi.fn() }, user: { findUnique: vi.fn() }, ticket: { findFirst: vi.fn() }, attachment: { findMany: vi.fn(), findFirst: vi.fn(), count: vi.fn(), create: vi.fn(), update: vi.fn() } }));
 vi.mock("../../src/prisma.js", () => ({ getPrisma: () => prisma }));
 import { app } from "../../src/app.js";
-
-describe("attachment API", () => {
-  beforeEach(() => { vi.resetAllMocks(); prisma.ticket.findFirst.mockResolvedValue({ id: 8 }); });
-  it("lists attachment metadata only for an owned active ticket", async () => {
-    prisma.attachment.findMany.mockResolvedValue([{ id: 1, originalFilename: "guide.pdf", mimeType: "application/pdf", byteSize: 10, createdAt: new Date(), removedAt: null, removalReason: null }]);
-    const response = await request(app).get("/api/tickets/8/attachments?requesterId=1");
-    expect(response.status).toBe(200); expect(response.body[0].originalFilename).toBe("guide.pdf");
-  });
-  it("rejects an unsupported upload before storing it", async () => {
-    const response = await request(app).post("/api/tickets/8/attachments").field("requesterId", "1").attach("file", Buffer.from("x"), { filename: "script.exe", contentType: "application/octet-stream" });
-    expect(response.status).toBe(415); expect(response.body).toEqual({ error: "Only JPG, PNG, WEBP, and PDF files are allowed." }); expect(prisma.attachment.create).not.toHaveBeenCalled();
-  });
-  it("returns a safe error for oversized uploads", async () => {
-    const response = await request(app).post("/api/tickets/8/attachments").field("requesterId", "1").attach("file", Buffer.alloc(5 * 1024 * 1024 + 1), { filename: "large.pdf", contentType: "application/pdf" });
-    expect(response.status).toBe(413); expect(response.body).toEqual({ error: "Attachment must be 5 MB or smaller." });
-  });
-  it("enforces the five active attachment limit", async () => {
-    prisma.attachment.count.mockResolvedValue(5);
-    const response = await request(app).post("/api/tickets/8/attachments").field("requesterId", "1").attach("file", Buffer.from("x"), { filename: "guide.pdf", contentType: "application/pdf" });
-    expect(response.status).toBe(409); expect(response.body).toEqual({ error: "A ticket can have at most five active attachments." });
-  });
-  it("rejects a non-owner upload", async () => {
-    prisma.ticket.findFirst.mockResolvedValue(null);
-    const response = await request(app).post("/api/tickets/8/attachments").field("requesterId", "2").attach("file", Buffer.from("x"), { filename: "guide.pdf", contentType: "application/pdf" });
-    expect(response.status).toBe(404); expect(response.body).toEqual({ error: "Ticket not found." });
-  });
-  it("uploads a valid owned file", async () => {
-    prisma.attachment.count.mockResolvedValue(0); prisma.attachment.create.mockResolvedValue({ id: 2, originalFilename: "guide.pdf", mimeType: "application/pdf", byteSize: 1, createdAt: new Date(), removedAt: null, removalReason: null });
-    const response = await request(app).post("/api/tickets/8/attachments").field("requesterId", "1").attach("file", Buffer.from("x"), { filename: "guide.pdf", contentType: "application/pdf" });
-    expect(response.status).toBe(201); expect(response.body.originalFilename).toBe("guide.pdf");
-  });
-  it("blocks download of a removed attachment", async () => {
-    prisma.attachment.findFirst.mockResolvedValue({ storageKey: "x", originalFilename: "guide.pdf", mimeType: "application/pdf", removedAt: new Date() });
-    const response = await request(app).get("/api/attachments/1/download?requesterId=1");
-    expect(response.status).toBe(410); expect(response.body).toEqual({ error: "Attachment is no longer available." });
-  });
-})
+const auth = { Authorization: "Bearer session-token" }; const user = { id: 1, name: "Anan", email: "anan@test", role: "REQUESTER", isActive: true, mustChangePassword: false, legacyRequesterId: 1 };
+describe("authenticated attachment API", () => {
+  beforeEach(() => { vi.resetAllMocks(); prisma.session.findUnique.mockResolvedValue({ userId: 1, revokedAt: null, expiresAt: new Date(Date.now() + 3600000) }); prisma.user.findUnique.mockResolvedValue(user); prisma.ticket.findFirst.mockResolvedValue({ id: 8 }); });
+  it("lists metadata without accepting requester context from the browser", async () => { prisma.attachment.findMany.mockResolvedValue([{ id: 1, originalFilename: "guide.pdf", mimeType: "application/pdf", byteSize: 10, createdAt: new Date(), removedAt: null, removalReason: null }]); const response = await request(app).get("/api/tickets/8/attachments?requesterId=999").set(auth); expect(response.status).toBe(200); expect(response.body.items[0].originalFilename).toBe("guide.pdf"); });
+  it("rejects unsupported media before storing it", async () => { const response = await request(app).post("/api/tickets/8/attachments").set(auth).attach("file", Buffer.from("x"), { filename: "script.exe", contentType: "application/octet-stream" }); expect(response.status).toBe(415); expect(response.body.code).toBe("UNSUPPORTED_MEDIA_TYPE"); expect(prisma.attachment.create).not.toHaveBeenCalled(); });
+  it("enforces the five active attachment limit", async () => { prisma.attachment.count.mockResolvedValue(5); const response = await request(app).post("/api/tickets/8/attachments").set(auth).attach("file", Buffer.from("x"), { filename: "guide.pdf", contentType: "application/pdf" }); expect(response.status).toBe(409); expect(response.body.code).toBe("CONFLICT"); });
+  it("rejects oversized uploads before storing metadata", async () => { const response = await request(app).post("/api/tickets/8/attachments").set(auth).attach("file", Buffer.alloc(5 * 1024 * 1024 + 1), { filename: "large.pdf", contentType: "application/pdf" }); expect(response.status).toBe(413); expect(response.body).toEqual({ error: "Attachment must be 5 MB or smaller.", code: "PAYLOAD_TOO_LARGE" }); expect(prisma.attachment.create).not.toHaveBeenCalled(); });
+  it("returns a generic server error when attachment metadata persistence fails", async () => { prisma.attachment.count.mockResolvedValue(0); prisma.attachment.create.mockRejectedValue(new Error("database unavailable")); const response = await request(app).post("/api/tickets/8/attachments").set(auth).attach("file", Buffer.from("x"), { filename: "guide.pdf", contentType: "application/pdf" }); expect(response.status).toBe(500); expect(response.body).toEqual({ error: "Unable to upload attachment.", code: "SERVER_ERROR" }); });
+  it("rejects a non-owned upload", async () => { prisma.ticket.findFirst.mockResolvedValue(null); const response = await request(app).post("/api/tickets/8/attachments").set(auth).attach("file", Buffer.from("x"), { filename: "guide.pdf", contentType: "application/pdf" }); expect(response.status).toBe(404); expect(response.body.code).toBe("NOT_FOUND"); });
+  it("uploads a valid file using session ownership", async () => { prisma.attachment.count.mockResolvedValue(0); prisma.attachment.create.mockResolvedValue({ id: 2, originalFilename: "guide.pdf", mimeType: "application/pdf", byteSize: 1, createdAt: new Date(), removedAt: null, removalReason: null }); const response = await request(app).post("/api/tickets/8/attachments").set(auth).attach("file", Buffer.from("x"), { filename: "guide.pdf", contentType: "application/pdf" }); expect(response.status).toBe(201); expect(response.body.attachment.originalFilename).toBe("guide.pdf"); });
+  it("blocks download of a removed attachment", async () => { prisma.attachment.findFirst.mockResolvedValue({ storageKey: "x", originalFilename: "guide.pdf", mimeType: "application/pdf", removedAt: new Date() }); const response = await request(app).get("/api/attachments/1/download?requesterId=999").set(auth); expect(response.status).toBe(410); expect(response.body.code).toBe("GONE"); });
+});

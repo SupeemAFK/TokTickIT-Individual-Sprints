@@ -1,0 +1,66 @@
+# Lab 3 Staging Candidate Verification
+
+This log records the post-review candidate evidence verification on `feature/lab3-issue-59-final-evidence` before review and before any final `main` integration or PDF generation.
+
+## Verification results
+
+- `PATH=/home/supeem/.nvm/versions/node/v24.15.0/bin:$PATH npm test -- --run` from `server/`: **PASS** — 24 test files, 122 tests.
+- `PATH=/home/supeem/.nvm/versions/node/v24.15.0/bin:$PATH npm run build` from `server/`: **PASS** — TypeScript build.
+- `PATH=/home/supeem/.nvm/versions/node/v24.15.0/bin:$PATH npm test -- --run` from `client/`: **PASS** — 15 test files, 47 tests.
+- `PATH=/home/supeem/.nvm/versions/node/v24.15.0/bin:$PATH npm run build` from `client/`: **PASS** — TypeScript/Vite production build.
+- `PATH=/home/supeem/.nvm/versions/node/v24.15.0/bin:$PATH npm run test:e2e` from `client/`: **PASS** — 9 tests, including the 768px Requester filter-width/readability assertion and the User Management role-width/no-overflow assertion.
+- Focused `e2e/lab-03/responsive.spec.ts`: **PASS** — 1 test, including eight Requester filter controls at least 260px wide at 768px with no horizontal overflow.
+- Focused `e2e/lab-03/user-administration.spec.ts`: **PASS** — 2 tests.
+- `git diff --check`: **PASS**.
+
+The first serialized post-review log attempt encountered a shared Playwright web-server port collision and was discarded; the isolated full E2E rerun above passed. No collision output is treated as candidate evidence.
+
+## Seed and fixture coverage
+
+- Real server seed: **PASS** — 12 workflow tickets plus the preserved Lab 2 legacy row; 5 Requesters (4 active, 1 inactive), 4 IT Staff accounts (3 active, 1 inactive), and 1 active Administrator.
+- Seed distribution: **PASS** — all eight required statuses, all LOW/MEDIUM/HIGH priorities, assigned and unassigned ownership, and non-sensitive Public Comments/Internal Notes; focused idempotency suite passed.
+- Evidence fixture: **PASS** — 10 workflow tickets, 3 tickets for the captured authenticated Requester, multiple owners, and 10 user-management rows; deterministic functional E2E fixtures remain unchanged by default.
+
+## Capture generation
+
+- Command: `PATH=/home/supeem/.nvm/versions/node/v24.15.0/bin:$PATH server/node_modules/.bin/tsx client/scripts/capture-lab3-final-evidence.ts`
+- Result: **PASS** — 27 screenshots regenerated from the realistic fixture after the Requester tablet layout fix; each capture waits for its expected visible UI state before writing the PNG.
+- Responsive groups: Login, Change Password, Requester, Staff Queue, Staff Detail, and User Management at desktop/tablet/mobile (18 PNGs).
+- Error/boundary groups: invalid login, inactive login, invalid password, queue empty/no-results/failure, staff comment failure, user-list failure, duplicate-email conflict (9 desktop PNGs).
+
+## Repository integrity
+
+- `git check-ignore -v server/.env server/uploads/example.txt client/playwright-report/example.html client/test-results/example.txt`: **PASS**.
+- Tracked secret/upload/report paths matching the check: **none**.
+- The final evidence PNGs are intentionally tracked repository artifacts; only secrets, uploads, and generated reports are excluded by `.gitignore`.
+- Pre-existing untracked Lab 2 evidence and older Lab 3 screenshots were intentionally left untouched and are not part of this PR.
+
+## PNG inventory
+
+- artifacts/lab-03/screenshots/final/authentication/change-password-desktop.png
+- artifacts/lab-03/screenshots/final/authentication/change-password-invalid-desktop.png
+- artifacts/lab-03/screenshots/final/authentication/change-password-mobile.png
+- artifacts/lab-03/screenshots/final/authentication/change-password-tablet.png
+- artifacts/lab-03/screenshots/final/authentication/login-desktop.png
+- artifacts/lab-03/screenshots/final/authentication/login-inactive-desktop.png
+- artifacts/lab-03/screenshots/final/authentication/login-invalid-desktop.png
+- artifacts/lab-03/screenshots/final/authentication/login-mobile.png
+- artifacts/lab-03/screenshots/final/authentication/login-tablet.png
+- artifacts/lab-03/screenshots/final/requester/requester-desktop.png
+- artifacts/lab-03/screenshots/final/requester/requester-mobile.png
+- artifacts/lab-03/screenshots/final/requester/requester-tablet.png
+- artifacts/lab-03/screenshots/final/staff-queue/queue-empty-desktop.png
+- artifacts/lab-03/screenshots/final/staff-queue/queue-failure-desktop.png
+- artifacts/lab-03/screenshots/final/staff-queue/queue-no-results-desktop.png
+- artifacts/lab-03/screenshots/final/staff-queue/ticket-queue-desktop.png
+- artifacts/lab-03/screenshots/final/staff-queue/ticket-queue-mobile.png
+- artifacts/lab-03/screenshots/final/staff-queue/ticket-queue-tablet.png
+- artifacts/lab-03/screenshots/final/staff-ticket-detail/staff-ticket-comment-failure-desktop.png
+- artifacts/lab-03/screenshots/final/staff-ticket-detail/staff-ticket-detail-desktop.png
+- artifacts/lab-03/screenshots/final/staff-ticket-detail/staff-ticket-detail-mobile.png
+- artifacts/lab-03/screenshots/final/staff-ticket-detail/staff-ticket-detail-tablet.png
+- artifacts/lab-03/screenshots/final/user-management/user-management-conflict-desktop.png
+- artifacts/lab-03/screenshots/final/user-management/user-management-desktop.png
+- artifacts/lab-03/screenshots/final/user-management/user-management-failure-desktop.png
+- artifacts/lab-03/screenshots/final/user-management/user-management-mobile.png
+- artifacts/lab-03/screenshots/final/user-management/user-management-tablet.png

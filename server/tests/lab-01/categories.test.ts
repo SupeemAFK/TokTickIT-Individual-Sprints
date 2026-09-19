@@ -32,6 +32,7 @@ describe("GET /api/categories", () => {
 
     expect(res.status).toBe(200);
     expect(prismaMock.findMany).toHaveBeenCalledWith({
+      where: { isActive: true },
       orderBy: { id: "asc" },
       select: { id: true, name: true },
     });
@@ -49,6 +50,6 @@ describe("GET /api/categories", () => {
     const res = await request(app).get("/api/categories");
 
     expect(res.status).toBe(500);
-    expect(res.body).toEqual({ error: "Unable to load categories." });
+    expect(res.body).toEqual({ error: "Unable to load categories.", code: "SERVER_ERROR" });
   });
 });

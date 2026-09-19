@@ -44,8 +44,8 @@ Open your terminal and clone the repository to your local machine:
 While still in the `server/` directory, install dependencies, initialize the database, and start the server:
 
     npm install
-    npx prisma migrate dev --name init
-    npx prisma db seed
+    npx prisma migrate dev
+    npm run prisma:seed
     npm run dev
 
 > The backend server will start (usually on http://localhost:3000).
@@ -60,6 +60,18 @@ Open a new terminal window, navigate to the `client/` directory, install depende
 > The React application will launch in your default web browser (usually on http://localhost:5173).
 
 ---
+
+## Lab 3 local seed accounts
+
+Running `npm run prisma:seed` creates local-only accounts with the initial password `Lab3Pass123`. Every seeded account has `mustChangePassword=true` and must change this password after login.
+
+| Role | Email examples |
+|---|---|
+| Requester | `nicha.somchai@toktickit.test`, `anan.kittisak@toktickit.test`, `mali.charoen@toktickit.test`, `preecha.wattanakul@toktickit.test` |
+| IT Staff | `arun.support@toktickit.test`, `bua.support@toktickit.test`, `chai.support@toktickit.test` |
+| Administrator | `admin@toktickit.test` |
+
+These credentials are for local development only. Passwords are stored as unique-salt scrypt hashes and are never returned by the API.
 
 ## Available API Endpoints
 
@@ -77,20 +89,21 @@ Once the backend is running, the following REST API endpoints are available:
 
 ## Running Tests
 
-Run the complete Lab 2 verification suite from the repository root:
+Run the complete Lab 3 verification suite from the repository root:
 
 ```text
 cd server && npm test
 cd server && npm run build
 cd client && npm test
 cd client && npm run build
+cd client && npm run test:e2e
 ```
 
 The backend suite covers API and unit behavior; the client suite covers component and style behavior.
 
 ### End-to-End Tests
 
-Install the Playwright browser once after installing client dependencies, then run the requester workflow:
+Install the Playwright browser once after installing client dependencies, then run the authenticated Lab 3 workflows:
 
 ```text
 cd client
@@ -98,8 +111,12 @@ npx playwright install chromium
 npm run test:e2e
 ```
 
-The E2E flow uses stateful browser API fixtures, so it is reproducible without a running PostgreSQL database. It covers requester selection/switching, validation, ticket creation, search, Ticket Detail, attachment upload/removal, and desktop/tablet/mobile layouts.
+The E2E suite uses stateful browser fixtures and covers authentication, mandatory first-login password change, authenticated Requester regression, IT Staff queue and ticket operations, Administrator user management, authorization boundaries, and desktop/tablet/mobile layouts.
 
 ## Lab 2 Documentation and Evidence
 
 The engineering contract, API/UI specifications, test traceability, peer-review record, AI-use record, and responsive screenshots are versioned under [`docs/lab-02/`](docs/lab-02/) and [`artifacts/lab-02/screenshots/`](artifacts/lab-02/screenshots/).
+
+## Lab 3 Documentation and Evidence
+
+The Lab 3 engineering contract, API/UI specifications, test traceability, peer-review record, AI-use record, and final evidence are versioned under [`docs/lab-03/`](docs/lab-03/) and [`artifacts/lab-03/screenshots/`](artifacts/lab-03/screenshots/). The final report is intentionally created only after the verified `main` branch contains the completed implementation and evidence.
