@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { seedDatabase } from "../../prisma/seed-data.js";
 import { makeSeedPrisma } from "../lab-03/seed-test-utils.js";
 
@@ -46,18 +46,33 @@ describe("Lab 4 Action Taken seed", () => {
     expect(seededTicket(state, "TKT-2026-000902")?.resolvedAt).toBeNull();
   });
 
-  it("keeps action identities and row counts stable on repeated runs", async () => {
+  it("keeps action identities, resolution timestamps, and Ticket update timestamps stable on repeated runs", async () => {
     const { prisma, state } = makeSeedPrisma();
 
     await seedDatabase(prisma);
     const firstIds = new Map(state.actions.rows.map((action) => [action.idempotencyKey, action.id]));
     const firstActionCount = state.actions.rows.length;
     const firstTicketCount = state.tickets.rows.length;
+    const legacyResolved = seededTicket(state, "TKT-2026-000903");
+    const seededResolved = seededTicket(state, "TKT-2026-000913");
+    if (!legacyResolved || !seededResolved) throw new Error("Expected resolved seed fixtures to exist.");
+    const authoritativeResolvedAt = new Date("2026-10-20T11:12:13.000Z");
+    const existingUpdatedAt = new Date("2026-10-20T11:12:14.000Z");
+    Object.assign(legacyResolved, { resolvedAt: authoritativeResolvedAt, updatedAt: existingUpdatedAt });
+    const seededTimestamps = new Map([legacyResolved, seededResolved].map((ticket) => [ticket?.ticketNumber, { resolvedAt: ticket?.resolvedAt, updatedAt: ticket?.updatedAt }]));
+    const ticketUpdate = vi.spyOn(prisma.ticket, "update");
 
     await seedDatabase(prisma);
 
     expect(state.actions.rows).toHaveLength(firstActionCount);
     expect(state.tickets.rows).toHaveLength(firstTicketCount);
+    expect(legacyResolved?.resolvedAt).toEqual(authoritativeResolvedAt);
+    expect(legacyResolved?.updatedAt).toEqual(existingUpdatedAt);
+    expect(ticketUpdate).not.toHaveBeenCalled();
+    for (const [ticketNumber, timestamps] of seededTimestamps) {
+      const ticket = state.tickets.rows.find((row) => row.ticketNumber === ticketNumber);
+      expect({ resolvedAt: ticket?.resolvedAt, updatedAt: ticket?.updatedAt }).toEqual(timestamps);
+    }
     for (const [key, id] of firstIds) {
       expect(state.actions.rows.find((action) => action.idempotencyKey === key)?.id).toBe(id);
     }

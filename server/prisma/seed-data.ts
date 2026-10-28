@@ -32,6 +32,8 @@ const workflowTickets = [
   { ticketNumber: "TKT-2026-000910", requesterEmail: "anan.kittisak@toktickit.test", ownerEmail: "arun.support@toktickit.test", categoryName: "Account and Access", relatedSystemName: "Email", summary: "Mailbox quota warning persists", description: "The mailbox continues to show a quota warning after cleanup.", requestedPriority: "MEDIUM", itPriority: "HIGH", currentStatus: "RESOLVED", publicComment: "The quota warning cleared after the mailbox cleanup.", internalNote: "No message content was inspected; only quota metadata was reviewed." },
   { ticketNumber: "TKT-2026-000911", requesterEmail: "mali.charoen@toktickit.test", ownerEmail: null, categoryName: "Network", relatedSystemName: "Campus Wi-Fi", summary: "New device cannot join Wi-Fi", description: "A newly issued device cannot complete the campus Wi-Fi sign-in.", requestedPriority: "HIGH", itPriority: "MEDIUM", currentStatus: "NEW" },
   { ticketNumber: "TKT-2026-000912", requesterEmail: "preecha.wattanakul@toktickit.test", ownerEmail: "bua.support@toktickit.test", categoryName: "Software", relatedSystemName: "LEB2 App", summary: "LEB2 screen takes too long to load", description: "The LEB2 app screen remains loading for several minutes.", requestedPriority: "HIGH", itPriority: "HIGH", currentStatus: "IN_PROGRESS", publicComment: "IT Staff is collecting timing information from the affected workflow.", internalNote: "Reproduce with a test account only; do not record personal data." },
+  { ticketNumber: "TKT-2026-000913", requesterEmail: "mali.charoen@toktickit.test", ownerEmail: "chai.support@toktickit.test", categoryName: "Software", relatedSystemName: "LEB2 App", summary: "Submission confirmation is delayed", description: "The confirmation message appeared after the submitted work had already completed.", requestedPriority: "MEDIUM", itPriority: "MEDIUM", currentStatus: "RESOLVED" },
+  { ticketNumber: "TKT-2026-000914", requesterEmail: "nicha.somchai@toktickit.test", ownerEmail: "arun.support@toktickit.test", categoryName: "Hardware", relatedSystemName: "Corporate Laptop", summary: "Dock display did not wake", description: "The external display did not wake after the laptop returned from sleep.", requestedPriority: "LOW", itPriority: "LOW", currentStatus: "CLOSED" },
 ] as const;
 
 const workflowActions = [
@@ -43,6 +45,7 @@ const workflowActions = [
   { idempotencyKey: "seed:lab4:TKT-2026-000907:account-reset", ticketNumber: "TKT-2026-000907", daysAgo: 8, description: "Completed the documented sign-in recovery steps with the requester.", result: "The requester confirmed mailbox access was restored.", status: "CANCELLED", followUpRequired: false, followUpNote: null, attachmentNotes: null, assignedToEmail: null, performedByEmail: "arun.support@toktickit.test" },
   { idempotencyKey: "seed:lab4:TKT-2026-000912:latency-triage", ticketNumber: "TKT-2026-000912", daysAgo: 1, description: "Captured response timings for the affected LEB2 workflow using a test account.", result: "The delay is reproducible and is being narrowed to the report query.", status: "OPEN", followUpRequired: false, followUpNote: null, attachmentNotes: null, assignedToEmail: "arun.support@toktickit.test", performedByEmail: "chai.support@toktickit.test" },
   { idempotencyKey: "seed:lab4:TKT-2026-000912:query-review", ticketNumber: "TKT-2026-000912", daysAgo: 1, description: "Reviewed the query plan and application timing for the slow screen.", result: "A follow-up comparison against the baseline is in progress.", status: "IN_PROGRESS", followUpRequired: false, followUpNote: null, attachmentNotes: null, assignedToEmail: "bua.support@toktickit.test", performedByEmail: "chai.support@toktickit.test" },
+  { idempotencyKey: "seed:lab4:TKT-2026-000913:confirmation-fix", ticketNumber: "TKT-2026-000913", daysAgo: 1, description: "Adjusted the confirmation polling interval and verified the submission response.", result: "The confirmation now appears immediately after the submission completes.", status: "COMPLETED", followUpRequired: false, followUpNote: null, attachmentNotes: null, assignedToEmail: "chai.support@toktickit.test", performedByEmail: "bua.support@toktickit.test" },
 ] as const;
 
 const passwordHash = (password = "Lab3Pass123") => {
@@ -88,7 +91,7 @@ export async function seedDatabase(prisma: any): Promise<void> {
     }
   }
 
-  if (!prisma.ticket || !prisma.category.findUnique || !prisma.relatedSystem.findUnique) return;
+  if (!prisma.ticket?.findUnique || !prisma.ticket.create || !prisma.ticket.update || !prisma.category.findUnique || !prisma.relatedSystem.findUnique) return;
   for (const ticket of workflowTickets) {
     const requester = await prisma.developmentRequester.findUnique({ where: { email: ticket.requesterEmail } });
     const category = await prisma.category.findUnique({ where: { name: ticket.categoryName } });
@@ -100,11 +103,29 @@ export async function seedDatabase(prisma: any): Promise<void> {
       : ticket.currentStatus === "CLOSED"
         ? new Date(seededAt.getTime() - 2 * dayMs)
         : null;
-    const saved = await prisma.ticket.upsert({
-      where: { ticketNumber: ticket.ticketNumber },
-      update: { requesterId: requester.id, categoryId: category.id, relatedSystemId: relatedSystem.id, ownerUserId: owner?.id ?? null, summary: ticket.summary, description: ticket.description, requestedPriority: ticket.requestedPriority, itPriority: ticket.itPriority, currentStatus: ticket.currentStatus, resolvedAt },
-      create: { ticketNumber: ticket.ticketNumber, requesterId: requester.id, categoryId: category.id, relatedSystemId: relatedSystem.id, ownerUserId: owner?.id ?? null, summary: ticket.summary, description: ticket.description, requestedPriority: ticket.requestedPriority, itPriority: ticket.itPriority, currentStatus: ticket.currentStatus, resolvedAt },
-    });
+    const ticketFields = {
+      requesterId: requester.id,
+      categoryId: category.id,
+      relatedSystemId: relatedSystem.id,
+      ownerUserId: owner?.id ?? null,
+      summary: ticket.summary,
+      description: ticket.description,
+      requestedPriority: ticket.requestedPriority,
+      itPriority: ticket.itPriority,
+      currentStatus: ticket.currentStatus,
+    };
+    const existing = await prisma.ticket.findUnique({ where: { ticketNumber: ticket.ticketNumber } });
+    let saved;
+    if (existing) {
+      const changes = Object.fromEntries(Object.entries(ticketFields).filter(([field, value]) => existing[field] !== value));
+      saved = Object.keys(changes).length
+        ? await prisma.ticket.update({ where: { id: existing.id }, data: changes })
+        : existing;
+    } else {
+      saved = await prisma.ticket.create({
+        data: { ticketNumber: ticket.ticketNumber, ...ticketFields, resolvedAt },
+      });
+    }
     if (prisma.publicComment && owner && prisma.publicComment.findFirst && prisma.publicComment.create) {
       const content = "publicComment" in ticket ? ticket.publicComment : "Seeded public update.";
       const comment = await prisma.publicComment.findFirst({ where: { ticketId: saved.id, authorId: owner.id, content } });

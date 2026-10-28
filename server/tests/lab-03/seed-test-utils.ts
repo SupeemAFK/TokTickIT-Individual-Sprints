@@ -49,7 +49,7 @@ export function makeSeedPrisma() {
     relatedSystem: { upsert: state.relatedSystems.upsert, findUnique: state.relatedSystems.findUnique },
     developmentRequester: { upsert: state.requesters.upsert, findUnique: state.requesters.findUnique, findMany: state.requesters.findMany, update: state.requesters.update },
     user: { upsert: state.users.upsert, findUnique: state.users.findUnique, findFirst: state.users.findFirst, findMany: state.users.findMany, create: state.users.create, update: state.users.update },
-    ticket: { upsert: state.tickets.upsert, findUnique: state.tickets.findUnique },
+    ticket: { upsert: state.tickets.upsert, findUnique: state.tickets.findUnique, create: state.tickets.create, update: state.tickets.update },
     actionTaken: { upsert: state.actions.upsert },
     publicComment: { findFirst: state.comments.findFirst, create: state.comments.create },
     internalNote: { findFirst: state.notes.findFirst, create: state.notes.create },

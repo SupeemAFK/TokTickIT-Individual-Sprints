@@ -134,7 +134,7 @@ describeWithDatabase("Lab 4 additive migration and recovery", () => {
         select: { id: true, idempotencyKey: true, status: true, assignedToUserId: true, performedByUserId: true, ticket: { select: { ticketNumber: true } } },
         orderBy: { idempotencyKey: "asc" },
       });
-      expect(firstSeededActions).toHaveLength(8);
+      expect(firstSeededActions).toHaveLength(9);
       expect(firstSeededActions.filter((action) => action.ticket.ticketNumber === "TKT-2026-000901")).toHaveLength(2);
       expect(firstSeededActions.filter((action) => action.ticket.ticketNumber === "TKT-2026-000902")).toHaveLength(0);
 
@@ -145,7 +145,25 @@ describeWithDatabase("Lab 4 additive migration and recovery", () => {
       });
       expect(activeAssignedCounts.length).toBeGreaterThanOrEqual(3);
 
+      const authoritativeResolvedAt = new Date("2026-10-20T11:12:13.000Z");
+      const authoritativeUpdatedAt = new Date("2026-10-20T11:12:14.000Z");
+      await prisma.ticket.update({
+        where: { ticketNumber: "TKT-2026-000903" },
+        data: { resolvedAt: authoritativeResolvedAt, updatedAt: authoritativeUpdatedAt },
+      });
+      const ticketTimestampsBeforeReplay = await prisma.ticket.findMany({
+        where: { ticketNumber: { in: ["TKT-2026-000903", "TKT-2026-000913", "TKT-2026-000914"] } },
+        select: { ticketNumber: true, resolvedAt: true, updatedAt: true },
+        orderBy: { ticketNumber: "asc" },
+      });
+
       await seedDatabase(prisma);
+      const ticketTimestampsAfterReplay = await prisma.ticket.findMany({
+        where: { ticketNumber: { in: ["TKT-2026-000903", "TKT-2026-000913", "TKT-2026-000914"] } },
+        select: { ticketNumber: true, resolvedAt: true, updatedAt: true },
+        orderBy: { ticketNumber: "asc" },
+      });
+      expect(ticketTimestampsAfterReplay).toEqual(ticketTimestampsBeforeReplay);
       const secondSeededActions = await prisma.actionTaken.findMany({
         where: { idempotencyKey: { startsWith: "seed:lab4:" } },
         select: { id: true, idempotencyKey: true },
