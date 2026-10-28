@@ -9,6 +9,7 @@ import { getPrisma } from "./prisma.js";
 import { formatTicketNumber } from "./ticket-number.js";
 import { getPrincipal, registerLab3, ticketDetail, ticketSummary } from "./lab3.js";
 import { registerLab4 } from "./lab4.js";
+import { registerLab4Dashboards } from "./lab4-dashboard.js";
 
 const SUMMARY_MIN_LENGTH = 5;
 const SUMMARY_MAX_LENGTH = 160;
@@ -44,6 +45,7 @@ app.use(express.json());
 app.use((error: unknown, _req: Request, res: Response, next: NextFunction) => { if (error instanceof SyntaxError && (error as { status?: number }).status === 400) return void fail(res, 400, "Request body must be valid JSON."); next(error); });
 registerLab3(app);
 registerLab4(app);
+registerLab4Dashboards(app);
 
 const authenticatedLegacyRequester = async (req: Request, res: Response, next: NextFunction) => {
   try {
