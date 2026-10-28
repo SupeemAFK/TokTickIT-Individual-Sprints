@@ -90,7 +90,7 @@ export async function getPrincipal(req: Request): Promise<Principal | null> {
   return { id: user.id, role: user.role, legacyRequesterId: user.legacyRequesterId, mustChangePassword: user.mustChangePassword };
 }
 
-function protect(roles?: UserRole[]) {
+export function protect(roles?: UserRole[]) {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
       const user = await getPrincipal(req);
