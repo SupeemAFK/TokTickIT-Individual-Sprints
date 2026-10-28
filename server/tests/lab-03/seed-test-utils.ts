@@ -40,6 +40,7 @@ export function makeSeedPrisma() {
     requesters: table([{ id: 999, name: "Legacy User", email: "legacy@example.test", isActive: true }]),
     users: table(),
     tickets: table([{ id: 700, ticketNumber: "TKT-LEGACY", requesterId: 999, categoryId: 1, relatedSystemId: 1, ownerUserId: null, summary: "Legacy ticket", description: "Preserve me", requestedPriority: "LOW", itPriority: "LOW", currentStatus: "NEW" }]),
+    actions: table(),
     comments: table(),
     notes: table(),
   };
@@ -48,7 +49,8 @@ export function makeSeedPrisma() {
     relatedSystem: { upsert: state.relatedSystems.upsert, findUnique: state.relatedSystems.findUnique },
     developmentRequester: { upsert: state.requesters.upsert, findUnique: state.requesters.findUnique, findMany: state.requesters.findMany, update: state.requesters.update },
     user: { upsert: state.users.upsert, findUnique: state.users.findUnique, findFirst: state.users.findFirst, findMany: state.users.findMany, create: state.users.create, update: state.users.update },
-    ticket: { upsert: state.tickets.upsert },
+    ticket: { upsert: state.tickets.upsert, findUnique: state.tickets.findUnique },
+    actionTaken: { upsert: state.actions.upsert },
     publicComment: { findFirst: state.comments.findFirst, create: state.comments.create },
     internalNote: { findFirst: state.notes.findFirst, create: state.notes.create },
   };
