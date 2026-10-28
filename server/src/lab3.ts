@@ -2,6 +2,7 @@ import { createHash, randomBytes, scryptSync, timingSafeEqual } from "node:crypt
 import type { Express, NextFunction, Request, Response } from "express";
 import { UserRole } from "@prisma/client";
 import { getPrisma } from "./prisma.js";
+import { lockTicket } from "./ticket-lock.js";
 
 type Principal = { id: number; role: UserRole; legacyRequesterId: number | null; mustChangePassword: boolean };
 const SESSION_TTL_MS = 8 * 60 * 60 * 1000;
@@ -301,13 +302,25 @@ export function registerLab3(app: Express) {
 
   app.patch("/api/staff/tickets/:ticketId/status", protect([UserRole.IT_STAFF, UserRole.ADMINISTRATOR]), async (req, res) => {
     try {
-      const id = idParam(req.params.ticketId); const value = req.body?.currentStatus;
+      const id = idParam(req.params.ticketId); const expected = req.body?.expectedCurrentStatus; const value = req.body?.currentStatus;
+      if (typeof expected !== "string" || !STATUS_SET.has(expected)) throw new RequestError(400, "expectedCurrentStatus is invalid.");
       if (typeof value !== "string" || !STATUS_SET.has(value)) throw new RequestError(400, "currentStatus is invalid.");
-      const prisma = getPrisma() as any; const current = await prisma.ticket.findUnique({ where: { id }, select: { id: true, currentStatus: true } });
-      if (!current) return sendError(res, 404, "Ticket not found.", "NOT_FOUND");
-      if (!ALLOWED_TRANSITIONS[current.currentStatus]?.includes(value)) return sendError(res, 409, "Status transition is not permitted.", "CONFLICT");
-      const updated = await prisma.ticket.updateMany({ where: { id, currentStatus: current.currentStatus }, data: { currentStatus: value } });
-      if (!updated.count) return sendError(res, 409, "Ticket changed; reload and retry.", "CONFLICT");
+      const prisma = getPrisma() as any;
+      await prisma.$transaction(async (tx: any) => {
+        const current = await lockTicket(tx, id);
+        if (!current) throw new RequestError(404, "Ticket not found.", "NOT_FOUND");
+        if (current.currentStatus !== expected) throw new RequestError(409, "Ticket changed; reload and retry.", "CONFLICT");
+        if (!ALLOWED_TRANSITIONS[current.currentStatus]?.includes(value)) throw new RequestError(409, "Status transition is not permitted.", "CONFLICT");
+        if (value === "RESOLVED") {
+          const incompleteActions = await tx.actionTaken.count({ where: { ticketId: id, status: { in: ["OPEN", "IN_PROGRESS"] } } });
+          if (incompleteActions > 0) throw new RequestError(409, "Complete or cancel all active Actions Taken before resolving this Ticket.", "ACTIONS_INCOMPLETE");
+        }
+        const data: Record<string, unknown> = { currentStatus: value };
+        if (value === "RESOLVED") data.resolvedAt = new Date();
+        else if (value !== "CLOSED") data.resolvedAt = null;
+        const updated = await tx.ticket.updateMany({ where: { id, currentStatus: expected }, data });
+        if (!updated.count) throw new RequestError(409, "Ticket changed; reload and retry.", "CONFLICT");
+      });
       res.json({ ticket: await findSummary(id) });
     } catch (error) { handleError(res, error, "Unable to update ticket status."); }
   });

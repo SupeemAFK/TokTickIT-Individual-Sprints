@@ -7,6 +7,9 @@ const prisma = vi.hoisted(() => ({
   session: { findUnique: vi.fn() },
   user: { findUnique: vi.fn(), findFirst: vi.fn() },
   ticket: { findUnique: vi.fn(), updateMany: vi.fn(), update: vi.fn() },
+  actionTaken: { count: vi.fn() },
+  $queryRawUnsafe: vi.fn(),
+  $transaction: vi.fn(),
   publicComment: { findMany: vi.fn(), create: vi.fn() },
   internalNote: { findMany: vi.fn(), create: vi.fn() },
   attachment: { findUnique: vi.fn() },
@@ -52,6 +55,7 @@ function authenticateAs(user: typeof staff | typeof administrator | typeof reque
 }
 
 function mockTicketLookups(ticket = detail) {
+  prisma.$queryRawUnsafe.mockResolvedValue([{ id: ticket.id, currentStatus: ticket.currentStatus }]);
   prisma.ticket.findUnique.mockImplementation(async (args: any) => {
     if (args.include) return ticket;
     if (args.select) return { id: ticket.id, ...(args.select.currentStatus ? { currentStatus: ticket.currentStatus } : {}) };
@@ -62,6 +66,8 @@ function mockTicketLookups(ticket = detail) {
 beforeEach(() => {
   vi.resetAllMocks();
   authenticateAs();
+  prisma.$transaction.mockImplementation((callback: (tx: any) => unknown) => callback(prisma));
+  prisma.actionTaken.count.mockResolvedValue(0);
 });
 
 afterEach(async () => {
@@ -168,26 +174,33 @@ describe("Issue #39 IT Staff ticket detail API", () => {
     mockTicketLookups({ ...detail, currentStatus: from });
     prisma.ticket.updateMany.mockResolvedValue({ count: 1 });
 
-    const response = await request(app).patch("/api/staff/tickets/12/status").set(auth).send({ currentStatus: to });
+    const response = await request(app).patch("/api/staff/tickets/12/status").set(auth).send({ expectedCurrentStatus: from, currentStatus: to });
 
     expect(response.status).toBe(200);
-    expect(prisma.ticket.updateMany).toHaveBeenCalledWith({ where: { id: 12, currentStatus: from }, data: { currentStatus: to } });
+    expect(prisma.ticket.updateMany).toHaveBeenCalledWith({
+      where: { id: 12, currentStatus: from },
+      data: to === "RESOLVED" ? { currentStatus: to, resolvedAt: expect.any(Date) } : to === "CLOSED" ? { currentStatus: to } : { currentStatus: to, resolvedAt: null },
+    });
   });
 
   it("distinguishes malformed and disallowed statuses and handles a stale transition", async () => {
     mockTicketLookups({ ...detail, currentStatus: "NEW" });
-    const malformed = await request(app).patch("/api/staff/tickets/12/status").set(auth).send({ currentStatus: "NOT_A_STATUS" });
+    const missingExpected = await request(app).patch("/api/staff/tickets/12/status").set(auth).send({ currentStatus: "OPEN" });
+    expect(missingExpected.status).toBe(400);
+    expect(missingExpected.body.code).toBe("INVALID_REQUEST");
+
+    const malformed = await request(app).patch("/api/staff/tickets/12/status").set(auth).send({ expectedCurrentStatus: "NEW", currentStatus: "NOT_A_STATUS" });
     expect(malformed.status).toBe(400);
     expect(malformed.body.code).toBe("INVALID_REQUEST");
 
-    const disallowed = await request(app).patch("/api/staff/tickets/12/status").set(auth).send({ currentStatus: "CLOSED" });
+    const disallowed = await request(app).patch("/api/staff/tickets/12/status").set(auth).send({ expectedCurrentStatus: "NEW", currentStatus: "CLOSED" });
     expect(disallowed.status).toBe(409);
     expect(disallowed.body.code).toBe("CONFLICT");
     expect(prisma.ticket.updateMany).not.toHaveBeenCalled();
 
     prisma.ticket.updateMany.mockResolvedValue({ count: 0 });
     mockTicketLookups({ ...detail, currentStatus: "OPEN" });
-    const stale = await request(app).patch("/api/staff/tickets/12/status").set(auth).send({ currentStatus: "IN_PROGRESS" });
+    const stale = await request(app).patch("/api/staff/tickets/12/status").set(auth).send({ expectedCurrentStatus: "NEW", currentStatus: "IN_PROGRESS" });
     expect(stale.status).toBe(409);
     expect(stale.body.code).toBe("CONFLICT");
   });
