@@ -83,6 +83,22 @@ export async function installLab3ApiMock(page: Page, role: Role, options: Fixtur
   const currentUser = role === "REQUESTER" ? requester : role === "IT_STAFF" ? staff : administrator;
   const users = realistic ? [requester, ...additionalRequesters, staff, ...additionalStaff, administrator] : [requester, staff, administrator];
   const staffUsers = realistic ? [staff, ...additionalStaff.slice(0, 2), administrator] : [staff, administrator];
+  let actions: Array<Record<string, any>> = [{
+    id: 31,
+    ticketId: 12,
+    actionAt: "2026-09-19T09:00:00.000Z",
+    description: "Reviewed the VPN client settings.",
+    result: "The profile is current.",
+    status: "OPEN",
+    followUpRequired: false,
+    followUpNote: null,
+    attachmentNotes: null,
+    assignedToUserId: staff.id,
+    assignedTo: { id: staff.id, name: staff.name, role: staff.role },
+    performedBy: { id: staff.id, name: staff.name, role: staff.role },
+    createdAt: "2026-09-19T09:01:00.000Z",
+    updatedAt: "2026-09-19T09:02:00.000Z",
+  }];
   const findTicket = (id: number) => tickets.find((item) => item.id === id) ?? tickets[0];
   const replaceTicket = (updated: (typeof tickets)[number]) => { tickets = tickets.map((item) => item.id === updated.id ? updated : item); };
   const json = (route: Route, body: unknown, status = 200) => route.fulfill({ status, contentType: "application/json", body: JSON.stringify(body) });
@@ -102,6 +118,48 @@ export async function installLab3ApiMock(page: Page, role: Role, options: Fixtur
     if (url.pathname === "/api/categories") return json(route, categories);
     if (url.pathname === "/api/related-systems") return json(route, systems);
     if (url.pathname === "/api/staff/users") return json(route, staffUsers);
+
+    const ticketActionsMatch = url.pathname.match(/^\/api\/tickets\/(\d+)\/actions$/);
+    if (ticketActionsMatch && method === "GET") return json(route, { items: actions.filter((item) => item.ticketId === Number(ticketActionsMatch[1])) });
+    const createActionMatch = url.pathname.match(/^\/api\/staff\/tickets\/(\d+)\/actions$/);
+    if (createActionMatch && method === "POST") {
+      const body = request.postDataJSON() as Record<string, any>;
+      const assignee = body.assignedToUserId == null ? null : staffUsers.find((person) => person.id === Number(body.assignedToUserId)) ?? null;
+      const created = {
+        id: Math.max(0, ...actions.map((item) => Number(item.id))) + 1,
+        ticketId: Number(createActionMatch[1]),
+        ...body,
+        status: "OPEN",
+        assignedToUserId: assignee?.id ?? null,
+        assignedTo: assignee ? { id: assignee.id, name: assignee.name, role: assignee.role } : null,
+        performedBy: { id: currentUser.id, name: currentUser.name, role: currentUser.role },
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      actions = [...actions, created];
+      return json(route, { action: created }, 201);
+    }
+    const cancelActionMatch = url.pathname.match(/^\/api\/staff\/tickets\/(\d+)\/actions\/(\d+)\/cancel$/);
+    if (cancelActionMatch && method === "POST") {
+      const updated = actions.map((item) => item.id === Number(cancelActionMatch[2]) && item.ticketId === Number(cancelActionMatch[1]) ? { ...item, status: "CANCELLED", updatedAt: new Date().toISOString() } : item);
+      actions = updated;
+      return json(route, { action: actions.find((item) => item.id === Number(cancelActionMatch[2])) });
+    }
+    const editActionMatch = url.pathname.match(/^\/api\/staff\/tickets\/(\d+)\/actions\/(\d+)$/);
+    if (editActionMatch && method === "PATCH") {
+      const body = request.postDataJSON() as Record<string, any>;
+      const existing = actions.find((item) => item.id === Number(editActionMatch[2]) && item.ticketId === Number(editActionMatch[1]));
+      if (!existing || existing.updatedAt !== body.expectedUpdatedAt) return json(route, { error: "Action Taken changed; reload and retry.", code: "CONFLICT" }, 409);
+      const { expectedUpdatedAt: _expectedUpdatedAt, ...changes } = body;
+      const assignee = Object.prototype.hasOwnProperty.call(changes, "assignedToUserId") ? staffUsers.find((person) => person.id === Number(changes.assignedToUserId)) ?? null : existing.assignedTo;
+      actions = actions.map((item) => item === existing ? {
+        ...item,
+        ...changes,
+        ...(Object.prototype.hasOwnProperty.call(changes, "assignedToUserId") ? { assignedToUserId: assignee?.id ?? null, assignedTo: assignee ? { id: assignee.id, name: assignee.name, role: assignee.role } : null } : {}),
+        updatedAt: new Date(Date.parse(existing.updatedAt) + 1000).toISOString(),
+      } : item);
+      return json(route, { action: actions.find((item) => item.id === Number(editActionMatch[2])) });
+    }
 
     if (url.pathname === "/api/tickets" && method === "GET") {
       const pageNumber = Number(url.searchParams.get("page") ?? 1);

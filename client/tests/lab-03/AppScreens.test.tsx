@@ -17,6 +17,7 @@ function installFetch(currentUser: typeof requester, firstLogin = false) {
     const url = String(input);
     if (url.endsWith("/api/auth/login")) return response({ user: currentUser, mustChangePassword: firstLogin, session: { token: "opaque-session", expiresAt: "2026-09-20T00:00:00.000Z" } });
     if (url.endsWith("/api/auth/me")) return response({ user: currentUser, mustChangePassword: firstLogin });
+    if (url.endsWith("/api/tickets/12/actions")) return response({ items: [] });
     if (url.endsWith("/api/categories")) return response([category]);
     if (url.endsWith("/api/related-systems")) return response([system]);
     if (url.includes("/api/tickets?") || url.endsWith("/api/tickets")) return response({ items: [summary], pagination: { page: 1, pageSize: 10, totalItems: 1, totalPages: 1 } });
