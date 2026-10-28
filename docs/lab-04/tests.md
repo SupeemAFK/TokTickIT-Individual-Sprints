@@ -4,8 +4,8 @@ This plan is created before implementation. Results remain Planned until the nam
 
 | Test ID | Type | AC | Scenario / expected result | Planned file or check | Result |
 |---|---|---|---|---|---|
-| DB-01 | Migration integration | AC-01, AC-14 | Apply additive migration to disposable Lab 3 data; preserve counts/FKs and keep legacy RESOLVED resolvedAt values null; verify those records are excluded from time-window metrics; restore pre-migration backup in recovery drill | server/tests/lab-04/migration.integration.test.ts | Planned |
-| DB-02 | Seed integration | AC-14 | Run seed twice; row counts and identities stay stable; all status/priority/action combinations exist | server/tests/lab-03/seed.integration.test.ts | Planned |
+| DB-01 | Migration integration | AC-01 | Apply additive migration to disposable Lab 1–3 data; preserve Ticket/User/Attachment/Public Comment/Internal Note rows; keep legacy RESOLVED resolvedAt null; inject a pre-write DDL failure and verify the transaction leaves no partial schema | server/tests/lab-04/migration.integration.test.ts | Passed: 1 test on disposable PostgreSQL 16 |
+| DB-02 | Seed integration | AC-14 | Run seed twice; row counts, identities, authoritative resolvedAt, and Ticket updatedAt stay stable; all status/priority/action combinations exist; verify zero/one/multiple Actions Taken and active assignments | server/tests/lab-04/seed.integration.test.ts; database-backed assertions in migration.integration.test.ts; server/tests/lab-03/seed.integration.test.ts | Passed: 3 Lab 4 seed tests and 2 Lab 3 seed regressions; database-backed repeat run preserved resolution/Ticket timestamps |
 | API-01 | API validation | AC-02, AC-04 | Create valid action; trim/bound text; validate ISO offset and conditional follow-up note | server/tests/lab-04/actions-taken.api.test.ts | Planned |
 | API-02 | API authorization | AC-03, AC-06 | Performer derives from session; Requester own-ticket read succeeds; cross-owner read is 404; Requester writes fail | server/tests/lab-04/actions-taken.api.test.ts | Planned |
 | API-03 | API assignment | AC-03, AC-04 | Active IT Staff/Admin can be assigned; inactive, missing, or Requester assignees fail; owner/assignee/performer remain distinct | server/tests/lab-04/actions-taken.api.test.ts | Planned |
@@ -32,6 +32,7 @@ This plan is created before implementation. Results remain Planned until the nam
 ## Execution notes
 
 - Use a disposable PostgreSQL database for migration/recovery testing. Do not apply a rollback that could delete newly recorded actions.
+- DB-01 runs only when `LAB4_TEST_DATABASE_URL` points to loopback PostgreSQL. It creates and drops a uniquely named temporary schema; it does not modify `public` or any remote database.
 - API tests cover role/ownership boundaries independently of UI hiding.
 - Dashboard tests assert exact query scope, server-returned metric windows, null legacy timestamp exclusion, drill-down parity and pagination, stable ordering, and explicit zero buckets.
 - Playwright captures the implemented screens at 1440, 768, and 375 px. Inspect screenshots visually and retain them under artifacts/lab-04/screenshots/.
