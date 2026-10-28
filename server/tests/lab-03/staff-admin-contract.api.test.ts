@@ -5,6 +5,7 @@ const prisma = vi.hoisted(() => ({
   $transaction: vi.fn(), session: { findUnique: vi.fn() },
   user: { findUnique: vi.fn(), findFirst: vi.fn(), findMany: vi.fn(), count: vi.fn(), update: vi.fn(), create: vi.fn() },
   ticket: { findMany: vi.fn(), count: vi.fn(), findUnique: vi.fn(), updateMany: vi.fn(), update: vi.fn() },
+  actionTaken: { count: vi.fn() }, $queryRawUnsafe: vi.fn(),
   publicComment: { findMany: vi.fn(), create: vi.fn() }, internalNote: { findMany: vi.fn(), create: vi.fn() },
   developmentRequester: { upsert: vi.fn(), update: vi.fn() }, attachment: { findUnique: vi.fn() },
 }));
@@ -19,7 +20,7 @@ const row = { id: 12, ticketNumber: "TKT-2026-000012", summary: "VPN", requested
 function authAs(user = staff) { prisma.session.findUnique.mockResolvedValue({ userId: user.id, revokedAt: null, expiresAt: new Date(Date.now() + 3600000) }); prisma.user.findUnique.mockImplementation(async ({ where }: any) => where.id === user.id ? user : null); }
 
 describe("Lab 3 staff and administrator contract", () => {
-  beforeEach(() => { vi.resetAllMocks(); prisma.$transaction.mockImplementation(async (callback: any) => callback(prisma)); authAs(); });
+  beforeEach(() => { vi.resetAllMocks(); prisma.$transaction.mockImplementation(async (callback: any) => callback(prisma)); prisma.$queryRawUnsafe.mockResolvedValue([{ id: 12, currentStatus: "NEW" }]); prisma.actionTaken.count.mockResolvedValue(0); authAs(); });
 
   it("returns queue counts and the canonical QueueItem shape", async () => {
     prisma.ticket.findMany.mockImplementation(async (args: any) => args.select ? [{ currentStatus: "NEW", itPriority: "HIGH", ownerUserId: null }] : [row]); prisma.ticket.count.mockResolvedValue(1);
@@ -29,9 +30,9 @@ describe("Lab 3 staff and administrator contract", () => {
 
   it("rejects unknown status values as 400 and disallowed values as 409 before mutation", async () => {
     prisma.ticket.findUnique.mockResolvedValue({ id: 12, currentStatus: "NEW" });
-    const unknown = await request(app).patch("/api/staff/tickets/12/status").set(auth).send({ currentStatus: "NOT_A_STATUS" });
+    const unknown = await request(app).patch("/api/staff/tickets/12/status").set(auth).send({ expectedCurrentStatus: "NEW", currentStatus: "NOT_A_STATUS" });
     expect(unknown.status).toBe(400); expect(unknown.body.code).toBe("INVALID_REQUEST"); expect(prisma.ticket.update).not.toHaveBeenCalled();
-    const disallowed = await request(app).patch("/api/staff/tickets/12/status").set(auth).send({ currentStatus: "CLOSED" });
+    const disallowed = await request(app).patch("/api/staff/tickets/12/status").set(auth).send({ expectedCurrentStatus: "NEW", currentStatus: "CLOSED" });
     expect(disallowed.status).toBe(409); expect(disallowed.body.code).toBe("CONFLICT"); expect(prisma.ticket.update).not.toHaveBeenCalled();
   });
 

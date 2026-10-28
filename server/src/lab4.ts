@@ -3,6 +3,7 @@ import type { Express, Request, Response } from "express";
 import { UserRole } from "@prisma/client";
 import { getPrisma } from "./prisma.js";
 import { protect } from "./lab3.js";
+import { lockTicket } from "./ticket-lock.js";
 
 const STAFF_ROLES = [UserRole.IT_STAFF, UserRole.ADMINISTRATOR];
 const ACTIVE_TICKET_STATUSES = new Set(["NEW", "OPEN", "IN_PROGRESS", "WAITING_FOR_REQUESTER", "REOPENED"]);
@@ -149,11 +150,6 @@ function idempotencyKey(req: Request) {
 
 function validateFollowUp(required: boolean, note: string | null) {
   if (required && !note) throw new ActionRequestError(400, "followUpNote is required when followUpRequired is true.");
-}
-
-async function lockTicket(tx: any, ticketId: number) {
-  const rows = await tx.$queryRawUnsafe('SELECT "id", "currentStatus" FROM "Ticket" WHERE "id" = $1 FOR UPDATE', ticketId);
-  return rows[0] ?? null;
 }
 
 function sameIdempotentCreate(row: any, ticketId: number, actorId: number, hash: string) {

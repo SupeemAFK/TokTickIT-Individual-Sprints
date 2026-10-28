@@ -111,7 +111,24 @@ function StaffDetail({ token, ticketId, staff, onBack, onChanged }: { token: str
   const [ticket, setTicket] = useState<Ticket | null>(null); const [comment, setComment] = useState(""); const [note, setNote] = useState(""); const [status, setStatus] = useState(""); const [priority, setPriority] = useState(""); const [loading, setLoading] = useState(true); const [loadError, setLoadError] = useState(""); const [busy, setBusy] = useState(false); const [commentBusy, setCommentBusy] = useState(false); const [noteBusy, setNoteBusy] = useState(false);
   const load = async () => { setLoading(true); setLoadError(""); try { const data = await api(`/api/staff/tickets/${ticketId}`, token); setTicket(data.ticket); setStatus(data.ticket.currentStatus); setPriority(data.ticket.itPriority); } catch (reason) { setLoadError(errorMessage(reason, "Unable to load ticket detail.")); } finally { setLoading(false); } };
   useEffect(() => { void load(); }, [ticketId, token]);
-  const update = async (path: string, body: Record<string, unknown>) => { setBusy(true); try { await api(`/api/staff/tickets/${ticketId}/${path}`, token, { method: path === "claim" ? "POST" : "PATCH", body: JSON.stringify(body) }); await load(); onChanged(); } catch (reason) { setLoadError(errorMessage(reason, "Unable to update ticket.")); } finally { setBusy(false); } };
+  const update = async (path: string, body: Record<string, unknown>) => {
+    setBusy(true); setLoadError("");
+    try {
+      const requestBody = path === "status" ? { ...body, expectedCurrentStatus: ticket?.currentStatus } : body;
+      await api(`/api/staff/tickets/${ticketId}/${path}`, token, { method: path === "claim" ? "POST" : "PATCH", body: JSON.stringify(requestBody) });
+      await load();
+      onChanged();
+    } catch (reason) {
+      const message = errorMessage(reason, "Unable to update ticket.");
+      if (path === "status" && reason instanceof ApiError && reason.status === 409) {
+        try {
+          const latest = await api(`/api/staff/tickets/${ticketId}`, token);
+          setTicket(latest.ticket); setStatus(latest.ticket.currentStatus); setPriority(latest.ticket.itPriority); onChanged();
+        } catch { if (ticket) setStatus(ticket.currentStatus); }
+      } else if (path === "status" && ticket) setStatus(ticket.currentStatus);
+      setLoadError(message);
+    } finally { setBusy(false); }
+  };
   const add = async (kind: "comments" | "notes", content: string, clear: () => void) => { const setBusyState = kind === "comments" ? setCommentBusy : setNoteBusy; setBusyState(true); try { await api(`/api/staff/tickets/${ticketId}/${kind}`, token, { method: "POST", body: JSON.stringify({ content }) }); clear(); await load(); } catch (reason) { setLoadError(errorMessage(reason, "Unable to add ticket update.")); } finally { setBusyState(false); } };
   const download = async (attachment: Attachment) => { try { const response = await fetch(`${API}/api/staff/attachments/${attachment.id}/download`, { headers: { Authorization: `Bearer ${token}` } }); if (!response.ok) throw new Error("Unable to download attachment."); const url = URL.createObjectURL(await response.blob()); const link = document.createElement("a"); link.href = url; link.download = attachment.originalFilename; link.click(); URL.revokeObjectURL(url); } catch (reason) { setLoadError(safeMessage(reason, "Unable to download attachment.")); } };
   if (loading) return <p role="status" aria-live="polite">Loading ticket detail…</p>;
