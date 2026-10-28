@@ -165,7 +165,7 @@ Attachments return metadata only:
 | Claim | `POST /api/staff/tickets/:ticketId/claim` with `{}` | `200 { "ticket": TicketSummary }`; `409 CONFLICT` if already claimed |
 | Assign/reassign | `PATCH /api/staff/tickets/:ticketId/owner` with `{ "ownerUserId": 4 }` or `{ "ownerUserId": null }` | `200 { "ticket": TicketSummary }` |
 | IT Priority | `PATCH /api/staff/tickets/:ticketId/priority` with `{ "itPriority":"HIGH" }` | `200 { "ticket": TicketSummary }` |
-| Status | `PATCH /api/staff/tickets/:ticketId/status` with `{ "currentStatus":"IN_PROGRESS" }` | `200 { "ticket": TicketSummary }` |
+| Status | `PATCH /api/staff/tickets/:ticketId/status` with `{ "expectedCurrentStatus":"OPEN", "currentStatus":"IN_PROGRESS" }` | `200 { "ticket": TicketSummary }`; `409 CONFLICT` for stale status or a disallowed transition; `409 ACTIONS_INCOMPLETE` when active actions block resolution |
 | Public Comments | `GET/POST /api/staff/tickets/:ticketId/comments` | `200 { "items":[Comment] }` / `201` Comment |
 | Internal Notes | `GET/POST /api/staff/tickets/:ticketId/notes` | `200 { "items":[Note] }` / `201` Note |
 | Staff/admin attachment download | `GET /api/staff/attachments/:attachmentId/download` | `200` file stream |
@@ -208,7 +208,9 @@ A StaffTicketDetail response has this exact shape:
 
 Comments and notes are append-only and use `{ "content":"..." }`. Both return `{ id, content, author:{id,name,role}, createdAt }`; Internal Notes are never returned to Requesters. Owner deactivation/demotion with any owned ticket, including `CLOSED`, returns `409 OWNER_INTEGRITY_CONFLICT` and makes no change.
 
-The permitted transition matrix is the one in `docs/lab-03/specification.md`. An unknown/malformed target status is `400 INVALID_REQUEST`; a valid target that is not allowed from the current state is `409 CONFLICT`. Every update validates the complete request before performing a conditional mutation.
+The permitted transition matrix is the one in `docs/lab-03/specification.md`. A status request must include a valid `expectedCurrentStatus`; a missing/invalid expected or target status is `400 INVALID_REQUEST`. If `expectedCurrentStatus` no longer matches the Ticket row, return `409 CONFLICT` without mutation. A valid target that is not allowed from the current state also returns `409 CONFLICT`.
+
+Under the Lab 4 workflow contract, a transition to `RESOLVED` returns `409 ACTIONS_INCOMPLETE` and leaves the Ticket unchanged while any Action Taken is `OPEN` or `IN_PROGRESS`. Tickets with no Actions Taken or only terminal Actions Taken may resolve. The status write and Action Taken writes serialize on the parent Ticket row. A successful transition into `RESOLVED` sets `resolvedAt` from the server; moving to `CLOSED` retains it, and reopening or moving to another non-resolved status clears it. Legacy `RESOLVED` Tickets with unknown resolution time retain `resolvedAt=null` when closed. See `docs/lab-04/api-spec.md` for the full resolution-gate contract.
 
 ## Administrator routes
 
