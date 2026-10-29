@@ -1,6 +1,6 @@
 # Lab 4 AI Use Record
 
-OpenAI Codex, using a GPT-6-based assistant (the exact model identifier is not exposed in this chat), assisted with reading the lab requirements, repository analysis, issue planning, implementation, regression tests, performance checks, documentation, and review-response work. The student remains responsible for understanding and verifying the handout, code, test results, peer-review history, and submitted evidence. The prompt excerpts below are selected from the actual instructions in this task; they are shortened only for readability.
+OpenAI Codex (GPT-5-based assistant; the exact model identifier is not exposed in the recorded Lab 4 work sessions) assisted with reading the lab requirements, repository analysis, issue planning, implementation, regression tests, performance checks, documentation, and review-response work. The student remains responsible for understanding and verifying the handout, code, test results, peer-review history, and submitted evidence. The prompt excerpts below are selected from the actual instructions in this task; they are shortened only for readability.
 
 ## Selected prompt traceability
 
