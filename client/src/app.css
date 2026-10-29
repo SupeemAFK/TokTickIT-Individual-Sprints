@@ -66,6 +66,16 @@
   border-color: var(--toktickit-secondary);
 }
 
+.dashboard-metric {
+  color: var(--toktickit-text);
+  background-color: #fff;
+  text-decoration: none;
+}
+.dashboard-metric:hover {
+  border-color: var(--toktickit-secondary) !important;
+  box-shadow: 0 .125rem .5rem rgba(22, 55, 43, .12);
+}
+
 html, body, #root { min-height: 100%; }
 .card { border: 1px solid #d7e2da !important; border-radius: .75rem; }
 .form-control, .form-select { min-height: 2.75rem; border-color: #b9c9bf; }
