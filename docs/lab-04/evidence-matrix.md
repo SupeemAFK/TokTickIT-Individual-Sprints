@@ -4,7 +4,7 @@ This index maps the Lab 4 PDF's nine required answer parts to repository records
 
 | PDF part | Required evidence | Repository evidence | State |
 |---|---|---|---|
-| 1 — Repository and Git workflow | Branch/commit history, issues and PR flow, repository structure, `.gitignore`, README rendering, and project board | GitHub-rendered README and repository captures under `artifacts/lab-04/screenshots/repository/`; [`reviewer.md`](reviewer.md) records issue PRs #64–#72 and review outcomes; [`release-evidence.md`](release-evidence.md) records the branch sequence | PRs #73–#81 are approved and merged to `lab4-staging`; final `main` integration and Kanban completion remain pending. |
+| 1 — Repository and Git workflow | Branch/commit history, issues and PR flow, repository structure, `.gitignore`, README rendering, and project board | GitHub-rendered README and repository captures under `artifacts/lab-04/screenshots/repository/`; [`reviewer.md`](reviewer.md) records issue PRs #64–#72 and review outcomes; [`release-evidence.md`](release-evidence.md) records the branch sequence | PRs #73–#82 are approved and merged to `lab4-staging`; final `main` integration and Kanban completion remain pending. |
 | 2 — Specification | Rendered specification and proof it predates implementation | [`specification.md`](specification.md), GitHub-rendered specification screenshot, and chronology in [`reviewer.md`](reviewer.md) | Staging evidence recorded. |
 | 3 — Testing | Rendered test plan, acceptance traceability, and test results | [`tests.md`](tests.md), GitHub-rendered test-plan screenshot, server/client results from PR #80, and the 20-test Playwright run at PR #81 capture commit `fb0e13f` | PR/staging results recorded with tested commits identified. Rerun on the exact final `main` commit remains pending. |
 | 4 — AI use and reflection | Rendered AI-use record, named LLM, 6–10 prompt examples, and reflection | [`ai-use.md`](ai-use.md) and its GitHub-rendered screenshot | AI attribution and eight selected prompts are recorded. Reflection is labeled as a draft for the student to review and personalize. |
@@ -16,7 +16,6 @@ This index maps the Lab 4 PDF's nine required answer parts to repository records
 
 ## Final submission items still open
 
-- Merge the post-merge evidence refresh to `lab4-staging`.
 - Open the final release PR from `lab4-staging` to `main`, then complete collaborator review and merge.
 - Rerun the full test and build set on the exact final `main` commit; record its SHA and actual output.
 - Change issue #72's project status to `In Progress` while final release work remains; mark it `Done` after final-main verification and the submission PDF are complete.
