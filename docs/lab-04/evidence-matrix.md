@@ -4,9 +4,9 @@ This index maps the Lab 4 PDF's nine required answer parts to repository records
 
 | PDF part | Required evidence | Repository evidence | State |
 |---|---|---|---|
-| 1 — Repository and Git workflow | Branch/commit history, issues and PR flow, repository structure, `.gitignore`, README rendering, and project board | GitHub-rendered README and repository captures under `artifacts/lab-04/screenshots/repository/`; [`reviewer.md`](reviewer.md) records issue PRs #64–#71 and review outcomes; [`release-evidence.md`](release-evidence.md) records the branch sequence | Staging history and repository evidence captured. Final `main` integration and Kanban completion remain pending. |
+| 1 — Repository and Git workflow | Branch/commit history, issues and PR flow, repository structure, `.gitignore`, README rendering, and project board | GitHub-rendered README and repository captures under `artifacts/lab-04/screenshots/repository/`; [`reviewer.md`](reviewer.md) records issue PRs #64–#72 and review outcomes; [`release-evidence.md`](release-evidence.md) records the branch sequence | PRs #73–#81 are approved and merged to `lab4-staging`; final `main` integration and Kanban completion remain pending. |
 | 2 — Specification | Rendered specification and proof it predates implementation | [`specification.md`](specification.md), GitHub-rendered specification screenshot, and chronology in [`reviewer.md`](reviewer.md) | Staging evidence recorded. |
-| 3 — Testing | Rendered test plan, acceptance traceability, and test results | [`tests.md`](tests.md), GitHub-rendered test-plan screenshot, server/client results from PR #80, and the 20-test Playwright run recorded for PR #81 | PR/staging results recorded. Rerun on the exact final `main` commit remains pending. |
+| 3 — Testing | Rendered test plan, acceptance traceability, and test results | [`tests.md`](tests.md), GitHub-rendered test-plan screenshot, server/client results from PR #80, and the 20-test Playwright run at PR #81 capture commit `fb0e13f` | PR/staging results recorded with tested commits identified. Rerun on the exact final `main` commit remains pending. |
 | 4 — AI use and reflection | Rendered AI-use record, named LLM, 6–10 prompt examples, and reflection | [`ai-use.md`](ai-use.md) and its GitHub-rendered screenshot | AI attribution and eight selected prompts are recorded. Reflection is labeled as a draft for the student to review and personalize. |
 | 5 — Staff Dashboard | Metrics, operational actions, recent/urgent Tickets, drill-downs, loading/empty/forbidden/failure states, responsiveness, and metric correctness | Loaded Staff Dashboard at 1440/768/375; empty, loading, forbidden, and safe-failure state captures; server dashboard API tests and disposable-database performance checks in [`tests.md`](tests.md) and [`performance-smoke.md`](performance-smoke.md) | Captured and tested on the PR/staging line. Final-main check remains pending. |
 | 6 — Actions Taken | List/create/assign/edit/status/complete/cancel, validation, inactive-assignee rejection, role controls, recoverable failures, and responsive layouts | Staff Ticket Detail and Action Taken screenshots at 1440/768/375; create form at all three widths; edit, recorded, in-progress, completed, cancel-confirmation, cancelled, empty, load-failure, safe create-failure/value-preservation, keyboard-focus, and requester read-only captures; API/component/E2E traceability in [`tests.md`](tests.md) | Captured and tested on the PR/staging line. Negative API authorization and inactive-assignee cases are covered by tests as listed in the traceability table. |
@@ -16,8 +16,8 @@ This index maps the Lab 4 PDF's nine required answer parts to repository records
 
 ## Final submission items still open
 
-- Complete review and merge of PR #81, then record its actual review and merge result in [`reviewer.md`](reviewer.md).
-- Open and merge the release PR from `lab4-staging` to `main` after issue #72 is integrated.
+- Merge the post-merge evidence refresh to `lab4-staging`.
+- Open the final release PR from `lab4-staging` to `main`, then complete collaborator review and merge.
 - Rerun the full test and build set on the exact final `main` commit; record its SHA and actual output.
-- Update the Lab 4 Kanban only after its acceptance criteria are complete.
+- Change issue #72's project status to `In Progress` while final release work remains; mark it `Done` after final-main verification and the submission PDF are complete.
 - Prepare the separate PDF with exactly `Answer Part 1` through `Answer Part 9` using the final-main evidence. The PDF remains outside this repository.
