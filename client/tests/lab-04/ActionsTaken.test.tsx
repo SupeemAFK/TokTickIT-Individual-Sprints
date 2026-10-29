@@ -47,7 +47,7 @@ function response(body: unknown, status = 200) {
   return { ok: status >= 200 && status < 300, status, json: async () => body } as Response;
 }
 
-function installApiMock(initial: Action[], failFirstCreate = false, holdFirstCreate = false, failFirstLoad = false) {
+function installApiMock(initial: Action[], failFirstCreate = false, holdFirstCreate = false, failFirstLoad = false, failFirstCreateStatus = 0, conflictStatus?: Action["status"]) {
   let rows = [...initial];
   let creates = 0;
   let conflictOnce = true;
@@ -68,6 +68,7 @@ function installApiMock(initial: Action[], failFirstCreate = false, holdFirstCre
     if (url.endsWith("/api/staff/tickets/12/actions") && method === "POST") {
       creates += 1;
       if (failFirstCreate && creates === 1) throw new TypeError("network lost after submit");
+      if (failFirstCreateStatus && creates === 1) return response({ error: "Input rejected.", code: "VALIDATION_ERROR" }, failFirstCreateStatus);
       if (holdFirstCreate && creates === 1) await new Promise<void>((resolve) => { releaseHeldCreate = resolve; });
       const assignedToUserId = body.assignedToUserId as number | null;
       const created = action(55, {
@@ -92,7 +93,7 @@ function installApiMock(initial: Action[], failFirstCreate = false, holdFirstCre
     if (patchMatch && method === "PATCH") {
       if (conflictOnce) {
         conflictOnce = false;
-        rows = rows.map((item) => item.id === Number(patchMatch[1]) ? { ...item, description: "Concurrent update from another staff member", updatedAt: "2026-10-29T10:03:00.000Z" } : item);
+        rows = rows.map((item) => item.id === Number(patchMatch[1]) ? { ...item, description: "Concurrent update from another staff member", status: conflictStatus ?? item.status, updatedAt: "2026-10-29T10:03:00.000Z" } : item);
         return response({ error: "Action Taken changed; reload and retry.", code: "CONFLICT" }, 409);
       }
       rows = rows.map((item) => item.id === Number(patchMatch[1]) ? {
@@ -183,6 +184,34 @@ describe("Issue #69 Actions Taken Ticket Detail interface", () => {
     expect(rows()).toHaveLength(1);
   });
 
+  it("rotates the idempotency key after a deterministic create rejection and preserves the form", async () => {
+    const user = userEvent.setup();
+    const { calls, rows } = installApiMock([], false, false, false, 400);
+    render(<ActionsTaken ticketId={12} token="staff-session" canManage ticketActive />);
+    await user.click(await screen.findByRole("button", { name: "Add Action Taken" }));
+    await user.type(screen.getByLabelText("Description"), "Corrected the VPN profile");
+    await user.type(screen.getByLabelText("Result"), "Connection restored");
+    await user.click(screen.getByRole("button", { name: "Record action" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("Input rejected.");
+    expect(screen.getByLabelText("Description")).toHaveValue("Corrected the VPN profile");
+    const firstPost = calls.mock.calls.find(([, init]) => init?.method === "POST");
+    const firstKey = (firstPost?.[1]?.headers as Record<string, string>)["Idempotency-Key"];
+
+    await user.selectOptions(screen.getByLabelText("Assigned To"), String(administrator.id));
+    await user.click(screen.getByRole("button", { name: "Record action" }));
+
+    expect(await screen.findByRole("status")).toHaveTextContent("Action Taken recorded.");
+    const posts = calls.mock.calls.filter(([, init]) => init?.method === "POST");
+    const secondKey = (posts[1][1]?.headers as Record<string, string>)["Idempotency-Key"];
+    expect(secondKey).not.toBe(firstKey);
+    expect(JSON.parse(String(posts[1][1]?.body))).toMatchObject({
+      description: "Corrected the VPN profile",
+      assignedToUserId: administrator.id,
+    });
+    expect(rows()).toHaveLength(1);
+  });
+
   it("preserves edit values on a conflict, supports status completion, and confirms cancellation", async () => {
     const user = userEvent.setup();
     const first = action(40);
@@ -226,6 +255,25 @@ describe("Issue #69 Actions Taken Ticket Detail interface", () => {
     expect(calls.mock.calls.some(([url, init]) => String(url).endsWith("/actions/41/cancel") && init?.method === "POST")).toBe(true);
     expect(within(secondAction as HTMLElement).getByText("CANCELLED")).toBeInTheDocument();
     expect(within(secondAction as HTMLElement).queryByRole("button", { name: /Edit action/ })).not.toBeInTheDocument();
+  });
+
+  it("closes an edit form when a conflict refresh shows the action is terminal", async () => {
+    const user = userEvent.setup();
+    const { calls, rows } = installApiMock([action(40)], false, false, false, 0, "COMPLETED");
+    render(<ActionsTaken ticketId={12} token="staff-session" canManage ticketActive />);
+
+    await user.click(await screen.findByRole("button", { name: "Edit action #40" }));
+    await user.clear(screen.getByLabelText("Description"));
+    await user.type(screen.getByLabelText("Description"), "Unsaved description");
+    await user.click(screen.getByRole("button", { name: "Save changes" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("Action Taken changed; reload and retry.");
+    expect(rows()[0].status).toBe("COMPLETED");
+    expect(screen.getByText("Concurrent update from another staff member")).toBeInTheDocument();
+    expect(screen.getByText("COMPLETED")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Save changes" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Edit action #40" })).not.toBeInTheDocument();
+    expect(calls.mock.calls.filter(([, init]) => init?.method === "PATCH")).toHaveLength(1);
   });
 
   it("shows explicit empty/loading failure states and hides controls for inactive Tickets", async () => {

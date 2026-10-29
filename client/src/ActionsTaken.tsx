@@ -227,9 +227,16 @@ export default function ActionsTaken({ ticketId, token, canManage, ticketActive 
     } catch (reason) {
       const fallback = editing ? "Unable to update the Action Taken." : "Unable to record the Action Taken. Your values are saved so you can retry.";
       setFormError(reason instanceof Error ? reason.message : fallback);
+      if (!editing && reason instanceof ActionApiError && reason.status >= 400 && reason.status < 500) {
+        idempotencyKey.current = null;
+      }
       if (reason instanceof ActionApiError && reason.status === 409) {
         const latest = await loadActions();
-        if (editing && latest) setEditing(latest.find((item) => item.id === editing.id) ?? editing);
+        if (editing && latest) {
+          const refreshed = latest.find((item) => item.id === editing.id);
+          if (refreshed?.status === "COMPLETED" || refreshed?.status === "CANCELLED") setEditing(null);
+          else setEditing(refreshed ?? editing);
+        }
       }
     } finally {
       savingRef.current = false;
