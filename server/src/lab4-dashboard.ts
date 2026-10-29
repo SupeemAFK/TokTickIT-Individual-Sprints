@@ -194,10 +194,11 @@ export function registerLab4Dashboards(app: Express) {
       const asOf = new Date();
       const from = new Date(asOf.getTime() - 30 * 24 * 60 * 60 * 1000);
       const prisma = getPrisma() as any;
-      const [totalTickets, activeGroups, resolvedLast30Days, recentlyResolvedTickets, recentTickets] = await Promise.all([
+      const [totalTickets, activeGroups, resolvedLast30Days, attentionTickets, recentlyResolvedTickets, recentTickets] = await Promise.all([
         prisma.ticket.count({ where: { requesterId: id } }),
         prisma.ticket.groupBy({ by: ["currentStatus"], where: { requesterId: id, currentStatus: { in: ACTIVE_STATUSES } }, _count: { _all: true } }),
         prisma.ticket.count({ where: { requesterId: id, resolvedAt: { gte: from, lt: asOf } } }),
+        prisma.ticket.findMany({ where: { requesterId: id, currentStatus: "WAITING_FOR_REQUESTER" }, orderBy: [{ updatedAt: "desc" }, { id: "desc" }], take: 10, select: DASHBOARD_TICKET_SELECT }),
         prisma.ticket.findMany({ where: { requesterId: id, resolvedAt: { gte: from, lt: asOf } }, orderBy: [{ resolvedAt: "desc" }, { id: "desc" }], take: 10, select: { ...DASHBOARD_TICKET_SELECT, resolvedAt: true } }),
         prisma.ticket.findMany({ where: { requesterId: id }, orderBy: [{ updatedAt: "desc" }, { id: "desc" }], take: 10, select: DASHBOARD_TICKET_SELECT }),
       ]);
@@ -211,6 +212,7 @@ export function registerLab4Dashboards(app: Express) {
           waitingForRequester: activeByStatus.WAITING_FOR_REQUESTER,
           resolvedLast30Days,
         },
+        attentionTickets: attentionTickets.map(toDashboardTicket),
         recentlyResolvedTickets: recentlyResolvedTickets.map((ticket: any) => ({ ...toDashboardTicket(ticket), resolvedAt: new Date(ticket.resolvedAt).toISOString() })),
         recentTickets: recentTickets.map(toDashboardTicket),
       });

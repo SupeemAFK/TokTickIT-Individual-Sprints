@@ -14,6 +14,8 @@ async function installUserAdminMock(page: Page, currentUser = administrator) {
     const method = request.method();
     if (url.pathname === "/api/auth/me") return json(route, { user: currentUser, mustChangePassword: false });
     if (url.pathname === "/api/categories" || url.pathname === "/api/related-systems") return json(route, []);
+    if (url.pathname === "/api/staff/users") return json(route, []);
+    if (url.pathname === "/api/staff/tickets") return json(route, { items: [], pagination: { page: 1, pageSize: 10, totalItems: 0, totalPages: 0 }, counts: { totalItems: 0, unassigned: 0, byItPriority: {} } });
     if (url.pathname === "/api/tickets" && method === "GET") return json(route, { items: [], pagination: { page: 1, pageSize: 10, totalItems: 0, totalPages: 1 } });
     if (url.pathname === "/api/admin/users" && method === "GET") {
       const search = (url.searchParams.get("search") ?? "").toLowerCase();
@@ -43,6 +45,7 @@ async function openUserManagement(page: Page) {
   await page.goto("/");
   await page.evaluate(() => sessionStorage.setItem("toktickit.token", "e2e-admin-session"));
   await page.reload();
+  await expect(page.getByRole("heading", { name: "Ticket Queue" })).toBeVisible();
   await page.getByRole("button", { name: "User Management" }).click();
   await expect(page.getByRole("heading", { name: "User Management" })).toBeVisible();
 }

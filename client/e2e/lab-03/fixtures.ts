@@ -118,6 +118,26 @@ export async function installLab3ApiMock(page: Page, role: Role, options: Fixtur
     if (url.pathname === "/api/categories") return json(route, categories);
     if (url.pathname === "/api/related-systems") return json(route, systems);
     if (url.pathname === "/api/staff/users") return json(route, staffUsers);
+    const activeStatuses = ["NEW", "OPEN", "IN_PROGRESS", "WAITING_FOR_REQUESTER", "REOPENED"];
+    const toDashboardTicket = (item: (typeof tickets)[number]) => ({ id: item.id, ticketNumber: item.ticketNumber, summary: item.summary, requestedPriority: item.requestedPriority, itPriority: item.itPriority, currentStatus: item.currentStatus, owner: item.owner ?? null, category: item.category, relatedSystem: item.relatedSystem, createdAt: item.createdAt, updatedAt: item.updatedAt });
+    if (url.pathname === "/api/requester/dashboard") {
+      if (role !== "REQUESTER") return json(route, { error: "Forbidden.", code: "FORBIDDEN" }, 403);
+      const owned = tickets.filter((item) => item.requester?.id === currentUser.id);
+      const active = owned.filter((item) => activeStatuses.includes(item.currentStatus));
+      const waiting = owned.filter((item) => item.currentStatus === "WAITING_FOR_REQUESTER");
+      const resolvedWindow = { from: "2026-08-20T08:00:00.000Z", to: "2026-09-19T08:00:00.000Z" };
+      return json(route, { asOf: resolvedWindow.to, resolvedLast30DaysWindow: resolvedWindow, metrics: { totalTickets: owned.length, activeTickets: active.length, waitingForRequester: waiting.length, resolvedLast30Days: 0 }, attentionTickets: waiting.slice(0, 10).map(toDashboardTicket), recentlyResolvedTickets: [], recentTickets: owned.slice(0, 10).map(toDashboardTicket) });
+    }
+    if (url.pathname === "/api/staff/dashboard") {
+      if (role === "REQUESTER") return json(route, { error: "Forbidden.", code: "FORBIDDEN" }, 403);
+      const active = tickets.filter((item) => activeStatuses.includes(item.currentStatus));
+      const activeByStatus = Object.fromEntries(activeStatuses.map((status) => [status, active.filter((item) => item.currentStatus === status).length]));
+      const activeByItPriority = Object.fromEntries(["LOW", "MEDIUM", "HIGH"].map((priority) => [priority, active.filter((item) => item.itPriority === priority).length]));
+      const actionsForMe = actions.filter((item) => item.assignedToUserId === currentUser.id && ["OPEN", "IN_PROGRESS"].includes(String(item.status))).slice(0, 10).map((item) => ({ id: item.id, ticketId: item.ticketId, actionAt: item.actionAt, description: item.description, status: item.status, ticket: toDashboardTicket(findTicket(Number(item.ticketId))) }));
+      const resolvedWindow = { from: "2026-09-12T08:00:00.000Z", to: "2026-09-19T08:00:00.000Z" };
+      return json(route, { asOf: resolvedWindow.to, resolvedLast7DaysWindow: resolvedWindow, metrics: { activeTickets: active.length, unassignedActiveTickets: active.filter((item) => !item.owner).length, myActiveTickets: active.filter((item) => item.owner?.id === currentUser.id).length, activeByStatus, activeByItPriority, waitingForRequester: activeByStatus.WAITING_FOR_REQUESTER ?? 0, resolvedLast7Days: 0, myActiveActions: actionsForMe.length }, myActions: actionsForMe, recentTickets: tickets.slice(0, 10).map(toDashboardTicket) });
+    }
+    if (/^\/api\/(staff|requester)\/dashboard\/resolved-tickets$/.test(url.pathname)) return json(route, { window: { from: url.searchParams.get("from"), to: url.searchParams.get("to") }, items: [], nextCursor: null });
 
     const ticketActionsMatch = url.pathname.match(/^\/api\/tickets\/(\d+)\/actions$/);
     if (ticketActionsMatch && method === "GET") return json(route, { items: actions.filter((item) => item.ticketId === Number(ticketActionsMatch[1])) });
@@ -164,7 +184,12 @@ export async function installLab3ApiMock(page: Page, role: Role, options: Fixtur
     if (url.pathname === "/api/tickets" && method === "GET") {
       const pageNumber = Number(url.searchParams.get("page") ?? 1);
       const pageSize = Number(url.searchParams.get("pageSize") ?? 10);
-      const visible = realistic && role === "REQUESTER" ? tickets.filter((item) => item.requester?.id === currentUser.id) : tickets;
+      const activeStatuses = ["NEW", "OPEN", "IN_PROGRESS", "WAITING_FOR_REQUESTER", "REOPENED"];
+      const visible = (realistic && role === "REQUESTER" ? tickets.filter((item) => item.requester?.id === currentUser.id) : tickets).filter((item) => {
+        const status = url.searchParams.get("status");
+        const group = url.searchParams.get("statusGroup");
+        return (!status || item.currentStatus === status) && (group !== "active" || activeStatuses.includes(item.currentStatus));
+      });
       const start = (pageNumber - 1) * pageSize;
       return json(route, { items: visible.slice(start, start + pageSize), pagination: { page: pageNumber, pageSize, totalItems: visible.length, totalPages: Math.ceil(visible.length / pageSize) || 0 } });
     }
@@ -197,8 +222,14 @@ export async function installLab3ApiMock(page: Page, role: Role, options: Fixtur
     if (url.pathname === "/api/staff/tickets" && method === "GET") {
       const pageNumber = Number(url.searchParams.get("page") ?? 1);
       const pageSize = Number(url.searchParams.get("pageSize") ?? 10);
+      const status = url.searchParams.get("status");
+      const statusGroup = url.searchParams.get("statusGroup");
+      const owner = url.searchParams.get("ownerUserId");
+      const priority = url.searchParams.get("itPriority");
+      const activeStatuses = ["NEW", "OPEN", "IN_PROGRESS", "WAITING_FOR_REQUESTER", "REOPENED"];
+      const filtered = tickets.filter((item) => (!status || item.currentStatus === status) && (statusGroup !== "active" || activeStatuses.includes(item.currentStatus)) && (owner === null || (owner === "null" ? !item.owner : item.owner?.id === Number(owner))) && (!priority || item.itPriority === priority));
       const start = (pageNumber - 1) * pageSize;
-      return json(route, { items: tickets.slice(start, start + pageSize).map((item) => ({ ...item, requester: { id: item.requester.id, name: item.requester.name } })), pagination: { page: pageNumber, pageSize, totalItems: tickets.length, totalPages: Math.ceil(tickets.length / pageSize) || 0 }, counts: counts() });
+      return json(route, { items: filtered.slice(start, start + pageSize).map((item) => ({ ...item, requester: { id: item.requester.id, name: item.requester.name } })), pagination: { page: pageNumber, pageSize, totalItems: filtered.length, totalPages: Math.ceil(filtered.length / pageSize) || 0 }, counts: counts() });
     }
     const staffTicketMatch = url.pathname.match(/^\/api\/staff\/tickets\/(\d+)$/);
     if (staffTicketMatch && method === "GET") return json(route, { ticket: findTicket(Number(staffTicketMatch[1])) });

@@ -79,6 +79,24 @@ describe("Issue #38 IT Staff Ticket Queue API", () => {
     });
   });
 
+  it("supports active status-group filtering for Dashboard drill-downs", async () => {
+    prisma.ticket.findMany.mockImplementation(async (args: any) => args.select ? countRows : [queueItem]);
+    prisma.ticket.count.mockResolvedValue(1);
+
+    const response = await request(app).get("/api/staff/tickets?statusGroup=active").set(auth);
+
+    expect(response.status).toBe(200);
+    const rowsQuery = prisma.ticket.findMany.mock.calls.find(([args]: any[]) => args.skip === 0);
+    expect(rowsQuery?.[0].where).toEqual({ currentStatus: { in: ["NEW", "OPEN", "IN_PROGRESS", "WAITING_FOR_REQUESTER", "REOPENED"] } });
+  });
+
+  it("rejects combining the active group with a single status", async () => {
+    const response = await request(app).get("/api/staff/tickets?status=CLOSED&statusGroup=active").set(auth);
+    expect(response.status).toBe(400);
+    expect(response.body.code).toBe("INVALID_REQUEST");
+    expect(prisma.ticket.findMany).not.toHaveBeenCalled();
+  });
+
   it.each([staff, administrator])("allows %s role to access the queue", async (user) => {
     authenticateAs(user);
     prisma.ticket.findMany.mockImplementation(async (args: any) => args.select ? countRows : [queueItem]);

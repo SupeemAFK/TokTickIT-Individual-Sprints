@@ -60,8 +60,9 @@ describe("Lab 4 Requester dashboard API", () => {
     ]);
     const resolvedAt = new Date("2026-10-27T11:00:00.000Z");
     const resolved = resolvedRow(14, resolvedAt, "CLOSED");
+    const attention = ticketRow({ id: 15, ticketNumber: "TKT-2026-000015", currentStatus: "WAITING_FOR_REQUESTER" });
     const recent = ticketRow();
-    prisma.ticket.findMany.mockImplementation(async ({ where }: any) => where.resolvedAt ? [resolved] : [recent]);
+    prisma.ticket.findMany.mockImplementation(async ({ where }: any) => where.resolvedAt ? [resolved] : where.currentStatus ? [attention] : [recent]);
 
     const response = await request(app).get("/api/requester/dashboard?requesterId=999").set(requesterAuth);
 
@@ -70,6 +71,7 @@ describe("Lab 4 Requester dashboard API", () => {
     expect(response.body.asOf).toBe(to);
     expect(Date.parse(to) - Date.parse(from)).toBe(30 * 24 * 60 * 60 * 1000);
     expect(response.body.metrics).toEqual({ totalTickets: 20, activeTickets: 4, waitingForRequester: 2, resolvedLast30Days: 3 });
+    expect(response.body.attentionTickets).toMatchObject([{ id: 15, currentStatus: "WAITING_FOR_REQUESTER" }]);
     expect(response.body.recentlyResolvedTickets).toMatchObject([{ id: 14, currentStatus: "CLOSED", resolvedAt: resolvedAt.toISOString() }]);
     expect(response.body.recentTickets).toMatchObject([{ id: 12, ticketNumber: "TKT-2026-000012" }]);
     expect(prisma.ticket.count).toHaveBeenCalledWith({ where: { requesterId: requester.legacyRequesterId } });
@@ -81,6 +83,7 @@ describe("Lab 4 Requester dashboard API", () => {
     });
     expect(prisma.ticket.findMany).toHaveBeenCalledWith(expect.objectContaining({ where: { requesterId: requester.legacyRequesterId, resolvedAt: { gte: new Date(from), lt: new Date(to) } }, orderBy: [{ resolvedAt: "desc" }, { id: "desc" }], take: 10 }));
     expect(prisma.ticket.findMany).toHaveBeenCalledWith(expect.objectContaining({ where: { requesterId: requester.legacyRequesterId }, orderBy: [{ updatedAt: "desc" }, { id: "desc" }], take: 10 }));
+    expect(prisma.ticket.findMany).toHaveBeenCalledWith(expect.objectContaining({ where: { requesterId: requester.legacyRequesterId, currentStatus: "WAITING_FOR_REQUESTER" }, orderBy: [{ updatedAt: "desc" }, { id: "desc" }], take: 10 }));
   });
 
   it("returns zero metrics and empty lists and rejects unauthenticated or wrong-role requests", async () => {
@@ -99,6 +102,7 @@ describe("Lab 4 Requester dashboard API", () => {
     const empty = await request(app).get("/api/requester/dashboard").set(requesterAuth);
     expect(empty.status).toBe(200);
     expect(empty.body.metrics).toEqual({ totalTickets: 0, activeTickets: 0, waitingForRequester: 0, resolvedLast30Days: 0 });
+    expect(empty.body.attentionTickets).toEqual([]);
     expect(empty.body.recentlyResolvedTickets).toEqual([]);
     expect(empty.body.recentTickets).toEqual([]);
   });

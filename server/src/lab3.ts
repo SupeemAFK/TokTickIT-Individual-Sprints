@@ -9,6 +9,7 @@ const SESSION_TTL_MS = 8 * 60 * 60 * 1000;
 const ROLES = new Set(Object.values(UserRole));
 const STATUSES = ["NEW", "OPEN", "IN_PROGRESS", "WAITING_FOR_REQUESTER", "RESOLVED", "CLOSED", "REOPENED", "CANCELLED"] as const;
 const STATUS_SET = new Set<string>(STATUSES);
+const ACTIVE_STATUSES = ["NEW", "OPEN", "IN_PROGRESS", "WAITING_FOR_REQUESTER", "REOPENED"] as const;
 const PRIORITIES = new Set(["LOW", "MEDIUM", "HIGH"]);
 const ALLOWED_TRANSITIONS: Record<string, readonly string[]> = {
   NEW: ["OPEN", "IN_PROGRESS", "CANCELLED"],
@@ -234,6 +235,9 @@ export function registerLab3(app: Express) {
       if (typeof sort !== "string" || !new Set(["updatedAt", "createdAt", "ticketNumber", "summary", "currentStatus", "itPriority", "requestedPriority"]).has(sort)) throw new RequestError(400, "sort is invalid.");
       const status = query.status === undefined ? undefined : requiredText(query.status, "status", 1, 40);
       if (status && !STATUS_SET.has(status)) throw new RequestError(400, "status is invalid.");
+      const statusGroup = query.statusGroup === undefined ? undefined : requiredText(query.statusGroup, "statusGroup", 1, 20);
+      if (statusGroup && statusGroup !== "active") throw new RequestError(400, "statusGroup is invalid.");
+      if (status && statusGroup) throw new RequestError(400, "status and statusGroup cannot be combined.");
       const ownerUserId = query.ownerUserId === undefined ? undefined : (query.ownerUserId === "null" ? null : idParam(query.ownerUserId, "ownerUserId"));
       const requestedPriority = query.requestedPriority === undefined ? undefined : requiredText(query.requestedPriority, "requestedPriority", 1, 20);
       const itPriority = query.itPriority === undefined ? undefined : requiredText(query.itPriority, "itPriority", 1, 20);
@@ -243,7 +247,7 @@ export function registerLab3(app: Express) {
       const requesterId = query.requesterId === undefined ? undefined : idParam(query.requesterId, "requesterId");
       const where: any = {
         ...(search ? { OR: [{ ticketNumber: { contains: search, mode: "insensitive" } }, { summary: { contains: search, mode: "insensitive" } }] } : {}),
-        ...(status ? { currentStatus: status } : {}), ...(ownerUserId === null ? { ownerUserId: null } : ownerUserId ? { ownerUserId } : {}),
+        ...(status ? { currentStatus: status } : statusGroup === "active" ? { currentStatus: { in: [...ACTIVE_STATUSES] } } : {}), ...(ownerUserId === null ? { ownerUserId: null } : ownerUserId ? { ownerUserId } : {}),
         ...(requestedPriority ? { requestedPriority } : {}), ...(itPriority ? { itPriority } : {}), ...(categoryId ? { categoryId } : {}), ...(requesterId ? { requesterId } : {}),
       };
       const prisma = getPrisma() as any;
