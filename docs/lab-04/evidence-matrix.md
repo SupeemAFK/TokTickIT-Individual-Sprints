@@ -19,5 +19,5 @@ This index maps the Lab 4 PDF's nine required answer parts to repository records
 - Merge the post-merge evidence refresh to `lab4-staging`.
 - Open the final release PR from `lab4-staging` to `main`, then complete collaborator review and merge.
 - Rerun the full test and build set on the exact final `main` commit; record its SHA and actual output.
-- Update the Lab 4 Kanban only after its acceptance criteria are complete.
+- Change issue #72's project status to `In Progress` while final release work remains; mark it `Done` after final-main verification and the submission PDF are complete.
 - Prepare the separate PDF with exactly `Answer Part 1` through `Answer Part 9` using the final-main evidence. The PDF remains outside this repository.

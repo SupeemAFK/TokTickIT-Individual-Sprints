@@ -19,7 +19,7 @@ This checklist distinguishes completed staging evidence from work that depends o
 
 - [ ] Merge this post-merge evidence refresh to `lab4-staging`, then open the final `lab4-staging` to `main` PR for collaborator review and merge.
 - [ ] On the resulting exact `main` commit, rerun server and client tests/builds and the complete Playwright suite; inspect the final screenshots and record the commit hash and actual outputs.
-- [ ] Update the GitHub Lab 4 project/Kanban only when all acceptance criteria and final-main verification are complete.
+- [ ] Change issue #72's project status from `Done` to `In Progress` while the final release gates remain pending; mark it `Done` only after final-main verification and the submission PDF meet the acceptance criteria.
 - [ ] Prepare the separate concise PDF with exactly `Answer Part 1` through `Answer Part 9`, working references, readable screenshots, and claims checked against final `main`. Do not commit the submission PDF to this repository.
 
 ## Verified staging snapshot
