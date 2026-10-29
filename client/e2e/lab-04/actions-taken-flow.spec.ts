@@ -3,6 +3,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { expect, test } from "playwright/test";
 import { openAuthenticatedApp } from "../lab-03/fixtures";
+import { watchForBrowserErrors } from "./browser-errors";
 
 const screenshotDirectory = resolve(dirname(fileURLToPath(import.meta.url)), "../../../artifacts/lab-04/screenshots/actions-taken");
 
@@ -15,6 +16,7 @@ async function openStaffDetail(page: Parameters<typeof openAuthenticatedApp>[0])
 }
 
 test("Staff can record, assign, edit, complete, and cancel Actions Taken", async ({ page }) => {
+  const browserErrors = watchForBrowserErrors(page);
   mkdirSync(screenshotDirectory, { recursive: true });
   await page.setViewportSize({ width: 1440, height: 1000 });
   await openStaffDetail(page);
@@ -61,18 +63,21 @@ test("Staff can record, assign, edit, complete, and cancel Actions Taken", async
     { width: 375, height: 812, name: "actions-taken-375.png" },
   ]) {
     await page.setViewportSize(viewport);
+    await page.mouse.move(0, 0);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
     await expect(page.getByRole("heading", { name: "Actions Taken" })).toBeVisible();
-    await page.screenshot({ path: resolve(screenshotDirectory, viewport.name), fullPage: true });
+    await page.screenshot({ path: resolve(screenshotDirectory, viewport.name), fullPage: true, animations: "disabled" });
   }
 
   await secondAction.getByRole("button", { name: "Cancel action #32" }).click();
   await secondAction.getByRole("button", { name: "Confirm cancellation" }).click();
   await expect(secondAction.getByText("CANCELLED")).toBeVisible();
   await expect(secondAction.getByRole("button", { name: "Edit action #32" })).toHaveCount(0);
+  expect(browserErrors()).toEqual([]);
 });
 
 test("Requester can read own action history without staff controls", async ({ page }) => {
+  const browserErrors = watchForBrowserErrors(page);
   await openAuthenticatedApp(page, "REQUESTER");
   await page.getByRole("button", { name: "Open ticket TKT-2026-000012" }).click();
   await expect(page.getByRole("heading", { name: "Ticket Detail" })).toBeVisible();
@@ -86,4 +91,5 @@ test("Requester can read own action history without staff controls", async ({ pa
   await expect(page.getByRole("button", { name: /Complete action/ })).toHaveCount(0);
   await expect(page.getByRole("button", { name: /Cancel action/ })).toHaveCount(0);
   await expect(page.getByText("No internal notes.")).toHaveCount(0);
+  expect(browserErrors()).toEqual([]);
 });

@@ -240,7 +240,17 @@ export async function installLab3ApiMock(page: Page, role: Role, options: Fixtur
       if (action === "claim" && method === "POST") { const updated = { ...ticket, owner: staff }; replaceTicket(updated); return json(route, { ticket: updated }); }
       if (action === "owner" && method === "PATCH") { const body = request.postDataJSON() as Record<string, unknown>; const ownerId = body.ownerUserId == null ? null : Number(body.ownerUserId); const owner = ownerId == null ? null : staffUsers.find((person) => person.id === ownerId) ?? null; const updated = { ...ticket, owner }; replaceTicket(updated); return json(route, { ticket: updated }); }
       if (action === "priority" && method === "PATCH") { const body = request.postDataJSON() as Record<string, unknown>; const updated = { ...ticket, itPriority: String(body.itPriority) }; replaceTicket(updated); return json(route, { ticket: updated }); }
-      if (action === "status" && method === "PATCH") { const body = request.postDataJSON() as Record<string, unknown>; const updated = { ...ticket, currentStatus: String(body.currentStatus) }; replaceTicket(updated); return json(route, { ticket: updated }); }
+      if (action === "status" && method === "PATCH") {
+        const body = request.postDataJSON() as Record<string, unknown>;
+        if (body.expectedCurrentStatus !== ticket.currentStatus) return json(route, { error: "Ticket changed; reload and retry.", code: "CONFLICT" }, 409);
+        if (body.currentStatus === "RESOLVED" && actions.some((item) => item.ticketId === ticket.id && ["OPEN", "IN_PROGRESS"].includes(String(item.status)))) {
+          return json(route, { error: "Complete or cancel all active Actions Taken before resolving this Ticket.", code: "ACTIONS_INCOMPLETE" }, 409);
+        }
+        const resolvedAt = body.currentStatus === "RESOLVED" ? new Date().toISOString() : body.currentStatus === "CLOSED" ? ticket.resolvedAt : null;
+        const updated = { ...ticket, currentStatus: String(body.currentStatus), resolvedAt };
+        replaceTicket(updated);
+        return json(route, { ticket: updated });
+      }
       if (action === "comments" && method === "GET") return json(route, { items: ticket.publicComments });
       if (action === "comments" && method === "POST") { const body = request.postDataJSON() as Record<string, unknown>; const comment = { id: 61, content: String(body.content), author: staff, createdAt: "2026-09-19T10:02:00.000Z" }; const updated = { ...ticket, publicComments: [...ticket.publicComments, comment] }; replaceTicket(updated); return json(route, comment, 201); }
       if (action === "notes" && method === "GET") return json(route, { items: ticket.internalNotes });
