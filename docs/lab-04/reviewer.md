@@ -27,4 +27,4 @@ The review-requested changes above were made before their linked approvals. GitH
 
 ## Release status snapshot — 2026-10-30
 
-Issues #64–#71 have approved PRs merged to `lab4-staging`. PR #81 was approved at `f081efc` and merged to `lab4-staging` as `3fa0743`, which is the current staging head at this snapshot. Issue #72 remains open while the final `lab4-staging` to `main` PR, verification on the resulting `main` commit, Kanban completion, and separate submission PDF are pending. No final release approval is claimed here.
+Issues #64–#71 have approved PRs merged to `lab4-staging`. PR #81 was approved at `f081efc` and merged to `lab4-staging` as `3fa0743`, which was the staging head at this snapshot. Issue #72 is open for the remaining final `lab4-staging` to `main` PR, verification on the resulting `main` commit, Kanban completion, and separate submission PDF; it was reopened after the PR #81 merge because those acceptance criteria remain incomplete. No final release approval is claimed here.
