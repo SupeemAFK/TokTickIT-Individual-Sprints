@@ -19,8 +19,12 @@ The review-requested changes above were made before their linked approvals. GitH
 
 ## Issue #72 evidence PR
 
-[PR #81](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/81), branch `chore/72-release-evidence`, is open for collaborator review as of this snapshot. Its review comments, response commits, approval, and merge commit will be recorded here only after those events occur.
+[PR #81](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/81), branch `chore/72-release-evidence`, is open for collaborator review.
+
+| Reviewer | Review result and requested change | Response and current status |
+|---|---|---|
+| `jarbbie` | [Changes requested](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/81#pullrequestreview-5703235853): correct the AI-use record from GPT-6 to the GPT-5-based assistant used for the recorded Lab 4 work and regenerate the rendered screenshot. | `cf885be` corrects `ai-use.md`; `57ccdc6` refreshes the GitHub-rendered screenshot. [Reply and re-review request](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/81#issuecomment-6505691800) sent to `jarbbie`. Awaiting re-review; approval and merge are pending. |
 
 ## Release status snapshot — 2026-10-30
 
-Issues #64–#71 have approved PRs merged to `lab4-staging`. The staging head at the start of issue #72 is `2d8db4f` (PR #80 merge commit). Issue #72's evidence PR #81 is pending collaborator review. The final `lab4-staging` to `main` PR, verification on the released `main` commit, and the separate submission PDF are pending; no final release approval is claimed here.
+Issues #64–#71 have approved PRs merged to `lab4-staging`. The staging head at the start of issue #72 is `2d8db4f` (PR #80 merge commit). Issue #72's evidence PR #81 is awaiting re-review after its requested correction. The final `lab4-staging` to `main` PR, verification on the released `main` commit, and the separate submission PDF are pending; no final release approval is claimed here.
