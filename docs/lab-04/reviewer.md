@@ -23,7 +23,7 @@ The review-requested changes above were made before their linked approvals. GitH
 
 | Reviewer | Review result and requested change | Response and current status |
 |---|---|---|
-| `jarbbie` | [Changes requested](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/81#pullrequestreview-5703235853): correct the AI-use record from GPT-6 to the GPT-5-based assistant used for the recorded Lab 4 work and regenerate the rendered screenshot. | `cf885be` corrects `ai-use.md`; `57ccdc6` refreshes the GitHub-rendered screenshot. [Reply and re-review request](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/81#issuecomment-6505691800) sent to `jarbbie`. Awaiting re-review; approval and merge are pending. |
+| `jarbbie` | [Changes requested](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/81#pullrequestreview-5703235853): replace GPT-6 with GPT-5 in the AI-use record and regenerate its rendered screenshot. | After rechecking, this Codex thread identifies as GPT-6-based, so the GPT-5 attribution is not supported for this recorded work. The AI-use record retains GPT-6; `cf885be` and `57ccdc6` temporarily applied the requested change and are superseded by the correction in progress. [Reply requesting the session/model source](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/81#issuecomment-6505756740) explains the discrepancy. Awaiting reviewer clarification; approval and merge are pending. |
 
 ## Release status snapshot — 2026-10-30
 
