@@ -14,7 +14,7 @@ This checklist distinguishes completed staging evidence from work that depends o
 
 ## Pending collaborator review and final release
 
-- [ ] Merge the issue #72 evidence PR to `lab4-staging` after collaborator review; then update `reviewer.md` with its actual review, response, and merge details.
+- [ ] Complete collaborator review of [PR #81](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/81), merge it to `lab4-staging`, and add the actual review, response, and merge details to `reviewer.md` after they occur.
 - [ ] Open the final `lab4-staging` to `main` PR only after issue PRs #64–#72 are integrated. Leave that PR for collaborator review and merge.
 - [ ] On the resulting exact `main` commit, rerun server and client tests/builds and the complete Playwright suite; inspect the final screenshots and record the commit hash and actual outputs.
 - [ ] Update the GitHub Lab 4 project/Kanban only when all acceptance criteria and final-main verification are complete.

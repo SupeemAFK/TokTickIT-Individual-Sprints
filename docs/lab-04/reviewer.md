@@ -17,6 +17,10 @@ This record summarizes the actual collaborator reviews and merges for the Lab 4 
 
 The review-requested changes above were made before their linked approvals. GitHub's PR review API reported no separate inline review comments for PRs #73–#80.
 
+## Issue #72 evidence PR
+
+[PR #81](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/81), branch `chore/72-release-evidence`, is open for collaborator review as of this snapshot. Its review comments, response commits, approval, and merge commit will be recorded here only after those events occur.
+
 ## Release status snapshot — 2026-10-30
 
-Issues #64–#71 have approved PRs merged to `lab4-staging`. The staging head at the start of issue #72 is `2d8db4f` (PR #80 merge commit). Issue #72 evidence and its peer review are still in progress. The final `lab4-staging` to `main` PR, verification on the released `main` commit, and the separate submission PDF are pending; no final release approval is claimed here.
+Issues #64–#71 have approved PRs merged to `lab4-staging`. The staging head at the start of issue #72 is `2d8db4f` (PR #80 merge commit). Issue #72's evidence PR #81 is pending collaborator review. The final `lab4-staging` to `main` PR, verification on the released `main` commit, and the separate submission PDF are pending; no final release approval is claimed here.
