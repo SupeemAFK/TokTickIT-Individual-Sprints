@@ -10,6 +10,8 @@ This checklist distinguishes completed staging evidence from work that depends o
 - [x] Regression suites and builds passed on PR #80 head `c6aef91`; the approved PR merged to staging as `2d8db4f`. See [`tests.md`](tests.md).
 - [x] Migration and dashboard performance checks ran against disposable PostgreSQL 16.15 using temporary schemas; no remote database or public schema was changed.
 - [x] Staff and Requester dashboards and Staff Ticket Detail were captured and visually inspected at 375, 768, and 1440 px. See the [screenshot index](../../artifacts/lab-04/screenshots/README.md).
+- [x] The complete existing Lab 1–4 Playwright suite passed on the PR #81 evidence update: 20 tests. It captured Action Taken create/edit/status/cancel/error/empty states, requester read-only history, dashboard loading/empty/forbidden/failure states, and ticket-resolution conflict/recovery.
+- [x] The [Parts 1–9 evidence matrix](evidence-matrix.md) and [visual/accessibility review](visual-review.md) map screenshots, test records, and remaining release work to the handout.
 - [x] README setup, migration, seed, test, and demo instructions describe the integrated Labs 1–4 application.
 
 ## Pending collaborator review and final release
