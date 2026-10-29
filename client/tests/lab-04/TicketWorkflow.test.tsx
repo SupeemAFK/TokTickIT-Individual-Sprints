@@ -35,6 +35,7 @@ function installWorkflowApi(conflictOnStatus = false) {
     const method = init?.method ?? "GET";
     const body = init?.body ? JSON.parse(String(init.body)) : undefined;
     if (url.endsWith("/api/auth/me")) return response({ user: staff, mustChangePassword: false });
+    if (url.endsWith("/api/tickets/12/actions") && method === "GET") return response({ items: [] });
     if (url.endsWith("/api/staff/users")) return response([staff]);
     if (url.endsWith("/api/categories")) return response([{ id: 1, name: "Network" }]);
     if (url.includes("/api/staff/tickets?") && method === "GET") return response({ items: [{ ...ticket, internalNotes: undefined, attachments: undefined, publicComments: undefined }], pagination: { page: 1, pageSize: 10, totalItems: 1, totalPages: 1 }, counts: { totalItems: 1, unassigned: 1, byStatus: { OPEN: 1 }, byItPriority: { LOW: 0, MEDIUM: 1, HIGH: 0 } } });

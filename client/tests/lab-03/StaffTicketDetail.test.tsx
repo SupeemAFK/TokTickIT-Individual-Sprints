@@ -43,6 +43,7 @@ function installStaffApi(currentUser: CurrentUser = staff, failurePath: FailureP
     const method = init?.method ?? "GET";
     const body = init?.body ? JSON.parse(String(init.body)) : undefined;
     if (url.endsWith("/api/auth/me")) return response({ user: currentUser, mustChangePassword: false });
+    if (url.endsWith("/api/tickets/12/actions") && method === "GET") return response({ items: [] });
     if (url.endsWith("/api/staff/users")) return response([staff, administrator]);
     if (url.endsWith("/api/categories")) return response([category]);
     if (url.endsWith("/api/related-systems")) return response([relatedSystem]);
