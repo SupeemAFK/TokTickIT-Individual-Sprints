@@ -1,6 +1,6 @@
 # Lab 4 Screenshot and Evidence Index
 
-Captured on 2026-10-30 on PR #81 using local Playwright fixtures with synthetic data, except the repository captures, which show GitHub's rendered pages. Responsive browser flows assert no horizontal page overflow. Captures disable animations and move the pointer away before taking screenshots; the keyboard-focus example intentionally keeps focus visible.
+Captured on 2026-10-30 using local Playwright fixtures with synthetic data for app screens; repository and pull-request evidence shows GitHub's rendered pages, including the approved and merged PR #81. Responsive browser flows assert no horizontal page overflow. Captures disable animations and move the pointer away before taking screenshots; the keyboard-focus example intentionally keeps focus visible.
 
 For the report's complete Parts 1–9 mapping, see [`evidence-matrix.md`](../../../docs/lab-04/evidence-matrix.md). The review scope and limits are in [`visual-review.md`](../../../docs/lab-04/visual-review.md).
 
@@ -52,8 +52,8 @@ These screenshots were captured from GitHub's HTML rendering of the PR branch or
 | Visual/accessibility review rendered | [visual-review-rendered-1440.png](repository/visual-review-rendered-1440.png) |
 | Release checklist rendered | [release-evidence-rendered-1440.png](repository/release-evidence-rendered-1440.png) |
 | AI-use record rendered | [ai-use-rendered-1440.png](repository/ai-use-rendered-1440.png) |
-| Peer-review record rendered | [reviewer-rendered-1440.png](repository/reviewer-rendered-1440.png) |
-| PR #81 open-status snapshot | [pr-81-status-1440.png](repository/pr-81-status-1440.png) |
+| Peer-review record rendered after PR #81 merge | [reviewer-rendered-1440.png](repository/reviewer-rendered-1440.png) |
+| PR #81 merged-status snapshot | [pr-81-status-1440.png](repository/pr-81-status-1440.png) |
 | Repository file structure | [repository-root-1440.png](repository/repository-root-1440.png) |
 | `.gitignore` rendered | [gitignore-rendered-1440.png](repository/gitignore-rendered-1440.png) |
 | `lab4-staging` commit history | [lab4-staging-commits-1440.png](repository/lab4-staging-commits-1440.png) |
