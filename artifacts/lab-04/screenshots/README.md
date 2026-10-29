@@ -53,7 +53,7 @@ These screenshots were captured from GitHub's HTML rendering of the PR branch or
 | Release checklist rendered | [release-evidence-rendered-1440.png](repository/release-evidence-rendered-1440.png) |
 | AI-use record rendered | [ai-use-rendered-1440.png](repository/ai-use-rendered-1440.png) |
 | Peer-review record rendered | [reviewer-rendered-1440.png](repository/reviewer-rendered-1440.png) |
-| PR #81 current review status | [pr-81-status-1440.png](repository/pr-81-status-1440.png) |
+| PR #81 open-status snapshot | [pr-81-status-1440.png](repository/pr-81-status-1440.png) |
 | Repository file structure | [repository-root-1440.png](repository/repository-root-1440.png) |
 | `.gitignore` rendered | [gitignore-rendered-1440.png](repository/gitignore-rendered-1440.png) |
 | `lab4-staging` commit history | [lab4-staging-commits-1440.png](repository/lab4-staging-commits-1440.png) |
