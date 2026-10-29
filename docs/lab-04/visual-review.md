@@ -4,16 +4,20 @@ Reviewed 2026-10-30 on PR #81's local evidence branch. Captures use local Playwr
 
 ## Review checklist
 
+- [x] Zen Green colors, card hierarchy, and spacing remain consistent with the Lab 2/3 visual baseline.
 - [x] Requester and Staff Dashboards captured at desktop 1440 px, tablet 768 px, and mobile 375 px.
+- [x] Dashboard metrics, action lists, recent-ticket cards, and empty lists reflow without obscuring controls or text.
 - [x] Staff Ticket Detail with Actions Taken captured at desktop 1440 px, tablet 768 px, and mobile 375 px.
 - [x] Action Taken create form, including assignee, conditional follow-up note, and attachment notes, captured at all three viewports.
+- [x] The conditional follow-up requirement stays with its labelled field; the failed-create alert is visible and entered values remain in the form.
 - [x] Requester Ticket Detail with read-only Action Taken history captured at all three viewports; staff-only controls and Internal Notes are absent.
 - [x] Active-action resolution conflict and successful resolution after cancellation captured at all three viewports.
 - [x] Action create/edit, in-progress, complete, cancellation confirmation/cancelled, empty, load failure, recoverable create failure, dashboard empty/loading/forbidden/failure, and visible keyboard focus captured.
-- [x] Horizontal page overflow is asserted absent in responsive screenshot flows; full-page screenshots show the complete screen content.
+- [x] Editable staff controls and read-only Requester/performed-by information are visually distinguishable.
 - [x] Form fields have visible labels; status, success, and error states have text and semantic live/alert roles.
 - [x] Action status and role controls remain understandable without relying on color; terminal actions and Requester history expose no staff mutation controls.
 - [x] Dashboard navigation exposes an active-page indication; keyboard-focus styling is asserted and captured for an Action Taken control.
+- [x] Screenshots were checked for clipped content and overlapping elements; responsive flows assert no horizontal page overflow, and full-page captures include content below the viewport.
 - [x] No transient hover state is intentionally retained in captures; animations are disabled and the pointer is moved away before each screenshot.
 
 ## Scope and remaining work
