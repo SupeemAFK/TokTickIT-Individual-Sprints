@@ -83,6 +83,22 @@ export async function installLab3ApiMock(page: Page, role: Role, options: Fixtur
   const currentUser = role === "REQUESTER" ? requester : role === "IT_STAFF" ? staff : administrator;
   const users = realistic ? [requester, ...additionalRequesters, staff, ...additionalStaff, administrator] : [requester, staff, administrator];
   const staffUsers = realistic ? [staff, ...additionalStaff.slice(0, 2), administrator] : [staff, administrator];
+  let actions: Array<Record<string, any>> = [{
+    id: 31,
+    ticketId: 12,
+    actionAt: "2026-09-19T09:00:00.000Z",
+    description: "Reviewed the VPN client settings.",
+    result: "The profile is current.",
+    status: "OPEN",
+    followUpRequired: false,
+    followUpNote: null,
+    attachmentNotes: null,
+    assignedToUserId: staff.id,
+    assignedTo: { id: staff.id, name: staff.name, role: staff.role },
+    performedBy: { id: staff.id, name: staff.name, role: staff.role },
+    createdAt: "2026-09-19T09:01:00.000Z",
+    updatedAt: "2026-09-19T09:02:00.000Z",
+  }];
   const findTicket = (id: number) => tickets.find((item) => item.id === id) ?? tickets[0];
   const replaceTicket = (updated: (typeof tickets)[number]) => { tickets = tickets.map((item) => item.id === updated.id ? updated : item); };
   const json = (route: Route, body: unknown, status = 200) => route.fulfill({ status, contentType: "application/json", body: JSON.stringify(body) });
@@ -102,11 +118,78 @@ export async function installLab3ApiMock(page: Page, role: Role, options: Fixtur
     if (url.pathname === "/api/categories") return json(route, categories);
     if (url.pathname === "/api/related-systems") return json(route, systems);
     if (url.pathname === "/api/staff/users") return json(route, staffUsers);
+    const activeStatuses = ["NEW", "OPEN", "IN_PROGRESS", "WAITING_FOR_REQUESTER", "REOPENED"];
+    const toDashboardTicket = (item: (typeof tickets)[number]) => ({ id: item.id, ticketNumber: item.ticketNumber, summary: item.summary, requestedPriority: item.requestedPriority, itPriority: item.itPriority, currentStatus: item.currentStatus, owner: item.owner ?? null, category: item.category, relatedSystem: item.relatedSystem, createdAt: item.createdAt, updatedAt: item.updatedAt });
+    if (url.pathname === "/api/requester/dashboard") {
+      if (role !== "REQUESTER") return json(route, { error: "Forbidden.", code: "FORBIDDEN" }, 403);
+      const owned = tickets.filter((item) => item.requester?.id === currentUser.id);
+      const active = owned.filter((item) => activeStatuses.includes(item.currentStatus));
+      const waiting = owned.filter((item) => item.currentStatus === "WAITING_FOR_REQUESTER");
+      const resolvedWindow = { from: "2026-08-20T08:00:00.000Z", to: "2026-09-19T08:00:00.000Z" };
+      return json(route, { asOf: resolvedWindow.to, resolvedLast30DaysWindow: resolvedWindow, metrics: { totalTickets: owned.length, activeTickets: active.length, waitingForRequester: waiting.length, resolvedLast30Days: 0 }, attentionTickets: waiting.slice(0, 10).map(toDashboardTicket), recentlyResolvedTickets: [], recentTickets: owned.slice(0, 10).map(toDashboardTicket) });
+    }
+    if (url.pathname === "/api/staff/dashboard") {
+      if (role === "REQUESTER") return json(route, { error: "Forbidden.", code: "FORBIDDEN" }, 403);
+      const active = tickets.filter((item) => activeStatuses.includes(item.currentStatus));
+      const activeByStatus = Object.fromEntries(activeStatuses.map((status) => [status, active.filter((item) => item.currentStatus === status).length]));
+      const activeByItPriority = Object.fromEntries(["LOW", "MEDIUM", "HIGH"].map((priority) => [priority, active.filter((item) => item.itPriority === priority).length]));
+      const actionsForMe = actions.filter((item) => item.assignedToUserId === currentUser.id && ["OPEN", "IN_PROGRESS"].includes(String(item.status))).slice(0, 10).map((item) => ({ id: item.id, ticketId: item.ticketId, actionAt: item.actionAt, description: item.description, status: item.status, ticket: toDashboardTicket(findTicket(Number(item.ticketId))) }));
+      const resolvedWindow = { from: "2026-09-12T08:00:00.000Z", to: "2026-09-19T08:00:00.000Z" };
+      return json(route, { asOf: resolvedWindow.to, resolvedLast7DaysWindow: resolvedWindow, metrics: { activeTickets: active.length, unassignedActiveTickets: active.filter((item) => !item.owner).length, myActiveTickets: active.filter((item) => item.owner?.id === currentUser.id).length, activeByStatus, activeByItPriority, waitingForRequester: activeByStatus.WAITING_FOR_REQUESTER ?? 0, resolvedLast7Days: 0, myActiveActions: actionsForMe.length }, myActions: actionsForMe, recentTickets: tickets.slice(0, 10).map(toDashboardTicket) });
+    }
+    if (/^\/api\/(staff|requester)\/dashboard\/resolved-tickets$/.test(url.pathname)) return json(route, { window: { from: url.searchParams.get("from"), to: url.searchParams.get("to") }, items: [], nextCursor: null });
+
+    const ticketActionsMatch = url.pathname.match(/^\/api\/tickets\/(\d+)\/actions$/);
+    if (ticketActionsMatch && method === "GET") return json(route, { items: actions.filter((item) => item.ticketId === Number(ticketActionsMatch[1])) });
+    const createActionMatch = url.pathname.match(/^\/api\/staff\/tickets\/(\d+)\/actions$/);
+    if (createActionMatch && method === "POST") {
+      const body = request.postDataJSON() as Record<string, any>;
+      const assignee = body.assignedToUserId == null ? null : staffUsers.find((person) => person.id === Number(body.assignedToUserId)) ?? null;
+      const created = {
+        id: Math.max(0, ...actions.map((item) => Number(item.id))) + 1,
+        ticketId: Number(createActionMatch[1]),
+        ...body,
+        status: "OPEN",
+        assignedToUserId: assignee?.id ?? null,
+        assignedTo: assignee ? { id: assignee.id, name: assignee.name, role: assignee.role } : null,
+        performedBy: { id: currentUser.id, name: currentUser.name, role: currentUser.role },
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      actions = [...actions, created];
+      return json(route, { action: created }, 201);
+    }
+    const cancelActionMatch = url.pathname.match(/^\/api\/staff\/tickets\/(\d+)\/actions\/(\d+)\/cancel$/);
+    if (cancelActionMatch && method === "POST") {
+      const updated = actions.map((item) => item.id === Number(cancelActionMatch[2]) && item.ticketId === Number(cancelActionMatch[1]) ? { ...item, status: "CANCELLED", updatedAt: new Date().toISOString() } : item);
+      actions = updated;
+      return json(route, { action: actions.find((item) => item.id === Number(cancelActionMatch[2])) });
+    }
+    const editActionMatch = url.pathname.match(/^\/api\/staff\/tickets\/(\d+)\/actions\/(\d+)$/);
+    if (editActionMatch && method === "PATCH") {
+      const body = request.postDataJSON() as Record<string, any>;
+      const existing = actions.find((item) => item.id === Number(editActionMatch[2]) && item.ticketId === Number(editActionMatch[1]));
+      if (!existing || existing.updatedAt !== body.expectedUpdatedAt) return json(route, { error: "Action Taken changed; reload and retry.", code: "CONFLICT" }, 409);
+      const { expectedUpdatedAt: _expectedUpdatedAt, ...changes } = body;
+      const assignee = Object.prototype.hasOwnProperty.call(changes, "assignedToUserId") ? staffUsers.find((person) => person.id === Number(changes.assignedToUserId)) ?? null : existing.assignedTo;
+      actions = actions.map((item) => item === existing ? {
+        ...item,
+        ...changes,
+        ...(Object.prototype.hasOwnProperty.call(changes, "assignedToUserId") ? { assignedToUserId: assignee?.id ?? null, assignedTo: assignee ? { id: assignee.id, name: assignee.name, role: assignee.role } : null } : {}),
+        updatedAt: new Date(Date.parse(existing.updatedAt) + 1000).toISOString(),
+      } : item);
+      return json(route, { action: actions.find((item) => item.id === Number(editActionMatch[2])) });
+    }
 
     if (url.pathname === "/api/tickets" && method === "GET") {
       const pageNumber = Number(url.searchParams.get("page") ?? 1);
       const pageSize = Number(url.searchParams.get("pageSize") ?? 10);
-      const visible = realistic && role === "REQUESTER" ? tickets.filter((item) => item.requester?.id === currentUser.id) : tickets;
+      const activeStatuses = ["NEW", "OPEN", "IN_PROGRESS", "WAITING_FOR_REQUESTER", "REOPENED"];
+      const visible = (realistic && role === "REQUESTER" ? tickets.filter((item) => item.requester?.id === currentUser.id) : tickets).filter((item) => {
+        const status = url.searchParams.get("status");
+        const group = url.searchParams.get("statusGroup");
+        return (!status || item.currentStatus === status) && (group !== "active" || activeStatuses.includes(item.currentStatus));
+      });
       const start = (pageNumber - 1) * pageSize;
       return json(route, { items: visible.slice(start, start + pageSize), pagination: { page: pageNumber, pageSize, totalItems: visible.length, totalPages: Math.ceil(visible.length / pageSize) || 0 } });
     }
@@ -139,8 +222,14 @@ export async function installLab3ApiMock(page: Page, role: Role, options: Fixtur
     if (url.pathname === "/api/staff/tickets" && method === "GET") {
       const pageNumber = Number(url.searchParams.get("page") ?? 1);
       const pageSize = Number(url.searchParams.get("pageSize") ?? 10);
+      const status = url.searchParams.get("status");
+      const statusGroup = url.searchParams.get("statusGroup");
+      const owner = url.searchParams.get("ownerUserId");
+      const priority = url.searchParams.get("itPriority");
+      const activeStatuses = ["NEW", "OPEN", "IN_PROGRESS", "WAITING_FOR_REQUESTER", "REOPENED"];
+      const filtered = tickets.filter((item) => (!status || item.currentStatus === status) && (statusGroup !== "active" || activeStatuses.includes(item.currentStatus)) && (owner === null || (owner === "null" ? !item.owner : item.owner?.id === Number(owner))) && (!priority || item.itPriority === priority));
       const start = (pageNumber - 1) * pageSize;
-      return json(route, { items: tickets.slice(start, start + pageSize).map((item) => ({ ...item, requester: { id: item.requester.id, name: item.requester.name } })), pagination: { page: pageNumber, pageSize, totalItems: tickets.length, totalPages: Math.ceil(tickets.length / pageSize) || 0 }, counts: counts() });
+      return json(route, { items: filtered.slice(start, start + pageSize).map((item) => ({ ...item, requester: { id: item.requester.id, name: item.requester.name } })), pagination: { page: pageNumber, pageSize, totalItems: filtered.length, totalPages: Math.ceil(filtered.length / pageSize) || 0 }, counts: counts() });
     }
     const staffTicketMatch = url.pathname.match(/^\/api\/staff\/tickets\/(\d+)$/);
     if (staffTicketMatch && method === "GET") return json(route, { ticket: findTicket(Number(staffTicketMatch[1])) });
@@ -151,7 +240,17 @@ export async function installLab3ApiMock(page: Page, role: Role, options: Fixtur
       if (action === "claim" && method === "POST") { const updated = { ...ticket, owner: staff }; replaceTicket(updated); return json(route, { ticket: updated }); }
       if (action === "owner" && method === "PATCH") { const body = request.postDataJSON() as Record<string, unknown>; const ownerId = body.ownerUserId == null ? null : Number(body.ownerUserId); const owner = ownerId == null ? null : staffUsers.find((person) => person.id === ownerId) ?? null; const updated = { ...ticket, owner }; replaceTicket(updated); return json(route, { ticket: updated }); }
       if (action === "priority" && method === "PATCH") { const body = request.postDataJSON() as Record<string, unknown>; const updated = { ...ticket, itPriority: String(body.itPriority) }; replaceTicket(updated); return json(route, { ticket: updated }); }
-      if (action === "status" && method === "PATCH") { const body = request.postDataJSON() as Record<string, unknown>; const updated = { ...ticket, currentStatus: String(body.currentStatus) }; replaceTicket(updated); return json(route, { ticket: updated }); }
+      if (action === "status" && method === "PATCH") {
+        const body = request.postDataJSON() as Record<string, unknown>;
+        if (body.expectedCurrentStatus !== ticket.currentStatus) return json(route, { error: "Ticket changed; reload and retry.", code: "CONFLICT" }, 409);
+        if (body.currentStatus === "RESOLVED" && actions.some((item) => item.ticketId === ticket.id && ["OPEN", "IN_PROGRESS"].includes(String(item.status)))) {
+          return json(route, { error: "Complete or cancel all active Actions Taken before resolving this Ticket.", code: "ACTIONS_INCOMPLETE" }, 409);
+        }
+        const resolvedAt = body.currentStatus === "RESOLVED" ? new Date().toISOString() : body.currentStatus === "CLOSED" ? ticket.resolvedAt : null;
+        const updated = { ...ticket, currentStatus: String(body.currentStatus), resolvedAt };
+        replaceTicket(updated);
+        return json(route, { ticket: updated });
+      }
       if (action === "comments" && method === "GET") return json(route, { items: ticket.publicComments });
       if (action === "comments" && method === "POST") { const body = request.postDataJSON() as Record<string, unknown>; const comment = { id: 61, content: String(body.content), author: staff, createdAt: "2026-09-19T10:02:00.000Z" }; const updated = { ...ticket, publicComments: [...ticket.publicComments, comment] }; replaceTicket(updated); return json(route, comment, 201); }
       if (action === "notes" && method === "GET") return json(route, { items: ticket.internalNotes });

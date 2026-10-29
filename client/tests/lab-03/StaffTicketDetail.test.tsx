@@ -43,6 +43,7 @@ function installStaffApi(currentUser: CurrentUser = staff, failurePath: FailureP
     const method = init?.method ?? "GET";
     const body = init?.body ? JSON.parse(String(init.body)) : undefined;
     if (url.endsWith("/api/auth/me")) return response({ user: currentUser, mustChangePassword: false });
+    if (url.endsWith("/api/tickets/12/actions") && method === "GET") return response({ items: [] });
     if (url.endsWith("/api/staff/users")) return response([staff, administrator]);
     if (url.endsWith("/api/categories")) return response([category]);
     if (url.endsWith("/api/related-systems")) return response([relatedSystem]);
@@ -51,7 +52,7 @@ function installStaffApi(currentUser: CurrentUser = staff, failurePath: FailureP
     if (url.endsWith("/api/staff/tickets/12/claim") && method === "POST") { ticket = { ...ticket, owner: staff }; return response({ ticket: summary() }); }
     if (url.endsWith("/api/staff/tickets/12/owner") && method === "PATCH") { ticket = { ...ticket, owner: body.ownerUserId === administrator.id ? administrator : body.ownerUserId === null ? null : staff }; return response({ ticket: summary() }); }
     if (url.endsWith("/api/staff/tickets/12/priority") && method === "PATCH") { ticket = { ...ticket, itPriority: body.itPriority }; return response({ ticket: summary() }); }
-    if (url.endsWith("/api/staff/tickets/12/status") && method === "PATCH") { ticket = { ...ticket, currentStatus: body.currentStatus }; return response({ ticket: summary() }); }
+    if (url.endsWith("/api/staff/tickets/12/status") && method === "PATCH") { if (body.expectedCurrentStatus !== ticket.currentStatus) return response({ error: "Ticket changed; reload and retry.", code: "CONFLICT" }, 409); ticket = { ...ticket, currentStatus: body.currentStatus }; return response({ ticket: summary() }); }
     if (url.endsWith("/api/staff/tickets/12/comments") && method === "POST") {
       if (failurePath === "comment") return response({ error: "Comment service unavailable.", code: "SERVER_ERROR" }, 500);
       ticket = { ...ticket, publicComments: [...ticket.publicComments, { id: 32, content: body.content, author: staff, createdAt: "2026-09-19T10:00:00.000Z" }] };
@@ -118,7 +119,7 @@ describe("Issue #39 IT Staff Ticket Detail UI", () => {
     expect(calls(fetchMock, "/api/staff/tickets/12/claim", "POST")).toHaveLength(1);
     expect(JSON.parse(String(calls(fetchMock, "/api/staff/tickets/12/owner", "PATCH")[0][1]?.body))).toEqual({ ownerUserId: administrator.id });
     expect(JSON.parse(String(calls(fetchMock, "/api/staff/tickets/12/priority", "PATCH")[0][1]?.body))).toEqual({ itPriority: "HIGH" });
-    expect(JSON.parse(String(calls(fetchMock, "/api/staff/tickets/12/status", "PATCH")[0][1]?.body))).toEqual({ currentStatus: "IN_PROGRESS" });
+    expect(JSON.parse(String(calls(fetchMock, "/api/staff/tickets/12/status", "PATCH")[0][1]?.body))).toEqual({ currentStatus: "IN_PROGRESS", expectedCurrentStatus: "OPEN" });
     expect(JSON.parse(String(calls(fetchMock, "/api/staff/tickets/12/comments", "POST")[0][1]?.body))).toEqual({ content: "Public update from staff." });
     expect(JSON.parse(String(calls(fetchMock, "/api/staff/tickets/12/notes", "POST")[0][1]?.body))).toEqual({ content: "Private investigation note." });
   });

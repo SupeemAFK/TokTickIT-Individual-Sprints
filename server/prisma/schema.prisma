@@ -25,6 +25,12 @@ enum UserRole {
   IT_STAFF
   ADMINISTRATOR
 }
+enum ActionTakenStatus {
+ OPEN
+ IN_PROGRESS
+ COMPLETED
+ CANCELLED
+}
 model DevelopmentRequester {
  id Int @id @default(autoincrement())
  name String
@@ -53,6 +59,8 @@ model User {
  sessions Session[]
  comments PublicComment[]
  notes InternalNote[]
+ assignedActions ActionTaken[] @relation("ActionTakenAssignee")
+ performedActions ActionTaken[] @relation("ActionTakenPerformer")
  @@index([role, isActive])
  @@index([name])
 }
@@ -96,6 +104,7 @@ model Ticket {
  description String @db.Text
  itPriority RequestedPriority @default(MEDIUM)
  currentStatus TicketStatus @default(NEW)
+ resolvedAt DateTime?
  createdAt DateTime @default(now())
  ownerUserId Int?
  requesterReportedResolvedAt DateTime?
@@ -107,12 +116,37 @@ model Ticket {
  attachments Attachment[]
  publicComments PublicComment[]
  internalNotes InternalNote[]
+ actionsTaken ActionTaken[]
  @@index([requesterId, createdAt])
  @@index([requesterId, categoryId])
  @@index([requesterId, relatedSystemId])
  @@index([requesterId, requestedPriority])
  @@index([requesterId, currentStatus])
  @@index([ownerUserId, currentStatus])
+ @@index([resolvedAt, id])
+}
+model ActionTaken {
+ id Int @id @default(autoincrement())
+ ticketId Int
+ actionAt DateTime
+ description String @db.Text
+ result String @db.Text
+ status ActionTakenStatus @default(OPEN)
+ followUpRequired Boolean @default(false)
+ followUpNote String? @db.Text
+ attachmentNotes String? @db.Text
+ assignedToUserId Int?
+ performedByUserId Int
+ idempotencyKey String @unique
+ idempotencyPayloadHash String
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+ ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+ assignedTo User? @relation("ActionTakenAssignee", fields: [assignedToUserId], references: [id], onDelete: SetNull)
+ performedBy User @relation("ActionTakenPerformer", fields: [performedByUserId], references: [id], onDelete: Restrict)
+ @@index([ticketId, actionAt, id])
+ @@index([ticketId, status])
+ @@index([assignedToUserId, status, actionAt, id])
 }
 model PublicComment {
  id Int @id @default(autoincrement())

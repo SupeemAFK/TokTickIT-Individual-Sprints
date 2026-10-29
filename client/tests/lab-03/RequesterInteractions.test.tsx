@@ -22,6 +22,7 @@ function installRequesterApi() {
     const url = String(input);
     const method = init?.method ?? "GET";
     if (url.endsWith("/api/auth/me")) return response({ user: requester, mustChangePassword: false });
+    if (url.endsWith("/api/tickets/12/actions") && method === "GET") return response({ items: [] });
     if (url.endsWith("/api/categories")) return response([category]);
     if (url.endsWith("/api/related-systems")) return response([system]);
     if (url.includes("/api/tickets?") && method === "GET") return response({ items: [ticket()], pagination: { page: 1, pageSize: 10, totalItems: 1, totalPages: 1 } });

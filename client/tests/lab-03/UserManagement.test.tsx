@@ -25,6 +25,8 @@ function installAdminApi(currentUser: CurrentUser = administrator, failurePath: 
     if (url.endsWith("/api/auth/me")) return response({ user: currentUser, mustChangePassword: false });
     if (url.endsWith("/api/categories")) return response([]);
     if (url.endsWith("/api/related-systems")) return response([]);
+    if (url.endsWith("/api/staff/users")) return response([]);
+    if (url.includes("/api/staff/tickets?")) return response({ items: [], pagination: { page: 1, pageSize: 10, totalItems: 0, totalPages: 0 }, counts: { totalItems: 0, unassigned: 0, byItPriority: {} } });
     if (url.includes("/api/admin/users?") && method === "GET") {
       if (failurePath === "list") return response({ error: "User service unavailable.", code: "SERVER_ERROR" }, 500);
       const params = new URL(url).searchParams;
@@ -63,6 +65,7 @@ async function openUsers(currentUser: CurrentUser = administrator, failurePath: 
   sessionStorage.setItem("toktickit.token", "admin-session");
   const fetchMock = installAdminApi(currentUser, failurePath);
   render(<App />);
+  await screen.findByRole("heading", { name: "Ticket Queue" });
   await userEvent.click(await screen.findByRole("button", { name: "User Management" }));
   await screen.findByRole("heading", { name: "User Management" });
   return fetchMock;

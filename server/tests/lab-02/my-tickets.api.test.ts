@@ -26,6 +26,18 @@ describe("GET /api/tickets", () => {
     expect(response.status).toBe(200); expect(response.body.pagination).toEqual({ page: 2, pageSize: 20, totalItems: 21, totalPages: 2 });
     expect(prisma.ticket.findMany).toHaveBeenCalledWith(expect.objectContaining({ where: expect.objectContaining({ requesterId: 1, categoryId: 2, relatedSystemId: 3, requestedPriority: "HIGH", currentStatus: "CLOSED" }), orderBy: [{ summary: "asc" }, { id: "desc" }], skip: 20, take: 20 }));
   });
+  it("supports the active status group used by Requester dashboard drill-downs", async () => {
+    prisma.ticket.findMany.mockResolvedValue([row]); prisma.ticket.count.mockResolvedValue(1);
+    const response = await request(app).get("/api/tickets?statusGroup=active").set(auth);
+    expect(response.status).toBe(200);
+    expect(prisma.ticket.findMany).toHaveBeenCalledWith(expect.objectContaining({ where: { requesterId: 1, currentStatus: { in: ["NEW", "OPEN", "IN_PROGRESS", "WAITING_FOR_REQUESTER", "REOPENED"] } } }));
+  });
+  it("rejects combining the active group with a single status", async () => {
+    const response = await request(app).get("/api/tickets?status=CLOSED&statusGroup=active").set(auth);
+    expect(response.status).toBe(400);
+    expect(response.body.code).toBe("INVALID_REQUEST");
+    expect(prisma.ticket.findMany).not.toHaveBeenCalled();
+  });
   it("requires a bearer session", async () => { const response = await request(app).get("/api/tickets"); expect(response.status).toBe(401); expect(response.body.code).toBe("UNAUTHENTICATED"); expect(prisma.ticket.findMany).not.toHaveBeenCalled(); });
   it("rejects malformed query values safely", async () => { const response = await request(app).get("/api/tickets?pageSize=7").set(auth); expect(response.status).toBe(400); expect(response.body.code).toBe("INVALID_REQUEST"); expect(prisma.ticket.findMany).not.toHaveBeenCalled(); });
 });
