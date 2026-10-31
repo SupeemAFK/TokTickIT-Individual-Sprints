@@ -1,6 +1,6 @@
 # Lab 4 Visual and Accessibility Review
 
-Initial visual review: 2026-10-30 on PR #81's local evidence branch. Final-main recheck: 2026-10-31 on commit `5dd4ff09b425e64352cc74318bb0af9063e7ab82` (tree `35126d193c93dc26767f92efea7ce5ebee573d1c`). Captures use local Playwright fixtures with synthetic Ticket data. The final-main Playwright suite passed all 20 tests and reproduced the 53 indexed Lab 4 screenshots from the verified application source tree. Responsive flows assert no horizontal page overflow at each recorded viewport.
+Initial visual review: 2026-10-30 on PR #81's local evidence branch. Final-main recheck: 2026-10-31 on commit `5dd4ff09b425e64352cc74318bb0af9063e7ab82` (tree `35126d193c93dc26767f92efea7ce5ebee573d1c`). Application captures use local Playwright fixtures with synthetic Ticket data. The final-main Playwright suite passed all 20 tests and reproduced the application screenshots from the verified source tree. The index also includes dated GitHub-rendered repository and review snapshots. Responsive flows assert no horizontal page overflow at each recorded viewport.
 
 ## Review checklist
 

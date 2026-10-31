@@ -8,7 +8,7 @@ The Lab 4 application release was integrated by approved PR [#84](https://github
 - PRs #73–#83 were merged to `lab4-staging`; approved PR #84 merged staging to `main`. The review and merge records are in [`reviewer.md`](reviewer.md).
 - The exact main source tree passed 164/164 server tests, 62/62 client tests, 20/20 Playwright tests, and both production builds. The test run used a clean archive of the recorded commit and tree. See [`tests.md`](tests.md) and the separate submission report for the run record.
 - Migration recovery, repeatable seed behavior, responsive evidence capture, and dashboard performance were checked with disposable local data. No production data or shared database was used.
-- All 53 indexed Lab 4 screenshots were reproduced from the final application source tree. UI captures use synthetic Playwright fixtures, not production data; the [screenshot index](../../artifacts/lab-04/screenshots/README.md) identifies each case and viewport.
+- All 54 indexed Lab 4 screenshots were reproduced from the final application source tree or captured as dated GitHub evidence. UI captures use synthetic Playwright fixtures, not production data; the [screenshot index](../../artifacts/lab-04/screenshots/README.md) identifies each case and viewport.
 - The separate course PDF contains Answer Parts 1–9 and is kept outside the repository. Its claims must be read with the exact source commit and dated GitHub evidence snapshots it identifies.
 - The AI-use record names OpenAI Codex using GPT-6, includes eight selected prompt examples, and transparently identifies the reflection as AI-assisted wording based on the student's stated experience. The student should confirm that it accurately represents their learning before submission.
 
