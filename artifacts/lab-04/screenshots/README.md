@@ -53,7 +53,7 @@ These screenshots were captured from GitHub's HTML rendering of the PR branch or
 | Release checklist rendered | [release-evidence-rendered-1440.png](repository/release-evidence-rendered-1440.png) |
 | Final-main dashboard performance smoke rendered | [performance-smoke-rendered-1440.png](repository/performance-smoke-rendered-1440.png) |
 | AI-use record rendered | [ai-use-rendered-1440.png](repository/ai-use-rendered-1440.png) |
-| Final reviewer record rendered after PR #84 main merge | [reviewer-rendered-1440.png](repository/reviewer-rendered-1440.png) |
+| Final reviewer record rendered from PR #85 branch, updated through PR #84 | [reviewer-rendered-1440.png](repository/reviewer-rendered-1440.png) |
 | PR #81 merged-status snapshot | [pr-81-status-1440.png](repository/pr-81-status-1440.png) |
 | PR #82 merged-status snapshot | [pr-82-status-1440.png](repository/pr-82-status-1440.png) |
 | Repository file structure | [repository-root-1440.png](repository/repository-root-1440.png) |
