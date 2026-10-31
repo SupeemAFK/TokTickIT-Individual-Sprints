@@ -15,8 +15,8 @@ OpenAI Codex (GPT-6-based assistant; the exact model identifier is not exposed i
 | 7 | “He review and request changes … take a look if valid then fix” | Examined each collaborator request against the contract, corrected valid issues, and recorded the real changes-requested and approval history in [`reviewer.md`](reviewer.md). |
 | 8 | “Nice it got merged now please proceed with next step” | Continued only after each preceding PR was merged, then verified PR #80's merge before starting issue #72 from the updated `lab4-staging` head. |
 
-## Student reflection draft
+## Reflection (AI-assisted wording)
 
-**Draft for the student to review and personalize before submission; this is not represented as a final student-authored reflection.**
+The student described feature development and reviewing a friend's work as important learning experiences. Codex helped express that reflection using the recorded Lab 4 implementation and peer-review history. The student remains responsible for the accuracy of this first-person account.
 
-> I learned that breaking the handout into issue-sized work and linking each issue to tests made it easier to see what was complete and what still needed evidence. Peer review found requirements that could have been missed by implementation alone, including exact dashboard drill-down behavior, safe seed reruns, and retry handling. Keeping one PR per issue also made it easier to review fixes without mixing unrelated changes. Before submitting, I still need to check the final `main` commit, verify the release evidence against it, and edit this reflection so it accurately describes my own work and learning.
+> I learned that implementing a feature means keeping its data, API, permissions, user interface, and tests in agreement. Building Actions Taken and dashboard features gave me practice connecting those parts, and peer review from my friend helped me notice behavior and edge cases I could have missed. I also learned that collecting evidence and keeping release records current are part of the engineering work. Next time, I will tie test results and screenshots to each issue as I finish it, so final verification and report preparation are easier.
