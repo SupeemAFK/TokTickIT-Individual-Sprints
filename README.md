@@ -130,7 +130,7 @@ The E2E suite uses stateful browser fixtures and covers authentication, mandator
 3. As IT Staff, open the Staff Dashboard and Ticket Queue. Review My Actions and the active Tickets, then open `TKT-2026-000901` to see multiple Actions Taken.
 4. Try resolving a Ticket while an Action Taken is OPEN or IN_PROGRESS. The API blocks resolution until each active action is completed or cancelled.
 
-The Lab 4 requirements, API/UI contracts, acceptance traceability, performance run, reviewer history, AI-use record, release checklist, and [Parts 1–9 evidence matrix](docs/lab-04/evidence-matrix.md) are in [`docs/lab-04/`](docs/lab-04/). The screenshots are under [`artifacts/lab-04/screenshots/`](artifacts/lab-04/screenshots/), with a [viewport and case index](artifacts/lab-04/screenshots/README.md) and a [visual/accessibility review](docs/lab-04/visual-review.md). The single Answer Parts 1–9 submission PDF is a separate artifact and will be prepared after final `main` verification; it is not committed to this repository.
+The Lab 4 requirements, API/UI contracts, acceptance traceability, performance runs, reviewer history, AI-use record, release checklist, and [Parts 1–9 evidence matrix](docs/lab-04/evidence-matrix.md) are in [`docs/lab-04/`](docs/lab-04/). The screenshots are under [`artifacts/lab-04/screenshots/`](artifacts/lab-04/screenshots/), with a [viewport and case index](artifacts/lab-04/screenshots/README.md) and a [visual/accessibility review](docs/lab-04/visual-review.md). The course submission is one separate Answer Parts 1–9 PDF built from the verified release evidence; it is kept outside this repository. The committed records identify the exact source commit and test results represented by that report.
 
 ## Lab 2 Documentation and Evidence
 
