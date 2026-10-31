@@ -31,6 +31,36 @@ The post-merge evidence refresh was reviewed separately:
 |---|---|---|
 | `jarbbie` | [Approved](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/82#pullrequestreview-5703621418) at `75cd4e7`. The reviewer checked the rendered records, all 89 local links, and all 52 indexed screenshots; application tests were not rerun because the changes were documentation and screenshots only. | [PR #82](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/82), branch `codex/chore-72-post-merge-evidence`, merged into `lab4-staging` as `d1be4b0`. |
 
-## Release status snapshot — 2026-10-30
+## Historical release status snapshot — 2026-10-30 (before PRs #83 and #84)
 
 Issues #64–#71 have approved PRs merged to `lab4-staging`. PR #81 was approved at `f081efc` and merged as `3fa0743`; the evidence follow-up PR #82 was approved at `75cd4e7` and merged as `d1be4b0`, the current staging head at this snapshot. Issue #72 is open for the remaining final `lab4-staging` to `main` PR, verification on the resulting `main` commit, Kanban completion, and separate submission PDF. It was reopened after PR #81 because those acceptance criteria remain incomplete. Its project card still shows `Done` and must be moved to `In Progress` until the final release gates are complete. No final release approval is claimed here.
+
+This section is retained as a point-in-time record. The final release section that follows supersedes its pending-release status.
+
+## PR #83 staging evidence review
+
+[PR #83](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/83), branch `codex/chore-72-final-evidence-snapshot` → `lab4-staging`, recorded the PR #82 merge and staging evidence state.
+
+| Reviewer | Review event | Merge result |
+|---|---|---|
+| `jarbbie` | [Dismissed the earlier review](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/83#pullrequestreview-5703820298), then [approved](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/83#pullrequestreview-5703857316) at `f51137f`. The approval body explicitly limits its scope to the PR #82 post-merge snapshot and says final release work is still pending. | Merged into `lab4-staging` as [`3e6d4bf`](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/commit/3e6d4bff9e48a51b2dc7ee8dfbbe15052e56f577) on 2026-10-30 at 02:37 Bangkok time. |
+
+PR #83 had no conversation comments or inline review comments.
+
+## PR #84 final integration review
+
+[PR #84](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/84), branch `lab4-staging` → `main`, completed the staged integration.
+
+| Reviewer | Review event | Merge result |
+|---|---|---|
+| `jarbbie` | [Approved](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/84#pullrequestreview-5703988098) at `3e6d4bf`, confirming the implementation, regression tests, documentation, and supporting evidence were ready for integration. | Merged to `main` as [`5dd4ff0`](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/commit/5dd4ff09b425e64352cc74318bb0af9063e7ab82) on 2026-10-30 at 02:46 Bangkok time. The resulting tree is [`35126d1`](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/tree/35126d193c93dc26767f92efea7ce5ebee573d1c). |
+
+PR #84 had no conversation comments or inline review comments. Its approval requested final verification on the resulting `main` commit; that verification was completed on 2026-10-31.
+
+## Final release status — 2026-10-31
+
+Issue [#72](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/issues/72) was closed on 2026-10-31 at 17:14 Bangkok time after PR #84 was integrated and final-main verification was recorded. The final tested source was `main` commit `5dd4ff09b425e64352cc74318bb0af9063e7ab82`, tree `35126d193c93dc26767f92efea7ce5ebee573d1c`.
+
+Final-main verification recorded 164/164 server tests, 62/62 client tests, 20/20 Playwright end-to-end tests, and both production builds passing. Migration recovery, repeatable seed behavior, responsive capture flows, and the local dashboard performance smoke were also recorded in the Lab 4 submission evidence.
+
+The release record now covers reviewed Lab 4 PRs #73–#83 into `lab4-staging`, followed by the approved PR #84 integration into `main`. This final section supersedes the historical pending-release snapshot above.

@@ -1,6 +1,6 @@
 # Lab 4 AI Use Record
 
-OpenAI Codex (GPT-6-based assistant; the exact model identifier is not exposed in this thread) assisted with reading the lab requirements, repository analysis, issue planning, implementation, regression tests, performance checks, documentation, and review-response work. The student remains responsible for understanding and verifying the handout, code, test results, peer-review history, and submitted evidence. The prompt excerpts below are selected from the actual instructions in this task; they are shortened only for readability.
+OpenAI Codex (GPT-6-based assistant; the exact model identifier is not exposed in this thread) assisted with reading the lab requirements, repository analysis, issue planning, implementation, regression tests, performance checks, documentation, and review-response work. The specification agent helped turn the handout into the engineering contract and acceptance criteria; the coding agent helped implement and verify the features. The student remains responsible for understanding and verifying the handout, code, test results, peer-review history, and submitted evidence. The prompt excerpts below are selected from the actual instructions in this task; they are shortened only for readability.
 
 ## Selected prompt traceability
 
@@ -15,8 +15,8 @@ OpenAI Codex (GPT-6-based assistant; the exact model identifier is not exposed i
 | 7 | “He review and request changes … take a look if valid then fix” | Examined each collaborator request against the contract, corrected valid issues, and recorded the real changes-requested and approval history in [`reviewer.md`](reviewer.md). |
 | 8 | “Nice it got merged now please proceed with next step” | Continued only after each preceding PR was merged, then verified PR #80's merge before starting issue #72 from the updated `lab4-staging` head. |
 
-## Student reflection draft
+## My Reflection
 
-**Draft for the student to review and personalize before submission; this is not represented as a final student-authored reflection.**
+Codex helped phrase this reflection from the student's description of feature development and reviewing a friend's work, together with the recorded Lab 4 agent and peer-review workflow. The student remains responsible for the accuracy of this first-person account.
 
-> I learned that breaking the handout into issue-sized work and linking each issue to tests made it easier to see what was complete and what still needed evidence. Peer review found requirements that could have been missed by implementation alone, including exact dashboard drill-down behavior, safe seed reruns, and retry handling. Keeping one PR per issue also made it easier to review fixes without mixing unrelated changes. Before submitting, I still need to check the final `main` commit, verify the release evidence against it, and edit this reflection so it accurately describes my own work and learning.
+> I used the specification agent to turn the handout into requirements, business rules, and tests before implementation. The coding agent helped build the Actions Taken and dashboard features, check regression behavior, and prepare evidence. Reviewing my friend's PR feedback showed me that peer review can find edge cases that a basic happy-path check misses. I learned that the strongest results came when requirements, implementation, and tests stayed connected. Next time, I will capture evidence alongside each issue and compare it to the release checklist earlier, so report preparation is easier.

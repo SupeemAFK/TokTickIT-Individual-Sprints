@@ -1,6 +1,6 @@
 # Lab 4 Visual and Accessibility Review
 
-Reviewed 2026-10-30 on PR #81's local evidence branch. Captures use local Playwright fixtures with synthetic ticket data. The full Lab 1–4 Playwright suite passed: 20 tests. The suite also asserts that the document has no horizontal overflow at each recorded viewport.
+Initial visual review: 2026-10-30 on PR #81's local evidence branch. Final-main recheck: 2026-10-31 on commit `5dd4ff09b425e64352cc74318bb0af9063e7ab82` (tree `35126d193c93dc26767f92efea7ce5ebee573d1c`). Application captures use local Playwright fixtures with synthetic Ticket data. The final-main Playwright suite passed all 20 tests and reproduced the application screenshots from the verified source tree. The index also includes dated GitHub-rendered repository and review snapshots. Responsive flows assert no horizontal page overflow at each recorded viewport.
 
 ## Review checklist
 
@@ -20,8 +20,8 @@ Reviewed 2026-10-30 on PR #81's local evidence branch. Captures use local Playwr
 - [x] Screenshots were checked for clipped content and overlapping elements; responsive flows assert no horizontal page overflow, and full-page captures include content below the viewport.
 - [x] No transient hover state is intentionally retained in captures; animations are disabled and the pointer is moved away before each screenshot.
 
-## Scope and remaining work
+## Scope and evidence limits
 
-The state-specific captures are generally desktop screenshots; the major screens and the create form, Requester history, and both resolution outcomes have the requested 1440/768/375 viewport set. The screenshots show test fixtures, not a live database. API and database assertions for inactive assignees, role enforcement, metric parity, append-only history, and ordering are documented in [`tests.md`](tests.md).
+The state-specific captures are generally desktop screenshots; the major screens and the create form, Requester history, and both resolution outcomes have the 1440/768/375 viewport set. The screenshots show local test fixtures, not a live database. API and database assertions for inactive assignees, role enforcement, metric parity, append-only history, and ordering are documented in [`tests.md`](tests.md).
 
-This is PR/staging evidence, not a claim about the final release. Repeat the visual review on the exact final `main` commit, record that commit and test output, and attach the final screenshots to the separate submission PDF.
+The final-main recheck confirms the committed application screenshots match the verified source tree. It does not claim a production deployment or production-data test. The separate submission PDF includes the final-main commit identity, screenshot index, and these scope limits.

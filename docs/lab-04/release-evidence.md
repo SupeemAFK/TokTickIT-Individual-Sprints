@@ -1,28 +1,23 @@
-# Lab 4 Release Evidence Checklist
+# Lab 4 Release Evidence
 
-This checklist distinguishes completed staging evidence from work that depends on collaborator review and final `main` integration. It is not a claim that the release is complete.
+## Final-main release snapshot
 
-## Staging evidence
+The Lab 4 application release was integrated by approved PR [#84](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/pull/84). The verified source was `main` commit [`5dd4ff09b425e64352cc74318bb0af9063e7ab82`](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/commit/5dd4ff09b425e64352cc74318bb0af9063e7ab82), tree [`35126d193c93dc26767f92efea7ce5ebee573d1c`](https://github.com/SupeemAFK/TokTickIT-Individual-Sprints/tree/35126d193c93dc26767f92efea7ce5ebee573d1c), checked on 2026-10-31.
 
-- [x] Contract, API/UI specifications, and acceptance traceability are versioned under `docs/lab-04/`.
-- [x] Issues #64–#71 have focused, issue-linked PRs merged to `lab4-staging`; actual review history is in [`reviewer.md`](reviewer.md).
-- [x] Lab 4 AI use and selected prompt traceability are recorded in [`ai-use.md`](ai-use.md). The reflection remains a draft for student review.
-- [x] Server/client regression suites and builds passed on PR #80 head `c6aef91`; the approved PR merged to staging as `2d8db4f`. See [`tests.md`](tests.md) for the tested commits and the later evidence-only changes.
-- [x] Migration and dashboard performance checks ran against disposable PostgreSQL 16.15 using temporary schemas; no remote database or public schema was changed.
-- [x] Staff and Requester dashboards and Staff Ticket Detail were captured and visually inspected at 375, 768, and 1440 px. See the [screenshot index](../../artifacts/lab-04/screenshots/README.md).
-- [x] The complete existing Lab 1–4 Playwright suite passed on PR #81's evidence-capture commit `fb0e13f`: 20 tests, including Action Taken create/edit/status/cancel/error/empty states, requester read-only history, dashboard loading/empty/forbidden/failure states, and ticket-resolution conflict/recovery. Later PR #81 changes were documentation and rendered screenshots; the reviewer recorded that the suite was not rerun for those evidence-only changes.
-- [x] PR #81 received collaborator approval at `f081efc` and merged into `lab4-staging` as `3fa0743`. The actual review, response, and merge history is recorded in [`reviewer.md`](reviewer.md).
-- [x] The post-merge evidence refresh in PR #82 was approved at `75cd4e7` and merged into `lab4-staging` as `d1be4b0`; its refreshed captures and review are recorded in [`reviewer.md`](reviewer.md).
-- [x] The [Parts 1–9 evidence matrix](evidence-matrix.md) and [visual/accessibility review](visual-review.md) map screenshots, test records, and remaining release work to the handout.
-- [x] README setup, migration, seed, test, and demo instructions describe the integrated Labs 1–4 application.
+- Issues #64–#72 are closed and the Lab 4 project cards show Done.
+- PRs #73–#83 were merged to `lab4-staging`; approved PR #84 merged staging to `main`. The review and merge records are in [`reviewer.md`](reviewer.md).
+- The exact main source tree passed 164/164 server tests, 62/62 client tests, 20/20 Playwright tests, and both production builds. The test run used a clean archive of the recorded commit and tree. See [`tests.md`](tests.md) and the separate submission report for the run record.
+- Migration recovery, repeatable seed behavior, responsive evidence capture, and dashboard performance were checked with disposable local data. No production data or shared database was used.
+- All 54 indexed Lab 4 screenshots were reproduced from the final application source tree or captured as dated GitHub evidence. UI captures use synthetic Playwright fixtures, not production data; the [screenshot index](../../artifacts/lab-04/screenshots/README.md) identifies each case and viewport.
+- The separate course PDF contains Answer Parts 1–9 and is kept outside the repository. Its claims must be read with the exact source commit and dated GitHub evidence snapshots it identifies.
+- The AI-use record names OpenAI Codex using GPT-6, includes eight selected prompt examples, and transparently identifies the reflection as AI-assisted wording based on the student's stated experience. The student should confirm that it accurately represents their learning before submission.
 
-## Pending integration and final release
+## Evidence provenance
 
-- [ ] Open the final `lab4-staging` to `main` PR for collaborator review and merge.
-- [ ] On the resulting exact `main` commit, rerun server and client tests/builds and the complete Playwright suite; inspect the final screenshots and record the commit hash and actual outputs.
-- [ ] Change issue #72's project status from `Done` to `In Progress` while the final release gates remain pending; mark it `Done` only after final-main verification and the submission PDF meet the acceptance criteria.
-- [ ] Prepare the separate concise PDF with exactly `Answer Part 1` through `Answer Part 9`, working references, readable screenshots, and claims checked against final `main`. Do not commit the submission PDF to this repository.
+The server and client suites/builds were initially reviewed on PR #80 head `c6aef91`; the full browser suite and screenshot capture ran on PR #81 head `fb0e13f`. Those runs established the candidate evidence before integration. The later final-main verification above reran the application suites, builds, performance smoke, and screenshot flow against the integrated source tree. The [Parts 1–9 evidence matrix](evidence-matrix.md) distinguishes these sources and records the final results.
 
-## Verified staging snapshot
+The initial dashboard performance smoke on 2026-10-30 recorded Staff at 114.8 ms and Requester at 54.4 ms. The final-main rerun on 2026-10-31 recorded Staff at 78.7 ms and Requester at 18.7 ms with the same 8 and 6 entity-query counts. Both measurements used disposable PostgreSQL 16.15 data; they are local smoke results, not production service-level targets. Details are in [`performance-smoke.md`](performance-smoke.md).
 
-After PR #82 merged, `origin/lab4-staging` was `d1be4b07f270453b8fb398dc0618ffda2dba0f93`, the merge commit for approved PR #82. The server/client regression evidence is from tested PR #80 head `c6aef91`; the full Playwright evidence run is from PR #81 capture commit `fb0e13f`. PRs #81 and #82 made documentation and screenshot updates after those runs. This is staging evidence, not final-main verification.
+## Submission artifact
+
+The PDF is a separate course submission artifact, not a repository deliverable. Generate it from the accepted release evidence, preserve the exact `Answer Part 1` through `Answer Part 9` headings, and label any older GitHub page captures with their actual snapshot dates. Do not present a historical screenshot as current repository state.
