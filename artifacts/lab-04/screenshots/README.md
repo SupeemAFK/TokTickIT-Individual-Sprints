@@ -1,6 +1,6 @@
 # Lab 4 Screenshot and Evidence Index
 
-Captured on 2026-10-30 using local Playwright fixtures with synthetic data for app screens; repository and pull-request evidence shows GitHub's rendered pages, including approved and merged PRs #81 and #82. Responsive browser flows assert no horizontal page overflow. Captures disable animations and move the pointer away before taking screenshots; the keyboard-focus example intentionally keeps focus visible.
+Application screens were captured on 2026-10-30 using local Playwright fixtures with synthetic data. The GitHub-rendered reviewer record was refreshed on 2026-11-01 from the final-review follow-up branch and now records PRs #83–#84 and the final-main verification. Other repository and pull-request evidence includes the PR #81 and #82 snapshots. Responsive browser flows assert no horizontal page overflow. Captures disable animations and move the pointer away before taking screenshots; the keyboard-focus example intentionally keeps focus visible.
 
 For the report's complete Parts 1–9 mapping, see [`evidence-matrix.md`](../../../docs/lab-04/evidence-matrix.md). The review scope and limits are in [`visual-review.md`](../../../docs/lab-04/visual-review.md).
 
@@ -52,7 +52,7 @@ These screenshots were captured from GitHub's HTML rendering of the PR branch or
 | Visual/accessibility review rendered | [visual-review-rendered-1440.png](repository/visual-review-rendered-1440.png) |
 | Release checklist rendered | [release-evidence-rendered-1440.png](repository/release-evidence-rendered-1440.png) |
 | AI-use record rendered | [ai-use-rendered-1440.png](repository/ai-use-rendered-1440.png) |
-| Peer-review record rendered after PR #82 merge | [reviewer-rendered-1440.png](repository/reviewer-rendered-1440.png) |
+| Final reviewer record rendered after PR #84 main merge | [reviewer-rendered-1440.png](repository/reviewer-rendered-1440.png) |
 | PR #81 merged-status snapshot | [pr-81-status-1440.png](repository/pr-81-status-1440.png) |
 | PR #82 merged-status snapshot | [pr-82-status-1440.png](repository/pr-82-status-1440.png) |
 | Repository file structure | [repository-root-1440.png](repository/repository-root-1440.png) |
